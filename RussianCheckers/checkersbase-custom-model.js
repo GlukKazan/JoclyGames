@@ -51,6 +51,7 @@
 		boardHeight=HEIGHT;
 		invertNotation=this.mOptions.invertNotation || false;
 	
+		this.g.russianCustom=false;                 
 		this.g.compulsoryCatch=true;
 		this.g.canStepBack=true;
 		this.g.mustMoveForward=false;
@@ -260,6 +261,20 @@
 					if(aGame.g.canCaptureBackward==false)
 						r=aGame.g.Coord[pos][0];
 					var dir0=aGame.Checkers2WaysDirections[dir];
+
+					if (aGame.g.russianCustom==true) {
+						if($this.board[pos0]>=0 && $this.pieces[$this.board[pos0]].s==-$this.mWho) {
+							var pp=aGame.g.Graph[pos0][dir];
+							if (aGame.g.Coord[pp]) {
+								var rr=aGame.g.Coord[pp][0];
+								var HEIGHT=aGame.mOptions.height;
+								if(rr==HEIGHT-1) {
+									king=true;
+								}
+							}
+						}
+					}
+
 					if(!king) {
 						if($this.board[pos0]>=0 && $this.pieces[$this.board[pos0]].s==-$this.mWho) {
 							var r0,forward;
@@ -575,6 +590,9 @@
 	/* Modify the current board instance to apply the move.
 	 */
 	Model.Board.ApplyMove = function(aGame,move) {
+
+		var pieceCrowned=false;
+
 		var WIDTH=aGame.mOptions.width;
 		var HEIGHT=aGame.mOptions.height;
 		var pos0=move.pos[0];
@@ -588,6 +606,14 @@
 			var pos=move.pos[i];
 			this.board[piece.p]=-1;
 			piece.p=pos;
+
+			if (aGame.g.russianCustom==true) {
+				var r=aGame.g.Coord[pos][0];
+				if((player==JocGame.PLAYER_A && r==HEIGHT-1) || (player==JocGame.PLAYER_B && r==0)) {
+					pieceCrowned=true;
+				}
+			}
+
 			this.board[pos]=pIndex;
 			var caught=move.capt[i];
 			if(caught!=null) {
@@ -613,7 +639,7 @@
 		}
 		if(aGame.g.lastRowCrown && this.pieces[pIndex].t==0) {
 			var r=aGame.g.Coord[move.pos[move.pos.length-1]][0];
-			if((player==JocGame.PLAYER_A && r==HEIGHT-1) || (player==JocGame.PLAYER_B && r==0)) {
+			if(pieceCrowned || (player==JocGame.PLAYER_A && r==HEIGHT-1) || (player==JocGame.PLAYER_B && r==0)) {
 				var piece0=this.pieces[pIndex];
 				piece0.t=1;
 				var self=(1-player)/2;
@@ -788,3 +814,4 @@
 	}
 
 })();
+
