@@ -268,7 +268,7 @@
 							if (aGame.g.Coord[pp]) {
 								var rr=aGame.g.Coord[pp][0];
 								var HEIGHT=aGame.mOptions.height;
-								if(rr==HEIGHT-1) {
+								if(($this.mWho==JocGame.PLAYER_A && rr==HEIGHT-1) || ($this.mWho==JocGame.PLAYER_B && rr==0)) {
 									king=true;
 								}
 							}
