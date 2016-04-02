@@ -1,5 +1,18 @@
 (function() {
 
+if ([].indexOf) {
+   Model.Utils.Find = function(array, value) {
+     return array.indexOf(value);
+   }
+} else {
+   Model.Utils.Find = function(array, value) {
+      for (var i = 0; i < array.length; i++) {
+          if (array[i] === value) return i;
+      }
+       return -1;
+   }
+}
+
 function PosToString(pos) {
   // TODO:
 }
@@ -60,8 +73,44 @@ Model.Board.ZrfGetValue = function(aName, aPos) {
   // TODO:
 }
 
-Model.Board.ZrfAddPosition = function(aPos, aLinks) {
-  // TODO:
+Model.ZrfBoardDesign.Init = function() {
+  this.g.players = [];
+  this.g.positions = [];
+  this.g.zones = [];
+}
+
+Model.ZrfBoardDesign.AddPlayer = function(aPlayer, aSymmetries) {
+  this.g.players[aPlayer] = aSymmetries;
+}
+
+Model.ZrfBoardDesign.AddPosition = function(aLinks) {
+  this.g.positions.push(aLinks);
+}
+
+Model.ZrfBoardDesign.Navigate = function(aPlayer, aPos, aDir) {
+  var dir = aDir;
+  if (this.g.players[aPlayer] !== undefined) {
+      if (this.g.players[aPlayer][aDir] !== null) {
+          dir = this.g.players[aPlayer][aDir];
+      }
+  }
+  if (this.g.positions[aPos][dir] !== null) {
+      return aPos + this.g.positions[aPos][dir];
+  } else {
+      return null;
+  }
+}
+
+Model.ZrfBoardDesign.AddZone = function(aZone, aPlayer, aPositions) {
+  this.g.zones[aZone] = [];
+  this.g.zones[aZone][aPlayer] = aPositions;
+}
+
+Model.ZrfBoardDesign.InZone = function(aZone, aPlayer, aPos) {
+  if ((this.g.zones[aZone] !== undefined) && (this.g.zones[aZone][aPlayer] !== undefined)) {
+      return Model.Utils.Find(this.g.zones[aZone][aPlayer], aPos) >= 0;
+  }
+  return false;
 }
 
 Model.Move.Init = function(args) {
