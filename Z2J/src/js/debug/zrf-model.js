@@ -214,7 +214,6 @@ Model.Game.commands = {
 Model.Game.InitGame = function() {
   this.boardDesign = new ZrfBoardDesign();
   this.BuildDesign();
-  this.commands = [];
   this.cache = [];
   // TODO:
 
