@@ -1,5 +1,54 @@
 (function() {
 
+var ZRF_JUMP     = 0;
+var ZRF_IF       = 1;
+var ZRF_LITERAL  = 2,
+var ZRF_VERIFY   = 3;
+var ZRF_SET_POS  = 4;
+var ZRF_NAVIGATE = 5;
+
+var zrfJump = function(aGen, aParam) {
+   return aParam;
+}
+
+var zrfIf = function(aGen, aParam) {
+   // TODO:
+
+   return 0;
+}
+
+var zrfLiteral = function(aGen, aParam) {
+   aGen.stack.push(aParam);
+   return 0;
+}
+
+var zrfVerify = function(aGen, aMove) {
+   // TODO:
+
+   return 0;
+}
+
+var zrfSetPos = function(aGen, aMove) {
+   // TODO:
+
+   return 0;
+}
+
+var zrfNavigate = function(aGen, aMove) {
+   // TODO:
+
+   return 0;
+}
+
+Model.Game.commands = {
+  ZRF_JUMP: zrfJump,
+  ZRF_IF: zrfIf,
+  ZRF_LITERAL: zrfLiteral,
+  ZRF_VERIFY: zrfVerify,
+  ZRF_SET_POS: zrfSetPos,
+  ZRF_NAVIGATE: zrfNavigate
+}
+
 if ([].indexOf) {
    Model.find = function(array, value) {
      return array.indexOf(value);
@@ -66,8 +115,25 @@ function ZrfMoveTemplate(aParams) {
   this.commands = [];
 }
 
-ZrfMoveTemplate.prototype.addCommand = function(aCommand) {
-  this.commands.push(aCommand);
+ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
+  if (typeof aGame.commands[aName] !== "undefined") {
+      if (typeof aGame.cache[aName] === "undefined") {
+          aGame.cache[aName] = [];
+      }
+      var offset = aParam;
+      if (typeof aGame.cache[aName][offset] !== "undefined") {
+          this.commands.push(aGame.cache[aName][offset]);
+      } else {
+          if (aName < ZRF_VERIFY) {
+              aGame.cache[aName][offset] = function(x, y) {
+                  (aGame.commands[aName])(x, offset);
+              }
+              this.commands.push(aGame.cache[aName][offset]);
+          } else {
+              this.commands.push(aGame.commands[aName]);
+          }
+      }
+  }
 }
 
 function ZrfMoveGenerator(aTemplate) {
@@ -162,55 +228,6 @@ ZrfPiece.prototype.setValue = function(aName, aValue) {
 
 Model.Game.BuildDesign = function() {}
 
-var ZRF_JUMP     = 0;
-var ZRF_IF       = 1;
-var ZRF_LITERAL  = 2,
-var ZRF_VERIFY   = 3;
-var ZRF_SET_POS  = 4;
-var ZRF_NAVIGATE = 5;
-
-var zrfJump = function(aGen, aMove, aParam) {
-   return aParam;
-}
-
-var zrfIf = function(aGen, aMove, aParam) {
-   // TODO:
-
-   return 0;
-}
-
-var zrfLiteral = function(aGen, aMove, aParam) {
-   aGen.stack.push(aParam);
-   return 0;
-}
-
-var zrfVerify = function(aGen, aMove) {
-   // TODO:
-
-   return 0;
-}
-
-var zrfSetPos = function(aGen, aMove) {
-   // TODO:
-
-   return 0;
-}
-
-var zrfNavigate = function(aGen, aMove) {
-   // TODO:
-
-   return 0;
-}
-
-Model.Game.commands = {
-  ZRF_JUMP: zrfJump,
-  ZRF_IF: zrfIf,
-  ZRF_LITERAL: zrfLiteral,
-  ZRF_VERIFY: zrfVerify,
-  ZRF_SET_POS: zrfSetPos,
-  ZRF_NAVIGATE: zrfNavigate
-}
-
 Model.Game.InitGame = function() {
   this.boardDesign = new ZrfBoardDesign();
   this.BuildDesign();
@@ -220,30 +237,6 @@ Model.Game.InitGame = function() {
 }
 
 Model.Game.DestroyGame = function() {}
-
-Model.Game.getCommand = function(aName, aOffset) {
-  var offset = aOffset;
-  if (typeof Model.Game.commands[aName] === "undefined") {
-      return null;
-  }
-  if (typeof this.cache[aName] === "undefined") {
-      this.cache[aName] = [];
-  }
-  if (typeof this.cache[aName][aOffset] !== "undefined") {
-      return this.cache[aName][aOffset];
-  }
-  if (aName < ZRF_VERIFY) {
-      this.cache[aName][offset] = function(x,y) {
-         (Model.Game.commands[aName])(x, y, offset);
-      }
-      return this.cache[aName][aOffset];
-  }
-  return Model.Game.commands[aName];
-}
-
-Model.Game.getCommand = function(aName) {
-  return this.commands[aName];
-}
 
 Model.Board.Init = function(aGame) {
   this.zSign = 0;
