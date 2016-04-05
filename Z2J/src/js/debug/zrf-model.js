@@ -1,19 +1,85 @@
 (function() {
 
-var ZRF_JUMP     = 0;
-var ZRF_IF       = 1;
-var ZRF_LITERAL  = 2,
-var ZRF_VERIFY   = 3;
-var ZRF_SET_POS  = 4;
-var ZRF_NAVIGATE = 5;
+var ZRF_NOT       = 0;
+var ZRF_IS_EMPTY  = 1;
+var ZRF_IS_ENEMY  = 2;
+var ZRF_IS_FRIEND = 3;
+var ZRF_MARK      = 4;
+var ZRF_BACK      = 5;
+var ZRF_PUSH      = 6;
+var ZRF_POP       = 7;
+
+var ZRF_JUMP      = 0;
+var ZRF_IF        = 1;
+var ZRF_FUNCTION  = 2;
+var ZRF_IN_ZONE   = 3;
+var ZRF_GET_FLAG  = 4;
+var ZRF_SET_FLAG  = 5;
+var ZRF_GET_PFLAG = 6;
+var ZRF_SET_PFLAG = 7;
+var ZRF_GET_ATTR  = 8;
+var ZRF_SET_ATTR  = 9;
+var ZRF_LITERAL   = 10;
+var ZRF_VERIFY    = 11;
+var ZRF_SET_POS   = 12;
+var ZRF_NAVIGATE  = 13;
 
 var zrfJump = function(aGen, aParam) {
-   return aParam;
+   return aParam - 1;
 }
 
 var zrfIf = function(aGen, aParam) {
-   // TODO:
+   var f = aGen.stack.pop();
+   if (f) {
+      return aParam - 1;
+   } else {
+      return 0;
+   }
+}
 
+var zrfFunction = function(aGen, aParam) {
+  var game = aGen.board.game;
+  if (typeof game.functions[aParam] !== "undefined") {
+     return (game.functions[aParam])(aGen);
+  }
+  return null;
+}
+
+var zrfInZone = function(aGen, aParam) {
+   var design = aGen.board.game.boardDesign;
+   var player = aGen.board.mWho;
+   if (aGen.cp === null) {
+       return null;
+   }
+   aGen.stack.push(design.inZone(aParam, player, aGen.cp));
+   return 0;
+}
+
+var zrfGetFlag = function(aGen, aParam) {
+   aGen.stack.push(aGen.getValue(aParam, -1));
+   return 0;
+}
+
+var zrfSetFlag = function(aGen, aParam) {
+   value = aGen.stack.pop();
+   aGen.setValue(aParam, -1, value);
+   return 0;
+}
+
+var zrfGetPosFlag = function(aGen, aParam) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   aGen.stack.push(aGen.getValue(aParam, aGen.cp));
+   return 0;
+}
+
+var zrfSetPosFlag = function(aGen, aParam) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   value = aGen.stack.pop();
+   aGen.setValue(aParam, aGen.cp, value);
    return 0;
 }
 
@@ -22,31 +88,131 @@ var zrfLiteral = function(aGen, aParam) {
    return 0;
 }
 
-var zrfVerify = function(aGen, aMove) {
-   // TODO:
-
-   return 0;
+var zrfVerify = function(aGen) {
+   var f = aGen.stack.pop();
+   if (f) {
+       return 0;
+   } else {
+       return null;
+   }
 }
 
-var zrfSetPos = function(aGen, aMove) {
-   // TODO:
-
-   return 0;
+var zrfSetPos = function(aGen) {
+   var pos = aGen.stack.pop();
+   var design = aGen.board.game.boardDesign;
+   if (pos < design.positions.length) {
+      aGen.cp = pos;
+      return 0;
+   } else {
+      return null;
+   }
 }
 
-var zrfNavigate = function(aGen, aMove) {
-   // TODO:
-
-   return 0;
+var zrfNavigate = function(aGen) {
+   var dir = aGen.stack.pop();
+   var design = aGen.board.game.boardDesign;
+   var player = aGen.board.mWho;
+   var pos = aGen.cp;
+   if (pos === null) {
+       return null;
+   }
+   pos = design.navigate(player, pos, dir);
+   if (pos === null) {
+       return null;
+   }
+   if (pos < design.positions.length) {
+      aGen.cp = pos;
+      return 0;
+   } else {
+      return null;
+   }
 }
 
 Model.Game.commands = {
-  ZRF_JUMP: zrfJump,
-  ZRF_IF: zrfIf,
-  ZRF_LITERAL: zrfLiteral,
-  ZRF_VERIFY: zrfVerify,
-  ZRF_SET_POS: zrfSetPos,
-  ZRF_NAVIGATE: zrfNavigate
+  ZRF_JUMP: 	 zrfJump,
+  ZRF_IF:	 zrfIf,
+  ZRF_FUNCTION:  zrFunction,
+  ZRF_IN_ZONE:	 zrfInZone,
+  ZRF_GET_FLAG:	 zrfGetFlag,
+  ZRF_SET_FLAG:	 zrfSetFlag,
+  ZRF_GET_PFLAG: zrfGetPosFlag,
+  ZRF_SET_PFLAG: zrfSetPosFlag,
+  ZRF_GET_ATTR:	 zrfGetAttr,
+  ZRF_SET_ATTR:	 zrfSetAttr,
+  ZRF_LITERAL:	 zrfLiteral,
+  ZRF_VERIFY:	 zrfVerify,
+  ZRF_SET_POS:	 zrfSetPos,
+  ZRF_NAVIGATE:	 zrfNavigate
+}
+
+var zrfNot = function(aGen) {
+   var f = aGen.stack.pop();
+   aGen.stack.push(!f);
+   return 0;
+}
+
+var zrfEmpty = function(aGen) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   var piece = aGen.board.getPiece(aGen.cp);
+   aGen.stack.push(piece === null);
+   return 0;
+}
+
+var zrfEnemy = function(aGen) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   var piece  = aGen.board.getPiece(aGen.cp);
+   var player = aGen.board.mWho;
+   aGen.stack.push(piece.player !== player);
+   return 0;
+}
+
+var zrfFriend = function(aGen) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   var piece  = aGen.board.getPiece(aGen.cp);
+   var player = aGen.board.mWho;
+   aGen.stack.push(piece.player === player);
+   return 0;
+}
+
+var zrfMark = function(aGen) {
+   aGen.mp = aGen.stack.pop();
+   return 0;
+}
+
+var zrfBack = function(aGen) {
+   if (aGen.mp !== null) {
+      aGen.cp = aGen.mp;
+   } else {
+      return null;
+   }
+   return 0;
+}
+
+var zrfPush = function(aGen) {
+   aGen.backs.push(aGen.cp);
+   return 0;
+}
+
+var zrfPop = function(aGen) {
+   aGen.cp = aGen.backs.pop();
+   return 0;
+}
+
+Model.Game.functions = {
+  ZRF_NOT:	 zrfNot,
+  ZRF_IS_EMPTY:	 zrfEmpty,
+  ZRF_IS_ENEMY:	 zrfEnemy,
+  ZRF_IS_FRIEND: zrfFriend,
+  ZRF_MARK:	 zrfMark,
+  ZRF_BACK:	 zrfBack,
+  ZRF_PUSH:	 zrfPush,
+  ZRF_POP:	 zrfPop
 }
 
 if ([].indexOf) {
@@ -125,7 +291,7 @@ ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
           this.commands.push(aGame.cache[aName][offset]);
       } else {
           if (aName < ZRF_VERIFY) {
-              aGame.cache[aName][offset] = function(x, y) {
+              aGame.cache[aName][offset] = function(x) {
                   (aGame.commands[aName])(x, offset);
               }
               this.commands.push(aGame.cache[aName][offset]);
@@ -140,28 +306,24 @@ function ZrfMoveGenerator(aTemplate) {
   this.template = aTemplate;
   this.board    = null;
   this.cp       = null;
+  this.mp       = null;
   this.parent   = null;
   this.pieces   = [];
   this.values   = [];
   this.stack    = [];
+  this.backs	= [];
 }
 
-ZrfMoveGenerator.prototype.init = function(aBoard, aPos) {
+ZrfMoveGenerator.prototype.init = function(aBoard, aPos, aMove) {
   this.board = aBoard;
   this.cp = aPos;
-}
-
-ZrfMoveGenerator.prototype.getBoard = function() {
-  return this.board;
-}
-
-ZrfMoveGenerator.prototype.getCurrentPosition = function() {
-  return this.cp;
+  this.move = aMove;
 }
 
 ZrfMoveGenerator.prototype.setParent = function(aParent) {
   this.board = aParent.getBoard();
-  this.cp = aParent.getCurrentPosition();
+  this.cp = aParent.cp;
+  this.move = aParent.move.CopyFrom();
   this.parent = aParent;
 }
 
@@ -185,6 +347,13 @@ ZrfMoveGenerator.prototype.getValue = function(aName, aPos) {
       return this.parent.getValue(aName, aPos);
   }
   return this.board.getValue(aName, aPos);
+}
+
+ZrfMoveGenerator.prototype.setValue = function(aName, aPos, aValue) {
+  if (typeof this.values[aName] === "undefined") {
+      this.values[aName] = [];
+  }
+  this.values[aName][aPos] = aValue;
 }
 
 ZrfMoveGenerator.prototype.generate = function(aMove) {
@@ -220,10 +389,15 @@ ZrfPiece.prototype.getValue = function(aName) {
 }
 
 ZrfPiece.prototype.setValue = function(aName, aValue) {
-  if (typeof this.values === "undefined") {
-     this.values = [];
+  if (this.getValue() === aValue) {
+      return this;
   }
-  this.values[aName] = aValue;
+  var piece = new ZrfPiece(this.type, this.player);
+  if (typeof piece.values === "undefined") {
+     piece.values = [];
+  }
+  piece.values[aName] = aValue;
+  return piece;
 }
 
 Model.Game.BuildDesign = function() {}
@@ -248,6 +422,7 @@ Model.Board.GetSignature = function() {
 }
 
 Model.Board.InitialPosition = function(aGame) {
+  this.game = aGame;
   // TODO:
 }
 
@@ -279,10 +454,6 @@ Model.Board.getPiece = function(aPos) {
   // TODO:
 }
 
-Model.Board.getValue = function(aName, aPos) {
-  // TODO:
-}
-
 Model.Move.Init = function(args) {
   // TODO:
 }
@@ -300,3 +471,4 @@ Model.Move.ToString = function() {
 }
 
 })();
+
