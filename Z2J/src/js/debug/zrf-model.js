@@ -337,16 +337,17 @@ ZrfMoveGenerator.prototype.getPiece = function(aPos) {
   return this.board.getPiece(aPos);
 }
 
+Model.Game.GetValue = function (aThis, aName, aPos) {
+  return null;
+}
+
 ZrfMoveGenerator.prototype.getValue = function(aName, aPos) {
   if (typeof this.values[aName] !== "undefined") {
       if (typeof this.values[aName][aPos] !== "undefined") {
           return this.values[aName][aPos];
       }
   }
-  if (this.parent !== null) {
-      return this.parent.getValue(aName, aPos);
-  }
-  return this.board.getValue(aName, aPos);
+  return Model.Game.GetValue(this, aName, aPos);
 }
 
 ZrfMoveGenerator.prototype.setValue = function(aName, aPos, aValue) {
