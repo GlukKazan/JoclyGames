@@ -26,6 +26,8 @@ var ZRF_SET_POS   = 13;
 var ZRF_NAVIGATE  = 14;
 var ZRF_FROM      = 15;
 var ZRF_TO        = 16;
+var ZRF_CAPTURE   = 17;
+var ZRF_FLIP      = 18;
 
 var zrfJump = function(aGen, aParam) {
    return aParam - 1;
@@ -100,13 +102,23 @@ var zrfGetAttr = function(aGen, aParam) {
 }
 
 var zrfSetAttr = function(aGen, aParam) {
-   // TODO: ZRF option
-
+   if (aGen.cp === null) {
+       return null;
+   }
+   var value = aGen.stack.pop();
+   if (typeof aGen.attrs{aGen.cp} === "undefined") {
+       aGen.attrs{aGen.cp} = {};
+   }
+   aGen.attrs{aGen.cp}{aParam} = value;
    return 0;
 }
 
 var zrfPromote = function(aGen, aParam) {
-   // TODO:
+   if (typeof aGen.piece === "undefined") {
+       return null;
+   }
+   aGen.piece = aGen.piece.promote(aParam);
+   return 0;
 }
 
 var zrfLiteral = function(aGen, aParam) {
@@ -173,14 +185,37 @@ var zrfTo = function(aGen) {
    if (typeof aGen.from === "undefined") {
        return null;
    }
-   if (aGen.getPiece(aGen.cp) !== null) {
-       aGen.move.CapturePiece(aGen.cp);
+   if (typeof aGen.piece === "undefined") {
+       return null;
    }
-   aGen.move.MovePiece(aGen.from, aGen.cp, aGen.getPiece(aGen.from));
+   aGen.move.MovePiece(aGen.from, aGen.cp, aGen.piece);
    aGen.setPiece(aGen.from, null);
    aGen.setPiece(aGen.cp, aGen.piece);
+   aGen.stops.push[aGen.cp];
    delete aGen.from;
    delete aGen.piece;
+   return 0;
+}
+
+var zrfCapture = function(aGen) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   aGen.move.CapturePiece(aGen.cp);
+   aGen.setPiece(aGen.cp, null);
+   return 0;
+}
+
+var zrfFlip = function(aGen) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   if (aGen.getPiece(aGen.cp) === null) {
+       return null;
+   }
+   var piece = aGen.getPiece(aGen.cp).flip();
+   aGen.move.MovePiece(aGen.cp, aGen.cp, piece);
+   aGen.setPiece(aGen.cp, piece);
    return 0;
 }
 
@@ -199,9 +234,11 @@ Model.Game.commands = {
   ZRF_LITERAL:	 zrfLiteral,
   ZRF_VERIFY:	 zrfVerify,
   ZRF_SET_POS:	 zrfSetPos,
-  ZRF_NAVIGATE:	 zrfNavigate
-  ZRF_FROM:	 zrfFrom
-  ZRF_TO:	 zrfTo
+  ZRF_NAVIGATE:	 zrfNavigate,
+  ZRF_FROM:	 zrfFrom,
+  ZRF_TO:	 zrfTo,
+  ZRF_CAPTURE:	 zrfCapture,
+  ZRF_FLIP:	 zrfFlip
 }
 
 var zrfNot = function(aGen) {
@@ -367,8 +404,10 @@ function ZrfMoveGenerator(aTemplate) {
   this.cp       = null;
   this.mark     = null;
   this.parent   = null;
-  this.pieces   = [];
-  this.values   = [];
+  this.pieces   = {};
+  this.values   = {};
+  this.attrs    = {};
+  this.stops    = [];
   this.stack    = [];
   this.backs	= [];
 }
@@ -387,8 +426,8 @@ ZrfMoveGenerator.prototype.setParent = function(aParent) {
 }
 
 Model.Game.getPieceInternal = function(aThis, aPos) {
-  if (typeof aThis.pieces[aPos] !== "undefined") {
-      return aThis.pieces[aPos];
+  if (typeof aThis.pieces{aPos} !== "undefined") {
+      return aThis.pieces{aPos};
   }
   if (this.parent !== null) {
       return aThis.getPieceInternal(aPos);
@@ -408,12 +447,12 @@ ZrfMoveGenerator.prototype.getPiece = function(aPos) {
 }
 
 ZrfMoveGenerator.prototype.setPiece = function(aPos, aPiece) {
-  this.pieces[aPos] = aPiece;
+  this.pieces{aPos} = aPiece;
 }
 
 ZrfMoveGenerator.prototype.getPiece = function(aPos) {
-  if (typeof this.pieces[aPos] !== "undefined") {
-      return this.pieces[aPos];
+  if (typeof this.pieces{aPos} !== "undefined") {
+      return this.pieces{aPos};
   }
   if (this.parent !== null) {
       return this.parent.getPiece(aPos);
@@ -426,27 +465,40 @@ Model.Game.GetValue = function (aThis, aName, aPos) {
 }
 
 ZrfMoveGenerator.prototype.getValue = function(aName, aPos) {
-  if (typeof this.values[aName] !== "undefined") {
-      if (typeof this.values[aName][aPos] !== "undefined") {
-          return this.values[aName][aPos];
+  if (typeof this.values{aName} !== "undefined") {
+      if (typeof this.values{aName}{aPos} !== "undefined") {
+          return this.values{aName}{aPos};
       }
   }
   return Model.Game.GetValue(this, aName, aPos);
 }
 
 ZrfMoveGenerator.prototype.setValue = function(aName, aPos, aValue) {
-  if (typeof this.values[aName] === "undefined") {
-      this.values[aName] = [];
+  if (typeof this.values{aName} === "undefined") {
+      this.values{aName} = {};
   }
-  this.values[aName][aPos] = aValue;
+  this.values{aName}{aPos} = aValue;
 }
 
-ZrfMoveGenerator.prototype.generate = function(aMove) {
+ZrfMoveGenerator.prototype.generate = function() {
   this.cc = 0;
   while (this.cc < this.template.commands.length) {
-     var r = (this.template.commands[this.cc++])(this, aMove);
+     var r = (this.template.commands[this.cc++])(this);
      if (r === null) return false;
      this.cc += r;
+  }
+  for (var pos in this.attrs) {
+     if (Model.find(this.stops, pos) < 0) {
+        var piece = this.getPiece(pos);
+        if (piece !== null) {
+           for (var name in this.attrs{pos}) {
+               piece = piece.setValue(name, this.attrs{pos}{name});
+           }
+           this.move.MovePiece(pos, pos, piece);
+        }
+     } else {
+        this.move.SetAttr(pos, this.attrs{pos});
+     }
   }
   return true;
 }
@@ -456,21 +508,25 @@ function ZrfPiece(aType, aPlayer) {
   this.player = aPlayer;
 }
 
-ZrfPiece.prototype.getType = function() {
-  return this.type;
-}
-
-ZrfPiece.prototype.getPlayer = function() {
-  return this.player;
+ZrfPiece.prototype.toString = function() {
+  return this.player + "/" + this.type;
 }
 
 ZrfPiece.prototype.getValue = function(aName) {
   if (typeof this.values !== "undefined") {
-     if (typeof this.values[aName] !== "undefined") {
-         return this.values[aName];
+     if (typeof this.values{aName} !== "undefined") {
+         return this.values{aName};
      }
   }
   return null;
+}
+
+ZrfPiece.prototype.promote = function(aType) {
+  return new ZrfPiece(aType, this.player);
+}
+
+ZrfPiece.prototype.flip = function() {
+  return new ZrfPiece(this.type, -this.player);
 }
 
 ZrfPiece.prototype.setValue = function(aName, aValue) {
@@ -479,27 +535,33 @@ ZrfPiece.prototype.setValue = function(aName, aValue) {
   }
   var piece = new ZrfPiece(this.type, this.player);
   if (typeof piece.values === "undefined") {
-     piece.values = [];
+     piece.values = {};
   }
-  piece.values[aName] = aValue;
+  piece.values{aName} = aValue;
   return piece;
 }
 
 Model.Game.BuildDesign = function() {}
+Model.Game.PieceList = [];
 
 Model.Game.InitGame = function() {
   this.boardDesign = new ZrfBoardDesign();
   this.BuildDesign();
   this.cache = [];
-  // TODO:
-
+  this.zobrist = new JocGame.Zobrist({
+     board: {
+        type: "array",
+        size: this.this.boardDesign.positions.length,
+        values: Model.Game.PieceList,
+     }
+  });
 }
 
 Model.Game.DestroyGame = function() {}
 
 Model.Board.Init = function(aGame) {
   this.zSign = 0;
-  this.pieces = [];
+  this.pieces = {};
 }
 
 Model.Board.GetSignature = function() {
@@ -520,7 +582,28 @@ Model.Board.GenerateMoves = function(aGame) {
 }
 
 Model.Board.ApplyMove = function(aGame, move) {
-  // TODO:
+  for (var i in move.moves) {
+      var fp = move.moves[i][0];
+      if (fp !== null) {
+          var piece = this.pieces{fp};
+          if (typeof piece !== "undefined") {
+              this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), fp);
+              delete this.pieces{fp};
+          }
+      }
+  }
+  for (var i in move.moves) {
+      var tp = move.moves[i][1];
+      var np = move.moves[i][2];
+      if (tp !== null) {
+          var op = this.pieces{tp};
+          if (typeof op !== "undefined") {
+              this.zSign = aGame.zobrist.update(this.zSign, "board", op.toString(), tp);
+          }
+          this.zSign = aGame.zobrist.update(this.zSign, "board", np.toString(), tp);
+          this.pieces{fp} = np;
+      }
+  }
 }
 
 Model.Board.Evaluate = function(aGame) {
@@ -536,31 +619,26 @@ Model.Board.IsValidMove = function(aGame,move) {
 }
 
 Model.Board.getPiece = function(aPos) {
-  if (typeof this.pieces[aPos] === "undefined") {
+  if (typeof this.pieces{aPos} === "undefined") {
       return null;
   } else {
-      return this.pieces[aPos];
+      return this.pieces{aPos};
   }
 }
 
 Model.Board.setPiece = function(aPos, aPiece) {
-  if (aPiece !==) {
-     delete this.pieces[aPos];
+  if (aPiece === null) {
+     delete this.pieces{aPos};
   } else {
-     this.pieces[aPos] = aPiece;
+     this.pieces{aPos} = aPiece;
   }
 }
 
 Model.Move.Init = function(args) {
-  // TODO:
-}
-
-Model.Move.CopyFrom = function(aMove) {
-  // TODO:
-}
-
-Model.Move.Equals = function(move) {
-  // TODO:
+  this.moves = [];
+  for (var i in args.moves) {
+     this.moves.push(args.moves[i])
+  }
 }
 
 Model.Move.ToString = function() {
@@ -568,15 +646,27 @@ Model.Move.ToString = function() {
 }
 
 Model.Move.MovePiece = function(aFrom, aTo, aPiece) {
-  // TODO:
+  this.moves.push([aFrom, aTo, aPiece]);
 }
 
 Model.Move.CreatePiece = function(aPos, aPiece) {
-  // TODO:
+  this.moves.push([null, aTo, aPiece]);
 }
 
 Model.Move.CapturePiece = function(aPos) {
-  // TODO:
+  this.moves.push([aFrom, null, null]);
+}
+
+Model.Move.SetAttr = function(aPos, aValues) {
+  for (var i in this.moves) {
+     if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
+         var piece = this.moves[i][2];
+         for (var name in aValues) {
+              piece = piece.setValue(name, aValues{name});
+         }
+         this.moves[i][2] = piece;
+     }
+  }
 }
 
 })();
