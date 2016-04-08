@@ -1,0 +1,106 @@
+(define checker-shift (
+   $1 (verify empty?)
+   (if (in-zone? promotion)
+      (add King)
+    else
+      add
+   )
+))
+
+(define checker-jump (
+   $1 (verify enemy?) 
+   capture 
+   $1 (verify empty?)
+   (if (not-in-zone? promotion)
+      (add-partial jumptype)
+    else
+      (add-partial King notype)
+   )
+))
+
+(define king-shift (
+   $1 (while empty?
+       add $1
+   )
+))
+
+(define king-jump (
+   $1 (while empty? 
+       $1 (verify not-last-from?)
+   )
+   (verify enemy?)
+   $1 (while empty?
+       mark
+       (while empty? 
+          (opposite $1)
+       ) 
+       capture
+       back
+       (add-partial jumptype) $1
+   )
+))
+
+(game
+  (title "Turkish Dama")
+
+  (option "maximal captures" true)
+
+  (players White Black)
+  (turn-order White Black)
+  (move-priorities jumptype normaltype)
+
+  (board
+     (image "images/Checkers/Shaag/checkbd2.bmp")
+     (grid
+         (start-rectangle 6 6 55 55)
+         (dimensions
+             ("a/b/c/d/e/f/g/h" (50 0)) ; files
+             ("8/7/6/5/4/3/2/1" (0 50)) ; ranks
+         )
+         (directions (n 0 -1) (s 0 1) (e 1 0) (w -1 0))
+     )
+     (symmetry Black (n s) (s n))
+     (zone (name promotion) (players White)
+           (positions a8 b8 c8 d8 e8 f8 g8 h8)
+     )
+     (zone (name promotion) (players Black)
+           (positions a1 b1 c1 d1 e1 f1 g1 h1)
+     )
+  )
+
+  (piece
+     (name Man)
+     (image White "images/Checkers/Shaag/chkrRM.bmp"
+            Black "images/Checkers/Shaag/chkrBM.bmp")
+     (moves
+         (move-type jumptype)
+         (checker-jump n) (checker-jump w) (checker-jump e)
+
+         (move-type normaltype)
+         (checker-shift n) (checker-shift w) (checker-shift e)
+
+         (move-type notype)
+     )
+  )
+  (piece
+     (name King)
+     (image White "images/Checkers/Shaag/chkrRK.bmp"
+            Black "images/Checkers/Shaag/chkrBK.bmp")
+     (moves
+         (move-type jumptype)
+         (king-jump n) (king-jump w) (king-jump e) (king-jump s)
+
+         (move-type normaltype)
+         (king-shift n) (king-shift w) (king-shift e) (king-shift s)
+
+         (move-type notype)
+     )
+  )
+
+  (board-setup
+    (White (Man a2 b2 c2 d2 e2 f2 g2 h2  a3 b3 c3 d3 e3 f3 g3 h3))
+    (Black (Man a7 b7 c7 d7 e7 f7 g7 h7  a6 b6 c6 d6 e6 f6 g6 h6))
+  )
+
+  (loss-condition (White Black) stalemated)
+)

@@ -6,8 +6,11 @@ Model.Game.BuildDesign = function() {
   // Для каждой позиции
   // Список целых смещений (возможно null)
   // По одному числу на каждое направление
-  this.boardDesign.addPosition([offsets]);
-  ...
+  this.design.addPosition([offsets]);
+  // Для каждого хода фигуры
+  this.design.addMove(..., ...);
+  // Симметрии
+  this.design.addPlayer(player, [...]);
 }
 
 // Оценочная функция
