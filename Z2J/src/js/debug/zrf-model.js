@@ -12,26 +12,28 @@ var ZRF_POP       = 8;
 
 var ZRF_JUMP      = 0;
 var ZRF_IF        = 1;
-var ZRF_FUNCTION  = 2;
-var ZRF_IN_ZONE   = 3;
-var ZRF_GET_FLAG  = 4;
-var ZRF_SET_FLAG  = 5;
-var ZRF_GET_PFLAG = 6;
-var ZRF_SET_PFLAG = 7;
-var ZRF_GET_ATTR  = 8;
-var ZRF_SET_ATTR  = 9;
-var ZRF_PROMOTE   = 10;
-var ZRF_MODE      = 11;
-var ZRF_PARAM     = 12;
-var ZRF_LITERAL   = 13;
-var ZRF_VERIFY    = 14;
-var ZRF_SET_POS   = 15;
-var ZRF_OPPOSITE  = 16;
-var ZRF_NAVIGATE  = 17;
-var ZRF_FROM      = 18;
-var ZRF_TO        = 19;
-var ZRF_CAPTURE   = 20;
-var ZRF_FLIP      = 21;
+var ZRF_FORK      = 2;
+var ZRF_FUNCTION  = 3;
+var ZRF_IN_ZONE   = 4;
+var ZRF_GET_FLAG  = 5;
+var ZRF_SET_FLAG  = 6;
+var ZRF_GET_PFLAG = 7;
+var ZRF_SET_PFLAG = 8;
+var ZRF_GET_ATTR  = 9;
+var ZRF_SET_ATTR  = 10;
+var ZRF_PROMOTE   = 11;
+var ZRF_MODE      = 12;
+var ZRF_PARAM     = 13;
+var ZRF_LITERAL   = 14;
+var ZRF_VERIFY    = 15;
+var ZRF_SET_POS   = 16;
+var ZRF_OPPOSITE  = 17;
+var ZRF_NAVIGATE  = 18;
+var ZRF_FROM      = 19;
+var ZRF_TO        = 20;
+var ZRF_CAPTURE   = 21;
+var ZRF_FLIP      = 22;
+var ZRF_END       = 23;
 
 var zrfJump = function(aGen, aParam) {
    return aParam - 1;
@@ -44,6 +46,14 @@ var zrfIf = function(aGen, aParam) {
    } else {
       return 0;
    }
+}
+
+var zrfFork = function(aGen, aParam) {
+   var g = new ZrfMoveGenerator(aGen.template, aGen.params);
+   g.CopyFrom(aGen);
+   g.cc += aParam - 1;
+   aGen.board.addFork(g);
+   return 0;
 }
 
 var zrfFunction = function(aGen, aParam) {
@@ -214,8 +224,6 @@ var zrfTo = function(aGen) {
    if (typeof aGen.piece === "undefined") {
        return null;
    }
-   // TODO: Multiple zrfTo
-
    aGen.move.MovePiece(aGen.from, aGen.cp, aGen.piece);
    aGen.setPiece(aGen.from, null);
    aGen.setPiece(aGen.cp, aGen.piece);
@@ -247,9 +255,14 @@ var zrfFlip = function(aGen) {
    return 0;
 }
 
+var zrfEnd = function(aGen) {
+   return -(aGen.cc + 2);
+}
+
 Model.Game.commands = {
   ZRF_JUMP: 	 zrfJump,
   ZRF_IF:	 zrfIf,
+  ZRF_FORK:	 zrfFork,
   ZRF_FUNCTION:  zrFunction,
   ZRF_IN_ZONE:	 zrfInZone,
   ZRF_GET_FLAG:	 zrfGetFlag,
@@ -269,7 +282,8 @@ Model.Game.commands = {
   ZRF_FROM:	 zrfFrom,
   ZRF_TO:	 zrfTo,
   ZRF_CAPTURE:	 zrfCapture,
-  ZRF_FLIP:	 zrfFlip
+  ZRF_FLIP:	 zrfFlip,
+  ZRF_END:	 zrfEnd
 }
 
 var zrfNot = function(aGen) {
@@ -477,6 +491,48 @@ function ZrfMoveGenerator(aTemplate, aParams) {
   this.backs	= [];
 }
 
+ZrfMoveGenerator.prototype.CopyFrom = function(aGen) {
+  this.template = aGen.template;
+  this.params   = aGen.params;
+  this.mode     = aGen.mode;
+  this.board    = aGen.board;
+  this.cp       = aGen.cp;
+  this.cc       = aGen.cc;
+  this.mark     = aGen.mark;
+  this.parent   = aGen.parent;
+  this.pieces   = {};
+  for (var pos in aGen.pieces) {
+      this.pieces{pos} = aGen.pieces{pos};
+  }
+  this.values = {};
+  for (var name in aGen.values) {
+      this.values{name} = {};
+      for (var pos in aGen.values{name}) {
+           this.values{name}{pos} = aGen.values{name}{pos};
+      }
+  }
+  this.attrs = {};
+  for (var pos in aGen.attrs) {
+      this.attrs{pos} = {};
+      for (var name in aGen.attrs{pos}) {
+           this.attrs{pos}{name} = aGen.attrs{pos}{name};
+      }
+  }
+  this.stops = [];
+  for (var i in aGen.stops) {
+      this.stops[i] = aGen.stops[i];
+  }
+  this.stack = [];
+  for (var i in aGen.stack) {
+      this.stack[i] = aGen.stack[i];
+  }
+  this.backs = [];
+  for (var i in aGen.backs) {
+      this.stack[i] = aGen.stack[i];
+  }
+  this.move = new Model.Move.Init(aGen.move);
+}
+
 ZrfMoveGenerator.prototype.init = function(aBoard, aPos, aMove) {
   this.board    = aBoard;
   this.cp       = aPos;
@@ -487,7 +543,7 @@ ZrfMoveGenerator.prototype.init = function(aBoard, aPos, aMove) {
 ZrfMoveGenerator.prototype.setParent = function(aParent) {
   this.board    = aParent.getBoard();
   this.cp       = aParent.cp;
-  this.move     = aParent.move.CopyFrom();
+  this.move     = new Model.Move.Init(aParent.move);
   this.parent   = aParent;
 }
 
@@ -561,6 +617,7 @@ ZrfMoveGenerator.prototype.generate = function() {
      var r = (this.template.commands[this.cc++])(this);
      if (r === null) return false;
      this.cc += r;
+     if (this.cc < 0) break;
   }
   for (var pos in this.attrs) {
      if (Model.find(this.stops, pos) < 0) {
@@ -657,6 +714,10 @@ Model.Board.PostActions = function(aGame, aMoves) {
   this.mMoves = aMoves;
 }
 
+Model.Board.addFork = function(aGen) {
+  this.forks.push(aGen);
+}
+
 var CompleteMove = function(aGame, aGen, aMove) {
   if (aGen.mode !== null) {
       var pos = aGen.stops.pop();
@@ -684,6 +745,7 @@ Model.Board.GenerateMoves = function(aGame) {
        if (piece.player === this.mWho) {
            for (var move in aGame.design.pieces{piece.type}) {
                if (move.type === 0) {
+                   this.forks = [];
                    var m = { 
                        moves: [], 
                    };
@@ -691,9 +753,13 @@ Model.Board.GenerateMoves = function(aGame) {
                    g.init(this, pos, m);
                    g.piece = piece;
                    g.from  = pos;
-                   if (g.generate()) {
-                       moves.push(m);
-                       CompleteMove(aGame, g, m);
+                   this.forks.push(g);
+                   while (this.forks.length > 0) {
+                       var f = this.forks.shift();
+                       if (f.generate()) {
+                           moves.push(f.move);
+                           CompleteMove(aGame, f, f.move);
+                       }
                    }
                }
            }
