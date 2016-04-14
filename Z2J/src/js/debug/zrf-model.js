@@ -581,16 +581,6 @@ ZrfMoveGenerator.prototype.setPiece = function(aPos, aPiece) {
   this.pieces{aPos} = aPiece;
 }
 
-ZrfMoveGenerator.prototype.getPiece = function(aPos) {
-  if (typeof this.pieces{aPos} !== "undefined") {
-      return this.pieces{aPos};
-  }
-  if (this.parent !== null) {
-      return this.parent.getPiece(aPos);
-  }
-  return this.board.getPiece(aPos);
-}
-
 Model.Game.GetValue = function (aThis, aName, aPos) {
   return null;
 }
