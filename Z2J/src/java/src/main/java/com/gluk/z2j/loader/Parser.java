@@ -17,7 +17,7 @@ import com.gluk.z2j.api.ILibrary;
 import com.gluk.z2j.api.IParser;
 import com.gluk.z2j.api.IScaner;
 
-public class RootParser implements IParser {
+public class Parser implements IParser {
 	
 	private final static String INCLUDE_CMD = "include";
 	
@@ -30,7 +30,7 @@ public class RootParser implements IParser {
     private TransformerHandler handler = null;
     private Document doc = null;
     
-    public RootParser(ILibrary lib) {
+    public Parser(ILibrary lib) {
     	this.lib = lib;
     }
 
@@ -60,8 +60,8 @@ public class RootParser implements IParser {
 	}
 
 	public void close() throws Exception {
-		if (deep <= 0) {
-			throw new Exception("Syntax error");
+		if ((handler == null) || (deep <= 0)) {
+			throw new Exception("Internal error");
 		}
 		handler.endElement("", LIST_TAG, LIST_TAG);
 		deep--;
@@ -71,11 +71,7 @@ public class RootParser implements IParser {
 				NodeIterator nl = lib.getTail(doc);
 				Node n;
 				while ((n = nl.nextNode())!= null) {
-					if (n.getNodeType() == Node.TEXT_NODE) {
-						include(n.getNodeValue());
-			    	} else {
-						include(n.getTextContent());
-			    	}
+					include(n.getTextContent());
 				}
 			} else {
 				lib.add(doc);
@@ -86,9 +82,9 @@ public class RootParser implements IParser {
 	}
 	
 	private void include(String s) throws Exception {
-		IParser parser = new ProxyParser(this);
-		IScaner scaner = new Scaner(parser);
+		IScaner scaner = new Scaner(this);
 		Loader  loader = new Loader(scaner);
 		loader.load(s);
 	}
 }
+
