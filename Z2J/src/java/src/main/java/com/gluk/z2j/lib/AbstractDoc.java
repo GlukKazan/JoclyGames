@@ -24,8 +24,8 @@ public abstract class AbstractDoc implements IDoc {
 	private final static String ALL_XP   = "*";
 	
 	protected Node doc = null;
+	protected int deep = 0;
 	
-	private int deep = 0;
     private TransformerHandler handler = null;
     private Stack<String> tags = new Stack<String>();
 

@@ -115,7 +115,7 @@ public class Library implements ILibrary {
 		String h = getHead(doc);
 		Node m = macro.get(h);
 		if (m != null) {
-			MacroEnvironment e = new MacroEnvironment(env);
+			Environment e = new Environment(env);
 			nl = XPathAPI.selectNodeIterator(doc, TAIL_XP);
 			while ((n = nl.nextNode())!= null) {
 				if (n.getLocalName().equals("l")) {

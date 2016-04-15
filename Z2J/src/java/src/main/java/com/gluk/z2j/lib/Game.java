@@ -1,11 +1,13 @@
 package com.gluk.z2j.lib;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.gluk.z2j.api.IDoc;
+import com.gluk.z2j.api.IGame;
 
-public class Game extends AbstractDoc {
+public class Game extends AbstractDoc implements IGame {
 	
 	private final static String GAME_TAG  = "game";
 	private final static String BOARD_TAG = "board";
@@ -19,7 +21,7 @@ public class Game extends AbstractDoc {
 			return;
 		}
 		if (tag.equals(BOARD_TAG)) {
-			proxy = new Board();
+			proxy = new Board(this);
 			proxy.open(tag);
 			return;
 		}
@@ -53,5 +55,11 @@ public class Game extends AbstractDoc {
 		}
 		super.extract(dest);
 		dest.close();
+	}
+
+	public Collection<String> getPlayers() {
+		// TODO:
+		
+		return null;
 	}
 }

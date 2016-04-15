@@ -5,12 +5,12 @@ import java.util.Map;
 
 import com.gluk.z2j.api.IEnvironment;
 
-public class MacroEnvironment implements IEnvironment {
+public class Environment implements IEnvironment {
 	
 	private IEnvironment parent = null;
 	private Map<String, String> values = new HashMap<String, String>();
 	
-	public MacroEnvironment(IEnvironment parent) {
+	public Environment(IEnvironment parent) {
 		this.parent = parent;
 	}
 	
