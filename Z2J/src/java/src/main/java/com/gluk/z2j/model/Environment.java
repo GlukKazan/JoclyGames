@@ -1,9 +1,9 @@
-package com.gluk.z2j.lib;
+package com.gluk.z2j.model;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gluk.z2j.api.IEnvironment;
+import com.gluk.z2j.api.loader.IEnvironment;
 
 public class Environment implements IEnvironment {
 	

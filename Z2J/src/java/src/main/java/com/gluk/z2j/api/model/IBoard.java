@@ -1,4 +1,4 @@
-package com.gluk.z2j.api;
+package com.gluk.z2j.api.model;
 
 public interface IBoard {
 	boolean isDefined(String pos);

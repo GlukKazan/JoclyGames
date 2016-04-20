@@ -1,4 +1,4 @@
-package com.gluk.z2j.lib;
+package com.gluk.z2j.model;
 
 import java.util.Stack;
 
@@ -15,9 +15,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.gluk.z2j.api.IDoc;
+import com.gluk.z2j.api.loader.IDoc;
+import com.gluk.z2j.api.model.ISource;
 
-public abstract class AbstractDoc implements IDoc {
+public abstract class AbstractDoc implements IDoc, ISource {
 	
 	private final static String ATOM_TAG = "a";
 

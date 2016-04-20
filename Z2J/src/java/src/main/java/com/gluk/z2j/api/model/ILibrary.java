@@ -1,7 +1,8 @@
-package com.gluk.z2j.api;
+package com.gluk.z2j.api.model;
 
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
+
 
 public interface ILibrary extends ISource {
 	String getHead(Node doc) throws Exception;

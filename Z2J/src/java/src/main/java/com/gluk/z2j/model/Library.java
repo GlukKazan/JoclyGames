@@ -1,4 +1,4 @@
-package com.gluk.z2j.lib;
+package com.gluk.z2j.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,9 +15,9 @@ import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
-import com.gluk.z2j.api.IDoc;
-import com.gluk.z2j.api.IEnvironment;
-import com.gluk.z2j.api.ILibrary;
+import com.gluk.z2j.api.loader.IDoc;
+import com.gluk.z2j.api.loader.IEnvironment;
+import com.gluk.z2j.api.model.ILibrary;
 
 public class Library implements ILibrary {
 	

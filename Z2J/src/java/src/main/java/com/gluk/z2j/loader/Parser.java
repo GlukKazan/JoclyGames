@@ -13,9 +13,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.helpers.AttributesImpl;
 
-import com.gluk.z2j.api.ILibrary;
-import com.gluk.z2j.api.IParser;
-import com.gluk.z2j.api.IScaner;
+import com.gluk.z2j.api.loader.IParser;
+import com.gluk.z2j.api.loader.IScaner;
+import com.gluk.z2j.api.model.ILibrary;
 
 public class Parser implements IParser {
 	

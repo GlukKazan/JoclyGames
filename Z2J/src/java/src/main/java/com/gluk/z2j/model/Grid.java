@@ -1,12 +1,12 @@
-package com.gluk.z2j.lib;
+package com.gluk.z2j.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gluk.z2j.api.IBoard;
-import com.gluk.z2j.api.IGrid;
+import com.gluk.z2j.api.model.IBoard;
+import com.gluk.z2j.api.model.IGrid;
 
 public class Grid extends AbstractDoc implements IGrid {
 	

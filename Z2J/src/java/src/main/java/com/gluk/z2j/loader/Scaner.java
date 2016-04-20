@@ -1,7 +1,7 @@
 package com.gluk.z2j.loader;
 
-import com.gluk.z2j.api.IParser;
-import com.gluk.z2j.api.IScaner;
+import com.gluk.z2j.api.loader.IParser;
+import com.gluk.z2j.api.loader.IScaner;
 
 public class Scaner implements IScaner {
 	

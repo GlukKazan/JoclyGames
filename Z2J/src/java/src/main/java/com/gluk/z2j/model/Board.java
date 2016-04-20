@@ -1,13 +1,13 @@
-package com.gluk.z2j.lib;
+package com.gluk.z2j.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.gluk.z2j.api.IBoard;
-import com.gluk.z2j.api.IDoc;
-import com.gluk.z2j.api.IGame;
+import com.gluk.z2j.api.loader.IDoc;
+import com.gluk.z2j.api.model.IBoard;
+import com.gluk.z2j.api.model.IGame;
 
 public class Board extends AbstractDoc implements IBoard {
 	

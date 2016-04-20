@@ -1,4 +1,4 @@
-package com.gluk.z2j.api;
+package com.gluk.z2j.api.loader;
 
 public interface IParser {
 	void open() throws Exception;
