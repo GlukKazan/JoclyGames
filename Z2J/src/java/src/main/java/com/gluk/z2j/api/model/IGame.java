@@ -1,12 +1,16 @@
 package com.gluk.z2j.api.model;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.gluk.z2j.api.form.IForm;
 
 public interface IGame {
 	Collection<String> getPlayers();
-	Integer getNameIndex(String name);
-	void addMove(IForm template, List<Integer> params, String mode) throws Exception;
+	void addMove(IForm form, String mode) throws Exception;
+	int addMode(String mode);
+	boolean isPosition(String name);
+	boolean isDirection(String name);
+	int getNameIndex(String name);
+	boolean checkFlag(int flag);
+	void setFlag(int flag, int value);
 }

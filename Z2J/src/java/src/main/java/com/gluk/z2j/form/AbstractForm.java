@@ -12,6 +12,10 @@ public abstract class AbstractForm implements IForm {
 		this.parser = parser;
 	}
 	
+	public String getName() throws Exception {
+		throw new Exception("Not supported");
+	}
+
 	public void open(String tag) throws Exception {
 		if (form != null) {
 			form.open(tag);
@@ -32,13 +36,7 @@ public abstract class AbstractForm implements IForm {
 	}
 
 	public void add(String s) throws Exception {
-		int ix = parser.getKnownName(s);
-		IForm f;
-		if (ix < 0) {
-			f = new ApplyForm(s, parser);
-		} else {
-			f = new ParamForm(ix);
-		}
+		IForm f = new ApplyForm(s, parser);
 		addForm(f);
 	}
 }

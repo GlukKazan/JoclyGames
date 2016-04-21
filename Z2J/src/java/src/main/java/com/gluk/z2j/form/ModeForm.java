@@ -1,7 +1,10 @@
 package com.gluk.z2j.form;
 
+import java.util.List;
+
 import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.form.IMoveParser;
+import com.gluk.z2j.api.model.IGame;
 import com.gluk.z2j.api.model.IMoveTemplate;
 
 public class ModeForm implements IForm {
@@ -28,7 +31,11 @@ public class ModeForm implements IForm {
 		throw new Exception("Not supported");
 	}
 
-	public void generate(IMoveTemplate template) throws Exception {
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
+		throw new Exception("Not supported");
+	}
+
+	public String getName() throws Exception {
 		throw new Exception("Not supported");
 	}
 }

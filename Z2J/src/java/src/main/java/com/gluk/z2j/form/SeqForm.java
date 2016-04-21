@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.form.IMoveParser;
+import com.gluk.z2j.api.model.IGame;
 import com.gluk.z2j.api.model.IMoveTemplate;
 
 public class SeqForm extends AbstractForm {
@@ -19,9 +20,9 @@ public class SeqForm extends AbstractForm {
 		forms.add(form);
 	}
 
-	public void generate(IMoveTemplate template) throws Exception {
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		for (IForm f: forms) {
-			f.generate(template);
+			f.generate(template, params, game);
 		}
 	}
 }

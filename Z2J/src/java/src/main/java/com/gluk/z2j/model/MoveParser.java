@@ -1,8 +1,5 @@
 package com.gluk.z2j.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.form.IMoveParser;
 import com.gluk.z2j.api.loader.IDoc;
@@ -22,30 +19,27 @@ public class MoveParser implements IDoc, IMoveParser {
 	private final static String WHILE_TAG   = "while";
 	private final static String AND_TAG     = "and";
 	private final static String OR_TAG      = "or";
+	private final static String FROM_TAG    = "from";
 	
 	private IGame game;
+	private boolean isDrop;
 	
 	private String mode = "";
 	private IForm form = null;
-	private List<Integer> params = null;
 	
-	public MoveParser(IGame game) {
+	public MoveParser(IGame game, boolean isDrop) {
 		this.game = game;
+		this.isDrop = isDrop;
 	}
 	
 	public void setMode(String mode) {
 		this.mode = mode;
 	}
 	
-	public int getKnownName(String name) {
-		Integer ix = game.getNameIndex(name);
-		if (ix != null) {
-			params.add(ix);
-			return ix;
-		}
-		return -1;
+	public boolean isNavigation(String name) {
+		return game.isDirection(name) || game.isPosition(name);
 	}
-
+	
 	public IForm createForm(String tag, boolean seqExpected) throws Exception {
 		if (tag.equals(MODE_TAG)) {
 			return new ModeForm(this);
@@ -65,6 +59,9 @@ public class MoveParser implements IDoc, IMoveParser {
 		IForm r;
 		if (seqExpected) {
 			r = new SeqForm(this);
+			if (!isDrop) {
+				r.add(FROM_TAG);
+			}
 			r.add(tag);
 		} else {
 			r = new ApplyForm(tag, this);
@@ -77,7 +74,6 @@ public class MoveParser implements IDoc, IMoveParser {
 			form.open(tag);
 		} else {
 			form = createForm(tag, true);
-			params = new ArrayList<Integer>();
 		}
 	}
 
@@ -86,9 +82,8 @@ public class MoveParser implements IDoc, IMoveParser {
 			return true;
 		}
 		if (form.close()) {
-			game.addMove(form, params, mode);
+			game.addMove(form, mode);
 			form = null;
-			params = null;
 		}
 		return false;
 	}
