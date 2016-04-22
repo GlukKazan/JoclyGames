@@ -4,11 +4,12 @@ var ZRF_NOT       = 0;
 var ZRF_IS_EMPTY  = 1;
 var ZRF_IS_ENEMY  = 2;
 var ZRF_IS_FRIEND = 3;
-var ZRF_IS_LAST   = 4;
-var ZRF_MARK      = 5;
-var ZRF_BACK      = 6;
-var ZRF_PUSH      = 7;
-var ZRF_POP       = 8;
+var ZRF_IS_LASTF  = 4;
+var ZRF_IS_LASTT  = 5;
+var ZRF_MARK      = 6;
+var ZRF_BACK      = 7;
+var ZRF_PUSH      = 8;
+var ZRF_POP       = 9;
 
 var ZRF_JUMP      = 0;
 var ZRF_IF        = 1;
@@ -23,17 +24,19 @@ var ZRF_GET_ATTR  = 9;
 var ZRF_SET_ATTR  = 10;
 var ZRF_PROMOTE   = 11;
 var ZRF_MODE      = 12;
-var ZRF_PARAM     = 13;
-var ZRF_LITERAL   = 14;
-var ZRF_VERIFY    = 15;
-var ZRF_SET_POS   = 16;
-var ZRF_OPPOSITE  = 17;
-var ZRF_NAVIGATE  = 18;
-var ZRF_FROM      = 19;
-var ZRF_TO        = 20;
-var ZRF_CAPTURE   = 21;
-var ZRF_FLIP      = 22;
-var ZRF_END       = 23;
+var ZRF_ON_BOARDD = 13;
+var ZRF_ON_BOARDP = 14;
+var ZRF_PARAM     = 15;
+var ZRF_LITERAL   = 16;
+var ZRF_VERIFY    = 20;
+var ZRF_SET_POS   = 21;
+var ZRF_NAVIGATE  = 22;
+var ZRF_OPPOSITE  = 23;
+var ZRF_FROM      = 24;
+var ZRF_TO        = 25;
+var ZRF_CAPTURE   = 26;
+var ZRF_FLIP      = 27;
+var ZRF_END       = 28;
 
 var zrfJump = function(aGen, aParam) {
    return aParam - 1;
@@ -140,6 +143,30 @@ var zrfMode = function(aGen, aParam) {
    return 0;
 }
 
+var zrfOnBoardDir = function(aGen, aParam) {
+   var design = aGen.board.game.design;
+   var player = aGen.board.mWho;
+   var pos = aGen.cp;
+   if (pos === null) {
+       return null;
+   }
+   pos = design.navigate(player, pos, aParam);
+   if (pos !== null) {
+       aGen.stack.push(true);
+   } else {
+       aGen.stack.push(false);
+   }
+}
+
+var zrfOnBoardPos = function(aGen, aParam) {
+   var design = aGen.board.game.design;
+   if ((aParam >= 0) && (aParam < this.positions.length)) {
+       aGen.stack.push(true);
+   } else {
+       aGen.stack.push(false);
+   }
+}
+
 var zrfParam = function(aGen, aParam) {
    var value = aGen.params[aParam];
    aGen.stack.push(value);
@@ -212,7 +239,8 @@ var zrfFrom = function(aGen) {
    if (aGen.getPiece(aGen.cp) === null) {
        return null;
    }
-   aGen.from = aGen.cp;
+   aGen.starts.push[aGen.cp];
+   aGen.from  = aGen.cp;
    aGen.piece = aGen.getPiece(aGen.cp);
    return 0;
 }
@@ -273,6 +301,8 @@ Model.Game.commands = {
   ZRF_SET_ATTR:	 zrfSetAttr,
   ZRF_PROMOTE:   zrfPromote,
   ZRF_MODE:      zrfMode,
+  ZRF_ON_BOARDD: zrfOnBoardDir,
+  ZRF_ON_BOARDP: zrfOnBoardPos,
   ZRF_PARAM:     zrfParam,
   ZRF_LITERAL:	 zrfLiteral,
   ZRF_VERIFY:	 zrfVerify,
@@ -321,11 +351,19 @@ var zrfFriend = function(aGen) {
    return 0;
 }
 
-var zrfLast = function(aGen) {
+var zrfLastFrom = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
-   aGen.stack.push(aGen.isLast(aGen.cp));
+   aGen.stack.push(aGen.isLastFrom(aGen.cp));
+   return 0;
+}
+
+var zrfLastTo = function(aGen) {
+   if (aGen.cp === null) {
+       return null;
+   }
+   aGen.stack.push(aGen.isLastTo(aGen.cp));
    return 0;
 }
 
@@ -358,7 +396,8 @@ Model.Game.functions = {
   ZRF_IS_EMPTY:	 zrfEmpty,
   ZRF_IS_ENEMY:	 zrfEnemy,
   ZRF_IS_FRIEND: zrfFriend,
-  ZRF_IS_LAST:   zrfLast,
+  ZRF_IS_LASTF:  zrfLastFrom,
+  ZRF_IS_LASTT:  zrfLastTo,
   ZRF_MARK:	 zrfMark,
   ZRF_BACK:	 zrfBack,
   ZRF_PUSH:	 zrfPush,
@@ -486,6 +525,7 @@ function ZrfMoveGenerator(aTemplate, aParams) {
   this.pieces   = {};
   this.values   = {};
   this.attrs    = {};
+  this.starts   = [];
   this.stops    = [];
   this.stack    = [];
   this.backs	= [];
@@ -521,6 +561,10 @@ ZrfMoveGenerator.prototype.CopyFrom = function(aGen) {
   this.stops = [];
   for (var i in aGen.stops) {
       this.stops[i] = aGen.stops[i];
+  }
+  this.starts = [];
+  for (var i in aGen.starts) {
+      this.stops[i] = aGen.starts[i];
   }
   this.stack = [];
   for (var i in aGen.stack) {
@@ -564,7 +608,16 @@ Model.Game.GetPiece = function(aThis, aPos) {
   return aThis.board.getPiece(aPos);
 }
 
-ZrfMoveGenerator.prototype.isLast = function(aPos) {
+ZrfMoveGenerator.prototype.isLastFrom = function(aPos) {
+  if (this.parent !== null) {
+      if (Model.find(this.parent.starts, aPos) >= 0) {
+          return true;
+      }
+  }
+  return false;
+}
+
+ZrfMoveGenerator.prototype.isLastTo = function(aPos) {
   if (this.parent !== null) {
       if (Model.find(this.parent.stops, aPos) >= 0) {
           return true;

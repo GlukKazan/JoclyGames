@@ -4,10 +4,12 @@ public class Command {
 	
 	public int code;
 	public int param;
+	public String name;
 	
-	public Command(int code, int param) {
+	public Command(int code, int param, String name) {
 		this.code  = code;
 		this.param = param; 
+		this.name  = name;
 	}
 	
 	public boolean isEqual(Command c) {

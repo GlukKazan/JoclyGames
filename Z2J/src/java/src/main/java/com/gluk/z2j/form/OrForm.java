@@ -37,13 +37,13 @@ public class OrForm extends AbstractForm  {
 			fixups.add(template.getOffset());
 			template.addCommand(ZRF_IF);
 		}
-		template.addCommand(ZRF_LITERAL, 0);
+		template.addCommand(ZRF_LITERAL, 0, "false");
 		int from = template.getOffset();
 		template.addCommand(ZRF_JUMP);
 		for (Integer o: fixups) {
 			template.fixup(o, template.getOffset() - o);
 		}
-		template.addCommand(ZRF_LITERAL, 1);
+		template.addCommand(ZRF_LITERAL, 1, "true");
 		template.fixup(from, template.getOffset() - from);
 	}
 }

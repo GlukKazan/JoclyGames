@@ -106,6 +106,8 @@ public class Board extends AbstractDoc implements IBoard {
 						}
 						int delta = poss.get(dst) - s;
 						dest.add(Integer.toString(delta));
+					} else {
+						dest.add("");
 					}
 				}
 				dest.close();

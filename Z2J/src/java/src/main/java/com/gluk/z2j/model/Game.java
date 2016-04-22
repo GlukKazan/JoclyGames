@@ -130,8 +130,13 @@ public class Game extends AbstractDoc implements IGame {
 		return false;
 	}
 
-	public int getNameIndex(String name) {
+	public boolean isAttribute(String name) {
 		// TODO Auto-generated method stub
+		return false;
+	}
+
+	public int getNameIndex(String name) {
+		// TODO: Часть имён добавляется при первичном разборе, часть - в процессе генерации шаблона хода
 		return 0;
 	}
 }

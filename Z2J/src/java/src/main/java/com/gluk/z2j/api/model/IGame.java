@@ -10,6 +10,7 @@ public interface IGame {
 	int addMode(String mode);
 	boolean isPosition(String name);
 	boolean isDirection(String name);
+	boolean isAttribute(String name);
 	int getNameIndex(String name);
 	boolean checkFlag(int flag);
 	void setFlag(int flag, int value);

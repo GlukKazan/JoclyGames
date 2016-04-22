@@ -34,17 +34,17 @@ public class AndForm extends AbstractForm {
 		List<Integer> fixups = new ArrayList<Integer>();
 		for (IForm f: body) {
 			f.generate(template, params, game);
-			template.addCommand(ZRF_FUNCTION, ZRF_NOT);
+			template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
 			fixups.add(template.getOffset());
 			template.addCommand(ZRF_IF);
 		}
-		template.addCommand(ZRF_LITERAL, 1);
+		template.addCommand(ZRF_LITERAL, 1, "true");
 		int from = template.getOffset();
 		template.addCommand(ZRF_JUMP);
 		for (Integer o: fixups) {
 			template.fixup(o, template.getOffset() - o);
 		}
-		template.addCommand(ZRF_LITERAL, 0);
+		template.addCommand(ZRF_LITERAL, 0, "false");
 		template.fixup(from, template.getOffset() - from);
 	}
 }
