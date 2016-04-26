@@ -113,6 +113,10 @@ var zrfGetAttr = function(aGen, aParam) {
    var value = false;
    if (piece !== null) {
        value = piece.getValue(aParam);
+       if (value === null) {
+           var design = aGen.board.game.design;
+           value = design.getAttribute(piece.type, aParam);
+       }
    }
    aGen.stack.push(!!value);
    return 0;
@@ -428,6 +432,26 @@ function ZrfDesign() {
   this.positions = [];
   this.zones     = [];
   this.pieces    = {};
+  this.attrs     = [];
+}
+
+ZrfDesign.prototype.addAttribute = function(aType, aName, aVal) {
+  if (typeof this.attrs[aName] === "undefined") {
+      this.attrs[aName] = {};
+  }
+  if (typeof this.attrs[aName]{aType} === "undefined") {
+      this.attrs[aName]{aType} = aVal;
+  }
+}
+
+ZrfDesign.prototype.getAttribute = function(aType, aName) {
+  if (typeof this.attrs[aName] === "undefined") {
+      return false;
+  }
+  if (typeof this.attrs[aName]{aType} === "undefined") {
+      return false;
+  }
+  return this.attrs[aName]{aType};
 }
 
 ZrfDesign.prototype.addMove = function(aType, aTemplate, aParams, aMode) {

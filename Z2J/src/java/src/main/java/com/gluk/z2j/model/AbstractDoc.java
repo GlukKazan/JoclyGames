@@ -74,9 +74,7 @@ public abstract class AbstractDoc implements IDoc, ISource {
 		handler.endElement("", ATOM_TAG, ATOM_TAG);
 	}
 
-	private void extract(IDoc dest, Node d) throws Exception {
-		String name = d.getLocalName();
-		dest.open(name);
+	protected void extract(IDoc dest, Node d) throws Exception {
 		Node n;
 		NodeIterator nl = XPathAPI.selectNodeIterator(d, ALL_XP);
 		while ((n = nl.nextNode())!= null) {
@@ -87,7 +85,6 @@ public abstract class AbstractDoc implements IDoc, ISource {
 				extract(dest, n);
 			}
 		}
-		dest.close();
 	}
 
 	public void extract(IDoc dest) throws Exception {
@@ -98,7 +95,9 @@ public abstract class AbstractDoc implements IDoc, ISource {
 			if (t.equals(ATOM_TAG)) {
 				dest.add(n.getTextContent());
 			} else {
+				dest.open(n.getLocalName());
 				extract(dest, n);
+				dest.close();
 			}
 		}
 	}

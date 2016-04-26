@@ -6,25 +6,98 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.xpath.XPathAPI;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
+
 import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.loader.IDoc;
 import com.gluk.z2j.api.model.IGame;
-import com.gluk.z2j.api.model.ISource;
 
 public class Game extends AbstractDoc implements IGame {
 	
-	private final static String GAME_TAG  = "game";
-	private final static String BOARD_TAG = "board";
+	private final static String   GAME_TAG  = "game";
+	private final static String   BOARD_TAG = "board";
+	private final static String PLAYERS_TAG = "players";
+	private final static String  PLAYER_TAG = "player";
+	private final static String    MODE_TAG = "mode";
+	private final static String    NAME_TAG = "name";
+	private final static String   INDEX_TAG = "index";
+	private final static String   PRIOR_TAG = "is_mandatory";
+	private final static String   PIECE_TAG = "piece";
 
-	private AbstractDoc proxy = null;
-	private List<ISource> docs = new ArrayList<ISource>();
-	private List<String> players = new ArrayList<String>();
-	private List<String> modes = new ArrayList<String>();
-	private List<MoveTemplate> templates = new ArrayList<MoveTemplate>();
-	private Map<Integer, List<Move>> moves = new HashMap<Integer, List<Move>>();
+	private final static String PLAYERS_XP  = "/game/turn-order/a";
+	private final static String  PRIORS_XP  = "/game/move-priorities/a";
+	private final static String   MODES_XP  = "/game/piece/*/move-type/a";
+	private final static String   ATTRS_XP  = "/game/piece/attribute/a[1]";
+	private final static String  PIECES_XP  = "/game/piece";
+	
+	private AbstractDoc               proxy = null;
+	private Map<String, Integer>    players = new HashMap<String, Integer>();
+	private List<String>              modes = new ArrayList<String>();
+	private List<MoveTemplate>    templates = new ArrayList<MoveTemplate>();
+	private Map<Integer, List<Move>>  moves = new HashMap<Integer, List<Move>>();
+	private Map<String, Integer>      names = new HashMap<String, Integer>();
+	private Map<String, Integer>      attrs = new HashMap<String, Integer>();
 	
 	private Integer currPiece = 0;
 	private int flags;
+	private int priorities = 0;
+	private Board board = null;
+
+	public Collection<String> getPlayers() {
+		return players.keySet();
+	}
+
+	public boolean isPlayer(String name) {
+		return players.containsKey(name);
+	}
+
+	public boolean isAttribute(String name) {
+		return attrs.containsKey(name);
+	}
+
+	public boolean isMode(String name) {
+		return modes.contains(name);
+	}
+
+	public boolean isPosition(String name) {
+		if (board != null) {
+			return (board.getPosition(name) >= 0);
+		}
+		return false;
+	}
+
+	public boolean isDirection(String name) {
+		if (board != null) {
+			return (board.getDirection(name) >= 0);
+		}
+		return false;
+	}
+
+	public int getNameIndex(String name) {
+		if (isPosition(name)) {
+			return board.getPosition(name);
+		}
+		if (isDirection(name)) {
+			return board.getDirection(name);
+		}
+		if (isAttribute(name)) {
+			return attrs.get(name);
+		}
+		if (isPlayer(name)) {
+			return players.get(name);
+		}
+		if (isMode(name)) {
+			return modes.indexOf(name);
+		}
+		Integer r = names.get(name);
+		if (r == null) {
+			r = names.size();
+			names.put(name, r);
+		}
+		return r;
+	}
 
 	public boolean checkFlag(int flag) {
 		return (flag & flags) != 0;
@@ -44,7 +117,11 @@ public class Game extends AbstractDoc implements IGame {
 			return;
 		}
 		if (tag.equals(BOARD_TAG)) {
-			proxy = new Board(this);
+			if (board != null) {
+				throw new Exception("Board redefined");
+			}
+			board = new Board(this);
+			proxy = board;
 			proxy.open(tag);
 			return;
 		}
@@ -55,7 +132,6 @@ public class Game extends AbstractDoc implements IGame {
 		if (proxy != null) {
 			boolean r = proxy.close(); 
 			if (r) {
-				docs.add(proxy);
 				proxy = null;
 			}
 			return r;
@@ -71,19 +147,6 @@ public class Game extends AbstractDoc implements IGame {
 		}
 	}
 
-	public void extract(IDoc dest) throws Exception {
-		dest.open(GAME_TAG);
-		for (ISource d: docs) {
-			d.extract(dest);
-		}
-		super.extract(dest);
-		dest.close();
-	}
-
-	public Collection<String> getPlayers() {
-		return players;
-	}
-
 	private int addTemplate(MoveTemplate template) {
 		for (int i = templates.size() - 1; i >= 0; i--) {
 			if (template.isEqual(templates.get(i))) {
@@ -94,7 +157,6 @@ public class Game extends AbstractDoc implements IGame {
 		return templates.size() - 1;
 	}
 	
-	// TODO: Предварительно составить список всех возможных режимов
 	public int addMode(String mode) {
 		for (int i = 0; i < modes.size(); i++) {
 			if (modes.get(i).equals(mode)) {
@@ -119,24 +181,88 @@ public class Game extends AbstractDoc implements IGame {
 		}
 		ml.add(new Move(tx, params, mx));
 	}
-
-	public boolean isPosition(String name) {
-		// TODO Auto-generated method stub
-		return false;
+	
+	private void extractPlayers(IDoc dest) throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, PLAYERS_XP);
+		Node n;
+		for (int i = 0; (n = nl.nextNode())!= null; i++) {
+			if (i > 1) {
+				throw new Exception("Not Supported");
+			}
+			if (i == 0) {
+				players.put(n.getTextContent(), 1);
+			} else {
+				players.put(n.getTextContent(), -1);
+			}
+		}
+		if (players.size() != 2) {
+			throw new Exception("Not Supported");
+		}
+		dest.open(PLAYERS_TAG);
+		for (String p: players.keySet()) {
+			Integer ix = players.get(p);
+			dest.open(PLAYER_TAG);
+			dest.open(NAME_TAG);dest.add(p); dest.close();
+			dest.open(INDEX_TAG);dest.add(ix.toString());dest.close();
+			dest.close();
+		}
+		dest.close();
 	}
-
-	public boolean isDirection(String name) {
-		// TODO Auto-generated method stub
-		return false;
+	
+	private void extractModes(IDoc dest) throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, PRIORS_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			addMode(n.getTextContent());
+		}
+		priorities = modes.size();
+		nl = XPathAPI.selectNodeIterator(doc, MODES_XP);
+		while ((n = nl.nextNode())!= null) {
+			addMode(n.getTextContent());
+		}
+		for (int i = 0; i < modes.size(); i++) {
+			dest.open(MODE_TAG);
+			dest.open(NAME_TAG); dest.add(modes.get(i)); dest.close();
+			if (i < priorities) {
+				dest.open(PRIOR_TAG); dest.close();
+			}
+			dest.close();
+		}
 	}
-
-	public boolean isAttribute(String name) {
-		// TODO Auto-generated method stub
-		return false;
+	
+	private void extractAttrs() throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, ATTRS_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			String name = n.getTextContent();
+			Integer r = attrs.get(name);
+			if (r == null) {
+				r = attrs.size();
+				attrs.put(name, r);
+			}
+		}
 	}
-
-	public int getNameIndex(String name) {
-		// TODO: Часть имён добавляется при первичном разборе, часть - в процессе генерации шаблона хода
-		return 0;
+	
+	public void extract(IDoc dest) throws Exception {
+		dest.open(GAME_TAG);
+		if (board == null) {
+			throw new Exception("Board undefined");
+		}
+		board.extract(dest);
+		extractPlayers(dest);
+		extractModes(dest);
+		extractAttrs();
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, PIECES_XP);
+		Node n;
+		for (int i = 0; (n = nl.nextNode())!= null; i++) {
+			Piece p = new Piece(this, i);
+			p.open(PIECE_TAG);
+			extract(p, n);
+			p.close();
+			p.extract(dest);
+		}
+		// TODO: board-setup
+		
+		dest.close();
 	}
 }

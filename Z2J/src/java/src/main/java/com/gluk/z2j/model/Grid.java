@@ -5,11 +5,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.xpath.XPathAPI;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
+
 import com.gluk.z2j.api.model.IBoard;
 import com.gluk.z2j.api.model.IGrid;
 
 public class Grid extends AbstractDoc implements IGrid {
 	
+	private final static String DIM_XP = "/grid/dimensions/l/a[1]";
+	private final static String DIR_XP = "/grid/directions/*";
+	private final static String ALL_XP = "/l/a[1]";
+
 	private List<List<String>> dims = new ArrayList<List<String>>();
 	private Map<String, List<Integer>> dirs = new HashMap<String, List<Integer>>();
 	
@@ -162,7 +170,7 @@ public class Grid extends AbstractDoc implements IGrid {
 		int stSz = startPosition.length();
 		int enSz = endPosition.length();
 		if (ix >= dims.size()) {
-			if (board.isDefined(startPosition.toString()) && board.isDefined(endPosition.toString())) {
+			if ((board.getPosition(startPosition.toString()) >= 0) && (board.getPosition(endPosition.toString()) >= 0) ) {
 				board.addLink(name, startPosition.toString(), endPosition.toString());
 			}
 			return;
@@ -182,10 +190,35 @@ public class Grid extends AbstractDoc implements IGrid {
 			}
 			extractLinks(ix + 1, name, deltas, startPosition, endPosition);
 		}
-		
+	}
+	
+	private void getDims() throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, DIM_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			addDimension(n.getTextContent());
+		}
+	}
+	
+	private void getDirs() throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, DIR_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			String name = n.getLocalName();
+			List<Integer> deltas = new ArrayList<Integer>();
+			NodeIterator ml = XPathAPI.selectNodeIterator(n, ALL_XP);
+			Node m;
+			while ((m = ml.nextNode())!= null) {
+				String s = m.getTextContent();
+				deltas.add(Integer.parseInt(s));
+			}
+			addDirection(name, deltas);
+		}
 	}
 
-	private void extract() throws Exception {
+	public void extract() throws Exception {
+		getDims();
+		getDirs();
 		extractPositions(0, new StringBuffer());
 		for (String dir: dirs.keySet()) {
 			List<Integer> deltas = dirs.get(dir);

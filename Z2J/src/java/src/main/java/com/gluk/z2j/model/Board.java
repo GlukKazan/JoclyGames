@@ -5,6 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.xpath.XPathExpression;
+
+import org.apache.xpath.XPathAPI;
+import org.w3c.dom.Node;
+import org.w3c.dom.traversal.NodeIterator;
+
 import com.gluk.z2j.api.loader.IDoc;
 import com.gluk.z2j.api.model.IBoard;
 import com.gluk.z2j.api.model.IGame;
@@ -12,12 +18,25 @@ import com.gluk.z2j.api.model.IGame;
 public class Board extends AbstractDoc implements IBoard {
 	
 	private final static String BOARD_TAG  = "board";
+	private final static String GRID_TAG   = "grid";
 	private final static String PLAYER_TAG = "player";
 	private final static String POS_TAG    = "pos";
 	private final static String NAME_TAG   = "name";
 	private final static String DIR_TAG    = "dir";
 	private final static String ZONE_TAG   = "zone";
 	
+	private final static String POS_XP     = "/board/positions/a";
+	private final static String DUMMY_XP   = "/board/dummy/a";
+	private final static String KILL_XP    = "/board/kill-positions/a";
+	private final static String LINK_XP    = "/board/links";
+	private final static String SYMS_XP    = "/board/symmetry";
+	private final static String ZONE_XP    = "/board/zone";
+	private final static String HEAD_XP    = "/a[1]";
+	private final static String TAIL_XP    = "/*[position()>1]";
+	private final static String NAME_XP    = "/name/a";
+	private final static String PLAYER_XP  = "/players/a";
+	private final static String ZPOS_XP    = "/positions/a";
+
 	private List<String> posl  = new ArrayList<String>();
 	private List<String> dirl  = new ArrayList<String>();
 	private List<String> zonel = new ArrayList<String>();
@@ -29,13 +48,60 @@ public class Board extends AbstractDoc implements IBoard {
 	private Map<String, Map<String, List<String>>> zones = new HashMap<String, Map<String, List<String>>>();
 	
 	private IGame game;
+	private Grid proxy = null;
+	private XpeFactory xf = new XpeFactory();
 	
 	public Board(IGame game) {
 		this.game = game;
 	}
 	
-	public boolean isDefined(String pos) {
-		return poss.containsKey(pos);
+	public int getPosition(String pos) {
+		Integer r = poss.get(pos);
+		if (r == null) {
+			return -1;
+		}
+		return r;
+	}
+
+	public int getDirection(String dir) {
+		Integer r = dirs.get(dir);
+		if (r == null) {
+			return -1;
+		}
+		return r;
+	}
+
+	public void open(String tag) throws Exception {
+		if (proxy != null) {
+			proxy.open(tag);
+			return;
+		}
+		if (tag.equals(GRID_TAG)) {
+			proxy = new Grid(this);
+			proxy.open(tag);
+			return;
+		}
+		super.open(tag);
+	}
+
+	public boolean close() throws Exception {
+		if (proxy != null) {
+			boolean r = proxy.close(); 
+			if (r) {
+				proxy.extract();
+				proxy = null;
+			}
+			return r;
+		}
+		return super.close();
+	}
+	
+	public void add(String s) throws Exception {
+		if (proxy != null) {
+			proxy.add(s);
+		} else {
+			super.add(s);
+		}
 	}
 
 	private void extractZones(IDoc dest) throws Exception {
@@ -230,7 +296,84 @@ public class Board extends AbstractDoc implements IBoard {
 		}
 	}
 	
+	private void getPositions() throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, POS_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			addPos(n.getTextContent());
+		}
+		nl = XPathAPI.selectNodeIterator(doc, DUMMY_XP);
+		while ((n = nl.nextNode())!= null) {
+			addPos(n.getTextContent());
+		}
+		nl = XPathAPI.selectNodeIterator(doc, KILL_XP);
+		while ((n = nl.nextNode())!= null) {
+			delPos(n.getTextContent());
+		}
+	}
+	
+	private void getLinks() throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, LINK_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			XPathExpression xe = xf.getXpe(HEAD_XP);
+			String name = xe.evaluate(n);
+			NodeIterator tl = XPathAPI.selectNodeIterator(n, TAIL_XP);
+			Node t;
+			while ((t = tl.nextNode())!= null) {
+				String from = t.getLocalName();
+				String to = xe.evaluate(t);
+				addLink(name, from, to);
+			}
+		}
+		// TODO: unlink
+		
+	}
+	
+	private void getSyms() throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, SYMS_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			XPathExpression xe = xf.getXpe(HEAD_XP);
+			String player = xe.evaluate(n);
+			NodeIterator tl = XPathAPI.selectNodeIterator(n, TAIL_XP);
+			Node t;
+			while ((t = tl.nextNode())!= null) {
+				String from = t.getLocalName();
+				String to = xe.evaluate(t);
+				addSym(player, from, to);
+			}
+		}
+	}
+	
+	private void getZones() throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, ZONE_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			NodeIterator ml = XPathAPI.selectNodeIterator(n, NAME_XP);
+			Node m;
+			while ((m = ml.nextNode())!= null) {
+				String name = m.getTextContent();
+				NodeIterator pl = XPathAPI.selectNodeIterator(n, PLAYER_XP);
+				Node p;
+				while ((p = pl.nextNode())!= null) {
+					String player = p.getTextContent();
+					NodeIterator zl = XPathAPI.selectNodeIterator(n, ZPOS_XP);
+					Node z;
+					while ((z = zl.nextNode())!= null) {
+						String pos = z.getTextContent();
+						addZone(name, player, pos);
+					}
+				}
+			}
+		}
+	}
+	
 	public void extract(IDoc dest) throws Exception {
+		getPositions();
+		getLinks();
+		getSyms();
+		getZones();
 		dest.open(BOARD_TAG);
 		extractOpposite(dest);
 		extractSyms(dest);

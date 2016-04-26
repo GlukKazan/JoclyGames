@@ -8,9 +8,11 @@ public interface IGame {
 	Collection<String> getPlayers();
 	void addMove(IForm form, String mode) throws Exception;
 	int addMode(String mode);
+	boolean isPlayer(String name);
 	boolean isPosition(String name);
 	boolean isDirection(String name);
 	boolean isAttribute(String name);
+	boolean isMode(String name);
 	int getNameIndex(String name);
 	boolean checkFlag(int flag);
 	void setFlag(int flag, int value);
