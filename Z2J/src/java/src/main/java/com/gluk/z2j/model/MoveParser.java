@@ -4,6 +4,7 @@ import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.form.IMoveParser;
 import com.gluk.z2j.api.loader.IDoc;
 import com.gluk.z2j.api.model.IGame;
+import com.gluk.z2j.api.model.IPiece;
 import com.gluk.z2j.form.AndForm;
 import com.gluk.z2j.form.ApplyForm;
 import com.gluk.z2j.form.IfForm;
@@ -22,13 +23,15 @@ public class MoveParser implements IDoc, IMoveParser {
 	private final static String FROM_TAG    = "from";
 	
 	private IGame game;
+	private IPiece piece;
 	private boolean isDrop;
 	
 	private String mode = "";
 	private IForm form = null;
 	
-	public MoveParser(IGame game, boolean isDrop) {
-		this.game = game;
+	public MoveParser(IPiece piece, IGame game, boolean isDrop) {
+		this.piece  = piece;
+		this.game   = game;
 		this.isDrop = isDrop;
 	}
 	
@@ -82,7 +85,7 @@ public class MoveParser implements IDoc, IMoveParser {
 			return true;
 		}
 		if (form.close()) {
-			game.addMove(form, mode);
+			piece.addMove(form, mode);
 			form = null;
 		}
 		return false;

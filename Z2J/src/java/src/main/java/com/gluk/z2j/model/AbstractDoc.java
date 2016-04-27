@@ -22,7 +22,7 @@ public abstract class AbstractDoc implements IDoc, ISource {
 	
 	private final static String ATOM_TAG = "a";
 
-	private final static String ALL_XP   = "*";
+	private final static String ALL_XP   = "/*";
 	
 	protected Node doc = null;
 	protected int deep = 0;

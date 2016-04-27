@@ -25,12 +25,17 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String   INDEX_TAG = "index";
 	private final static String   PRIOR_TAG = "is_mandatory";
 	private final static String   PIECE_TAG = "piece";
+	private final static String   SETUP_TAG = "board-setup";
+	private final static String     OFF_TAG = "off";
 
 	private final static String PLAYERS_XP  = "/game/turn-order/a";
 	private final static String  PRIORS_XP  = "/game/move-priorities/a";
 	private final static String   MODES_XP  = "/game/piece/*/move-type/a";
 	private final static String   ATTRS_XP  = "/game/piece/attribute/a[1]";
 	private final static String  PIECES_XP  = "/game/piece";
+	private final static String   SETUP_XP  = "/game/board-setup/*";
+	private final static String     ALL_XP  = "/*";
+	private final static String     POS_XP  = "/a";
 	
 	private AbstractDoc               proxy = null;
 	private Map<String, Integer>    players = new HashMap<String, Integer>();
@@ -40,7 +45,6 @@ public class Game extends AbstractDoc implements IGame {
 	private Map<String, Integer>      names = new HashMap<String, Integer>();
 	private Map<String, Integer>      attrs = new HashMap<String, Integer>();
 	
-	private Integer currPiece = 0;
 	private int flags;
 	private int priorities = 0;
 	private Board board = null;
@@ -167,17 +171,17 @@ public class Game extends AbstractDoc implements IGame {
 		return modes.size() - 1;
 	}
 	
-	public void addMove(IForm form, String mode) throws Exception {
+	public void addMove(int piece, IForm form, String mode) throws Exception {
 		flags = 0;
 		List<Integer> params = new ArrayList<Integer>();
 		MoveTemplate template = new MoveTemplate();
 		form.generate(template, params, this);
 		int tx = addTemplate(template);
 		int mx = addMode(mode);
-		List<Move> ml = moves.get(currPiece);
+		List<Move> ml = moves.get(piece);
 		if (ml == null) {
 			ml = new ArrayList<Move>();
-			moves.put(currPiece, ml);
+			moves.put(piece, ml);
 		}
 		ml.add(new Move(tx, params, mx));
 	}
@@ -230,6 +234,36 @@ public class Game extends AbstractDoc implements IGame {
 		}
 	}
 	
+	private void extractSetup(IDoc dest) throws Exception {
+		boolean f = false;
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, SETUP_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			if (!f) {
+				dest.open(SETUP_TAG);
+				f = true;
+			}
+			dest.open(n.getLocalName());
+			NodeIterator al = XPathAPI.selectNodeIterator(doc, ALL_XP);
+			Node a;
+			while ((a = al.nextNode())!= null) {
+				dest.open(a.getLocalName());
+				NodeIterator pl = XPathAPI.selectNodeIterator(doc, POS_XP);
+				Node p;
+				while ((p = pl.nextNode())!= null) {
+					String pos = p.getTextContent();
+					if (pos.equals(OFF_TAG)) break;
+					dest.open(pos); dest.close();
+				}
+				dest.close();
+			}
+			dest.close();
+		}
+		if (f) {
+			dest.close();
+		}
+	}
+	
 	private void extractAttrs() throws Exception {
 		NodeIterator nl = XPathAPI.selectNodeIterator(doc, ATTRS_XP);
 		Node n;
@@ -261,8 +295,7 @@ public class Game extends AbstractDoc implements IGame {
 			p.close();
 			p.extract(dest);
 		}
-		// TODO: board-setup
-		
+		extractSetup(dest);
 		dest.close();
 	}
 }

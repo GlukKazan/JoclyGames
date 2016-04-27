@@ -24,11 +24,13 @@ public class Board extends AbstractDoc implements IBoard {
 	private final static String NAME_TAG   = "name";
 	private final static String DIR_TAG    = "dir";
 	private final static String ZONE_TAG   = "zone";
+	private final static String ATOM_TAG   = "a";
 	
 	private final static String POS_XP     = "/board/positions/a";
 	private final static String DUMMY_XP   = "/board/dummy/a";
 	private final static String KILL_XP    = "/board/kill-positions/a";
 	private final static String LINK_XP    = "/board/links";
+	private final static String UNLINK_XP  = "/board/unlink";
 	private final static String SYMS_XP    = "/board/symmetry";
 	private final static String ZONE_XP    = "/board/zone";
 	private final static String HEAD_XP    = "/a[1]";
@@ -36,6 +38,8 @@ public class Board extends AbstractDoc implements IBoard {
 	private final static String NAME_XP    = "/name/a";
 	private final static String PLAYER_XP  = "/players/a";
 	private final static String ZPOS_XP    = "/positions/a";
+	private final static String ALL_XP     = "/*";
+	private final static String A_XP       = "/a";
 
 	private List<String> posl  = new ArrayList<String>();
 	private List<String> dirl  = new ArrayList<String>();
@@ -289,11 +293,25 @@ public class Board extends AbstractDoc implements IBoard {
 		l.put(name, to);
 	}
 
-	public void delLink(String name, String from) throws Exception {
+	public void delLink(String from, String to) throws Exception {
 		Map<String, String> l = links.get(from);
 		if (l != null) {
-			l.remove(name);
+			while (true) {
+				boolean f = true;
+				for (String name: l.keySet()) {
+					if (l.get(name).equals(to)) {
+						l.remove(name);
+						f = false;
+						break;
+					}
+				}
+				if (f) break;
+			}
 		}
+	}
+
+	public void delLink(String from) throws Exception {
+		links.remove(from);
 	}
 	
 	private void getPositions() throws Exception {
@@ -326,8 +344,24 @@ public class Board extends AbstractDoc implements IBoard {
 				addLink(name, from, to);
 			}
 		}
-		// TODO: unlink
-		
+		nl = XPathAPI.selectNodeIterator(doc, UNLINK_XP);
+		while ((n = nl.nextNode())!= null) {
+			NodeIterator tl = XPathAPI.selectNodeIterator(n, ALL_XP);
+			Node t;
+			while ((t = tl.nextNode())!= null) {
+				if (t.getLocalName().equals(ATOM_TAG)) {
+					delLink(t.getTextContent());
+				} else {
+					String from = n.getLocalName();
+					NodeIterator ql = XPathAPI.selectNodeIterator(n, A_XP);
+					Node q;
+					while ((q = ql.nextNode())!= null) {
+						String to = q.getTextContent();
+						delLink(from, to);
+					}
+				}
+			}
+		}
 	}
 	
 	private void getSyms() throws Exception {
