@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
+import com.gluk.z2j.api.loader.ILoader;
 import com.gluk.z2j.api.loader.IScaner;
 
-public class Loader {
+public class Loader implements ILoader {
 	
 	private IScaner scaner;
 	
@@ -16,12 +17,12 @@ public class Loader {
 		this.scaner = scaner;
 	}
 	
-	public void load(String name) throws Exception {
+	public void load(String dir, String name) throws Exception {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(
                         new InputStreamReader(
-                            new FileInputStream(name), Charset.forName("WINDOWS-1251")));
+                            new FileInputStream(dir + name), Charset.forName("WINDOWS-1251")));
             String line;
             while ((line = reader.readLine()) != null) {
             	for (Character c: line.toCharArray()) {

@@ -25,39 +25,40 @@ public abstract class AbstractDoc implements IDoc, ISource {
 	private final static String ALL_XP   = "/*";
 	
 	protected Node doc = null;
-	protected int deep = 0;
-	
-    private TransformerHandler handler = null;
+    protected TransformerHandler handler = null;
+    
     private Stack<String> tags = new Stack<String>();
+    
+    protected void init() throws Exception {
+		TransformerFactory tf = TransformerFactory.newInstance();
+		if (tf.getFeature(SAXSource.FEATURE) && tf.getFeature(DOMResult.FEATURE)) {
+			SAXTransformerFactory stf = (SAXTransformerFactory)tf;
+			handler = stf.newTransformerHandler();
+			DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
+			doc = df.newDocumentBuilder().newDocument();
+			Result out = new DOMResult(doc);
+			handler.setResult(out);
+		} else {
+			throw new Exception("Feature unsupported");
+		}
+    }
 
 	public void open(String tag) throws Exception {
-		if (deep == 0) {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			if (tf.getFeature(SAXSource.FEATURE) && tf.getFeature(DOMResult.FEATURE)) {
-				SAXTransformerFactory stf = (SAXTransformerFactory)tf;
-				handler = stf.newTransformerHandler();
-				DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
-				doc = df.newDocumentBuilder().newDocument();
-				Result out = new DOMResult(doc);
-				handler.setResult(out);
-				handler.startDocument();
-			} else {
-				throw new Exception("Feature unsupported");
-			}
+		if (tags.isEmpty()) {
+			init();
+			handler.startDocument();
 		}
 		handler.startElement("", tag, tag, new AttributesImpl());
 		tags.push(tag);
-		deep++;
 	}
 
 	public boolean close() throws Exception {
-		if ((handler == null) || (tags.isEmpty()) || (deep <= 0)) {
+		if ((handler == null) || (tags.isEmpty())) {
 			throw new Exception("Internal error");
 		}
 		String tag = tags.pop();
 		handler.endElement("", tag, tag);
-		deep--;
-		if (deep == 0) {
+		if (tags.isEmpty()) {
 			handler.endDocument();
 			handler = null;
 			return true;

@@ -25,6 +25,7 @@ public class Parser implements IParser {
 	private final static String ATOM_TAG = "a";
 	
 	private ILibrary lib;
+	private String dir = "";
 	
 	private int deep = 0;
     private TransformerHandler handler = null;
@@ -34,6 +35,10 @@ public class Parser implements IParser {
     	this.lib = lib;
     }
 
+	public void setDirectory(String dir) {
+		this.dir = dir;
+	}
+	
 	public void add(String s) throws Exception {
 		handler.startElement("", ATOM_TAG, ATOM_TAG, new AttributesImpl());
 		handler.characters(s.toCharArray(), 0, s.length());
@@ -84,7 +89,7 @@ public class Parser implements IParser {
 	private void include(String s) throws Exception {
 		IScaner scaner = new Scaner(this);
 		Loader  loader = new Loader(scaner);
-		loader.load(s);
+		loader.load(dir, s);
 	}
 }
 

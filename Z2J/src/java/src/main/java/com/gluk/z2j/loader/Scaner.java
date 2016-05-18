@@ -20,6 +20,10 @@ public class Scaner implements IScaner {
 		this.parser = parser;
 	}
 	
+	public void setDirectory(String dir) {
+		parser.setDirectory(dir);
+	}
+	
 	private void flush() throws Exception {
 		if (token.length() > 0) {
 			parser.add(token.toString());
