@@ -127,10 +127,10 @@ var zrfSetAttr = function(aGen, aParam) {
        return null;
    }
    var value = aGen.stack.pop();
-   if (typeof aGen.attrs{aGen.cp} === "undefined") {
-       aGen.attrs{aGen.cp} = {};
+   if (typeof aGen.attrs[aGen.cp] === "undefined") {
+       aGen.attrs[aGen.cp] = {};
    }
-   aGen.attrs{aGen.cp}{aParam} = value;
+   aGen.attrs[aGen.cp][aParam] = value;
    return 0;
 }
 
@@ -435,12 +435,16 @@ function ZrfDesign() {
   this.attrs     = [];
 }
 
+Model.Game.newZrfDesign = function() {
+  return new ZrfDesign();
+}
+
 ZrfDesign.prototype.addAttribute = function(aType, aName, aVal) {
   if (typeof this.attrs[aName] === "undefined") {
       this.attrs[aName] = {};
   }
-  if (typeof this.attrs[aName]{aType} === "undefined") {
-      this.attrs[aName]{aType} = aVal;
+  if (this.attrs[aName][aType] === undefined) {
+      this.attrs[aName][aType] = aVal;
   }
 }
 
@@ -448,17 +452,17 @@ ZrfDesign.prototype.getAttribute = function(aType, aName) {
   if (typeof this.attrs[aName] === "undefined") {
       return false;
   }
-  if (typeof this.attrs[aName]{aType} === "undefined") {
+  if (typeof this.attrs[aName][aType] === "undefined") {
       return false;
   }
-  return this.attrs[aName]{aType};
+  return this.attrs[aName][aType];
 }
 
 ZrfDesign.prototype.addMove = function(aType, aTemplate, aParams, aMode) {
-  if (typeof this.pieces{aType} === "undefined") {
-      this.pieces{aType} = [];
+  if (typeof this.pieces[aType] === "undefined") {
+      this.pieces[aType] = [];
   }
-  this.pieces{aType}.push({
+  this.pieces[aType].push({
      type: 0,
      template: aTemplate,
      params: aParams,
@@ -467,10 +471,10 @@ ZrfDesign.prototype.addMove = function(aType, aTemplate, aParams, aMode) {
 }
 
 ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams) {
-  if (typeof this.pieces{aType} === "undefined") {
-      this.pieces{aType} = [];
+  if (typeof this.pieces[aType] === "undefined") {
+      this.pieces[aType] = [];
   }
-  this.pieces{aType}.push({
+  this.pieces[aType].push({
      type: 1,
      template: aTemplate,
      params: aParams,
@@ -566,20 +570,20 @@ ZrfMoveGenerator.prototype.CopyFrom = function(aGen) {
   this.parent   = aGen.parent;
   this.pieces   = {};
   for (var pos in aGen.pieces) {
-      this.pieces{pos} = aGen.pieces{pos};
+      this.pieces[pos] = aGen.pieces[pos];
   }
   this.values = {};
   for (var name in aGen.values) {
-      this.values{name} = {};
-      for (var pos in aGen.values{name}) {
-           this.values{name}{pos} = aGen.values{name}{pos};
+      this.values[name] = {};
+      for (var pos in aGen.values[name]) {
+           this.values[name][pos] = aGen.values[name][pos];
       }
   }
   this.attrs = {};
   for (var pos in aGen.attrs) {
-      this.attrs{pos} = {};
-      for (var name in aGen.attrs{pos}) {
-           this.attrs{pos}{name} = aGen.attrs{pos}{name};
+      this.attrs[pos] = {};
+      for (var name in aGen.attrs[pos]) {
+           this.attrs[pos][name] = aGen.attrs[pos][name];
       }
   }
   this.stops = [];
@@ -616,8 +620,8 @@ ZrfMoveGenerator.prototype.setParent = function(aParent) {
 }
 
 Model.Game.getPieceInternal = function(aThis, aPos) {
-  if (typeof aThis.pieces{aPos} !== "undefined") {
-      return aThis.pieces{aPos};
+  if (typeof aThis.pieces[aPos] !== "undefined") {
+      return aThis.pieces[aPos];
   }
   if (this.parent !== null) {
       return aThis.getPieceInternal(aPos);
@@ -655,7 +659,7 @@ ZrfMoveGenerator.prototype.getPiece = function(aPos) {
 }
 
 ZrfMoveGenerator.prototype.setPiece = function(aPos, aPiece) {
-  this.pieces{aPos} = aPiece;
+  this.pieces[aPos] = aPiece;
 }
 
 Model.Game.GetValue = function (aThis, aName, aPos) {
@@ -663,19 +667,19 @@ Model.Game.GetValue = function (aThis, aName, aPos) {
 }
 
 ZrfMoveGenerator.prototype.getValue = function(aName, aPos) {
-  if (typeof this.values{aName} !== "undefined") {
-      if (typeof this.values{aName}{aPos} !== "undefined") {
-          return this.values{aName}{aPos};
+  if (typeof this.values[aName] !== "undefined") {
+      if (typeof this.values[aName][aPos] !== "undefined") {
+          return this.values[aName][aPos];
       }
   }
   return Model.Game.GetValue(this, aName, aPos);
 }
 
 ZrfMoveGenerator.prototype.setValue = function(aName, aPos, aValue) {
-  if (typeof this.values{aName} === "undefined") {
-      this.values{aName} = {};
+  if (typeof this.values[aName] === "undefined") {
+      this.values[aName] = {};
   }
-  this.values{aName}{aPos} = aValue;
+  this.values[aName][aPos] = aValue;
 }
 
 ZrfMoveGenerator.prototype.generate = function() {
@@ -690,13 +694,13 @@ ZrfMoveGenerator.prototype.generate = function() {
      if (Model.find(this.stops, pos) < 0) {
         var piece = this.getPiece(pos);
         if (piece !== null) {
-           for (var name in this.attrs{pos}) {
-               piece = piece.setValue(name, this.attrs{pos}{name});
+           for (var name in this.attrs[pos]) {
+               piece = piece.setValue(name, this.attrs[pos][name]);
            }
            this.move.MovePiece(pos, pos, piece);
         }
      } else {
-        this.move.SetAttr(pos, this.attrs{pos});
+        this.move.SetAttr(pos, this.attrs[pos]);
      }
   }
   return true;
@@ -713,8 +717,8 @@ ZrfPiece.prototype.toString = function() {
 
 ZrfPiece.prototype.getValue = function(aName) {
   if (typeof this.values !== "undefined") {
-     if (typeof this.values{aName} !== "undefined") {
-         return this.values{aName};
+     if (typeof this.values[aName] !== "undefined") {
+         return this.values[aName];
      }
   }
   return null;
@@ -736,7 +740,7 @@ ZrfPiece.prototype.setValue = function(aName, aValue) {
   if (typeof piece.values === "undefined") {
      piece.values = {};
   }
-  piece.values{aName} = aValue;
+  piece.values[aName] = aValue;
   return piece;
 }
 
@@ -788,8 +792,8 @@ Model.Board.addFork = function(aGen) {
 var CompleteMove = function(aGame, aGen, aMove) {
   if (aGen.mode !== null) {
       var pos = aGen.stops.pop();
-      var piece = aGen.pieces{pos};
-      for (var move in aGame.design.pieces{piece.type}) {
+      var piece = aGen.pieces[pos];
+      for (var move in aGame.design.pieces[piece.type]) {
            if ((move.type === 0) && (move.mode === aGen.mode)) {
                 var m = new Model.Move.Init(aMove);
                 var g = new ZrfMoveGenerator(move.template, move.params);
@@ -808,9 +812,9 @@ var CompleteMove = function(aGame, aGen, aMove) {
 Model.Board.GenerateMoves = function(aGame) {
   var moves = [];
   for (var pos in this.pieces) {
-       var piece = this.pieces{pos};
+       var piece = this.pieces[pos];
        if (piece.player === this.mWho) {
-           for (var move in aGame.design.pieces{piece.type}) {
+           for (var move in aGame.design.pieces[piece.type]) {
                if (move.type === 0) {
                    this.forks = [];
                    var m = { 
@@ -833,9 +837,9 @@ Model.Board.GenerateMoves = function(aGame) {
        }
   }
   for (var pos in aGame.design.positions) {
-       if (typeof this.pieces{pos} === "undefined") {
+       if (typeof this.pieces[pos] === "undefined") {
            for (var tp in aGame.design.pieces) {
-                for (var move in aGame.design.pieces{tp}) {
+                for (var move in aGame.design.pieces[tp]) {
                      if (move.type === 1) {
                          var m = { 
                              moves: [], 
@@ -863,10 +867,10 @@ Model.Board.ApplyMove = function(aGame, move) {
   for (var i in move.moves) {
       var fp = move.moves[i][0];
       if (fp !== null) {
-          var piece = this.pieces{fp};
+          var piece = this.pieces[fp];
           if (typeof piece !== "undefined") {
               this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), fp);
-              delete this.pieces{fp};
+              delete this.pieces[fp];
           }
       }
   }
@@ -874,12 +878,12 @@ Model.Board.ApplyMove = function(aGame, move) {
       var tp = move.moves[i][1];
       var np = move.moves[i][2];
       if (tp !== null) {
-          var op = this.pieces{tp};
+          var op = this.pieces[tp];
           if (typeof op !== "undefined") {
               this.zSign = aGame.zobrist.update(this.zSign, "board", op.toString(), tp);
           }
           this.zSign = aGame.zobrist.update(this.zSign, "board", np.toString(), tp);
-          this.pieces{fp} = np;
+          this.pieces[fp] = np;
       }
   }
 }
@@ -897,18 +901,18 @@ Model.Board.IsValidMove = function(aGame,move) {
 }
 
 Model.Board.getPiece = function(aPos) {
-  if (typeof this.pieces{aPos} === "undefined") {
+  if (typeof this.pieces[aPos] === "undefined") {
       return null;
   } else {
-      return this.pieces{aPos};
+      return this.pieces[aPos];
   }
 }
 
 Model.Board.setPiece = function(aPos, aPiece) {
   if (aPiece === null) {
-     delete this.pieces{aPos};
+     delete this.pieces[aPos];
   } else {
-     this.pieces{aPos} = aPiece;
+     this.pieces[aPos] = aPiece;
   }
 }
 
@@ -940,7 +944,7 @@ Model.Move.SetAttr = function(aPos, aValues) {
      if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
          var piece = this.moves[i][2];
          for (var name in aValues) {
-              piece = piece.setValue(name, aValues{name});
+              piece = piece.setValue(name, aValues[name]);
          }
          this.moves[i][2] = piece;
      }
