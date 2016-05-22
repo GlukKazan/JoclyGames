@@ -1,48 +1,50 @@
 (function() {
 
-var ZRF_NOT       = 0;
-var ZRF_IS_EMPTY  = 1;
-var ZRF_IS_ENEMY  = 2;
-var ZRF_IS_FRIEND = 3;
-var ZRF_IS_LASTF  = 4;
-var ZRF_IS_LASTT  = 5;
-var ZRF_MARK      = 6;
-var ZRF_BACK      = 7;
-var ZRF_PUSH      = 8;
-var ZRF_POP       = 9;
+Model.Move.ZRF_JUMP      = 0;
+Model.Move.ZRF_IF        = 1;
+Model.Move.ZRF_FORK      = 2;
+Model.Move.ZRF_FUNCTION  = 3;
+Model.Move.ZRF_IN_ZONE   = 4;
+Model.Move.ZRF_GET_FLAG  = 5;
+Model.Move.ZRF_SET_FLAG  = 6;
+Model.Move.ZRF_GET_PFLAG = 7;
+Model.Move.ZRF_SET_PFLAG = 8;
+Model.Move.ZRF_GET_ATTR  = 9;
+Model.Move.ZRF_SET_ATTR  = 10;
+Model.Move.ZRF_PROMOTE   = 11;
+Model.Move.ZRF_MODE      = 12;
+Model.Move.ZRF_ON_BOARDD = 13;
+Model.Move.ZRF_ON_BOARDP = 14;
+Model.Move.ZRF_PARAM     = 15;
+Model.Move.ZRF_LITERAL   = 16;
+Model.Move.ZRF_VERIFY    = 20;
+Model.Move.ZRF_SET_POS   = 21;
+Model.Move.ZRF_NAVIGATE  = 22;
+Model.Move.ZRF_OPPOSITE  = 23;
+Model.Move.ZRF_FROM      = 24;
+Model.Move.ZRF_TO        = 25;
+Model.Move.ZRF_CAPTURE   = 26;
+Model.Move.ZRF_FLIP      = 27;
+Model.Move.ZRF_END       = 28;
 
-var ZRF_JUMP      = 0;
-var ZRF_IF        = 1;
-var ZRF_FORK      = 2;
-var ZRF_FUNCTION  = 3;
-var ZRF_IN_ZONE   = 4;
-var ZRF_GET_FLAG  = 5;
-var ZRF_SET_FLAG  = 6;
-var ZRF_GET_PFLAG = 7;
-var ZRF_SET_PFLAG = 8;
-var ZRF_GET_ATTR  = 9;
-var ZRF_SET_ATTR  = 10;
-var ZRF_PROMOTE   = 11;
-var ZRF_MODE      = 12;
-var ZRF_ON_BOARDD = 13;
-var ZRF_ON_BOARDP = 14;
-var ZRF_PARAM     = 15;
-var ZRF_LITERAL   = 16;
-var ZRF_VERIFY    = 20;
-var ZRF_SET_POS   = 21;
-var ZRF_NAVIGATE  = 22;
-var ZRF_OPPOSITE  = 23;
-var ZRF_FROM      = 24;
-var ZRF_TO        = 25;
-var ZRF_CAPTURE   = 26;
-var ZRF_FLIP      = 27;
-var ZRF_END       = 28;
+Model.Move.ZRF_NOT       = 0;
+Model.Move.ZRF_IS_EMPTY  = 1;
+Model.Move.ZRF_IS_ENEMY  = 2;
+Model.Move.ZRF_IS_FRIEND = 3;
+Model.Move.ZRF_IS_LASTF  = 4;
+Model.Move.ZRF_IS_LASTT  = 5;
+Model.Move.ZRF_MARK      = 6;
+Model.Move.ZRF_BACK      = 7;
+Model.Move.ZRF_PUSH      = 8;
+Model.Move.ZRF_POP       = 9;
 
-var zrfJump = function(aGen, aParam) {
+Model.Game.commands = [];
+
+Model.Game.commands[Model.Move.ZRF_JUMP] = function(aGen, aParam) {
    return aParam - 1;
 }
 
-var zrfIf = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_IF] = function(aGen, aParam) {
    var f = aGen.stack.pop();
    if (f) {
       return aParam - 1;
@@ -51,7 +53,7 @@ var zrfIf = function(aGen, aParam) {
    }
 }
 
-var zrfFork = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_FORK] = function(aGen, aParam) {
    var g = new ZrfMoveGenerator(aGen.template, aGen.params);
    g.CopyFrom(aGen);
    g.cc += aParam - 1;
@@ -59,7 +61,7 @@ var zrfFork = function(aGen, aParam) {
    return 0;
 }
 
-var zrfFunction = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_FUNCTION] = function(aGen, aParam) {
   var game = aGen.board.game;
   if (typeof game.functions[aParam] !== "undefined") {
      return (game.functions[aParam])(aGen);
@@ -67,7 +69,7 @@ var zrfFunction = function(aGen, aParam) {
   return null;
 }
 
-var zrfInZone = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_IN_ZONE] = function(aGen, aParam) {
    var design = aGen.board.game.design;
    var player = aGen.board.mWho;
    if (aGen.cp === null) {
@@ -77,18 +79,18 @@ var zrfInZone = function(aGen, aParam) {
    return 0;
 }
 
-var zrfGetFlag = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_GET_FLAG] = function(aGen, aParam) {
    aGen.stack.push(aGen.getValue(aParam, -1));
    return 0;
 }
 
-var zrfSetFlag = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_SET_FLAG] = function(aGen, aParam) {
    value = aGen.stack.pop();
    aGen.setValue(aParam, -1, value);
    return 0;
 }
 
-var zrfGetPosFlag = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_GET_PFLAG] = function(aGen, aParam) {
    if (aGen.cp === null) {
        return null;
    }
@@ -96,7 +98,7 @@ var zrfGetPosFlag = function(aGen, aParam) {
    return 0;
 }
 
-var zrfSetPosFlag = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_SET_PFLAG] = function(aGen, aParam) {
    if (aGen.cp === null) {
        return null;
    }
@@ -105,7 +107,7 @@ var zrfSetPosFlag = function(aGen, aParam) {
    return 0;
 }
 
-var zrfGetAttr = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_GET_ATTR] = function(aGen, aParam) {
    if (aGen.cp === null) {
        return null;
    }
@@ -122,7 +124,7 @@ var zrfGetAttr = function(aGen, aParam) {
    return 0;
 }
 
-var zrfSetAttr = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_SET_ATTR] = function(aGen, aParam) {
    if (aGen.cp === null) {
        return null;
    }
@@ -134,7 +136,7 @@ var zrfSetAttr = function(aGen, aParam) {
    return 0;
 }
 
-var zrfPromote = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_PROMOTE] = function(aGen, aParam) {
    if (typeof aGen.piece === "undefined") {
        return null;
    }
@@ -142,12 +144,12 @@ var zrfPromote = function(aGen, aParam) {
    return 0;
 }
 
-var zrfMode = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_MODE] = function(aGen, aParam) {
    aGen.mode = aParam;
    return 0;
 }
 
-var zrfOnBoardDir = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(aGen, aParam) {
    var design = aGen.board.game.design;
    var player = aGen.board.mWho;
    var pos = aGen.cp;
@@ -162,7 +164,7 @@ var zrfOnBoardDir = function(aGen, aParam) {
    }
 }
 
-var zrfOnBoardPos = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_ON_BOARDP] = function(aGen, aParam) {
    var design = aGen.board.game.design;
    if ((aParam >= 0) && (aParam < this.positions.length)) {
        aGen.stack.push(true);
@@ -171,18 +173,18 @@ var zrfOnBoardPos = function(aGen, aParam) {
    }
 }
 
-var zrfParam = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_PARAM] = function(aGen, aParam) {
    var value = aGen.params[aParam];
    aGen.stack.push(value);
    return 0;
 }
 
-var zrfLiteral = function(aGen, aParam) {
+Model.Game.commands[Model.Move.ZRF_LITERAL] = function(aGen, aParam) {
    aGen.stack.push(aParam);
    return 0;
 }
 
-var zrfVerify = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_VERIFY] = function(aGen) {
    var f = aGen.stack.pop();
    if (f) {
        return 0;
@@ -191,7 +193,7 @@ var zrfVerify = function(aGen) {
    }
 }
 
-var zrfSetPos = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_SET_POS] = function(aGen) {
    var pos = aGen.stack.pop();
    var design = aGen.board.game.design;
    if (pos < design.positions.length) {
@@ -202,21 +204,7 @@ var zrfSetPos = function(aGen) {
    }
 }
 
-var zrfOpposite = function(aGen) {
-   var dir = aGen.stack.pop();
-   var design = aGen.board.game.design;
-   if (typeof design.players[0] === "undefined") {
-       return null;
-   }
-   if (typeof design.players[0][dir] === "undefined") {
-       return null;
-   }
-   dir = design.players[0][dir];
-   aGen.stack.push(dir);
-   return 0;
-}
-
-var zrfNavigate = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_NAVIGATE] = function(aGen) {
    var dir = aGen.stack.pop();
    var design = aGen.board.game.design;
    var player = aGen.board.mWho;
@@ -236,7 +224,21 @@ var zrfNavigate = function(aGen) {
    }
 }
 
-var zrfFrom = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_OPPOSITE] = function(aGen) {
+   var dir = aGen.stack.pop();
+   var design = aGen.board.game.design;
+   if (typeof design.players[0] === "undefined") {
+       return null;
+   }
+   if (typeof design.players[0][dir] === "undefined") {
+       return null;
+   }
+   dir = design.players[0][dir];
+   aGen.stack.push(dir);
+   return 0;
+}
+
+Model.Game.commands[Model.Move.ZRF_FROM] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -249,7 +251,7 @@ var zrfFrom = function(aGen) {
    return 0;
 }
 
-var zrfTo = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_TO] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -265,7 +267,7 @@ var zrfTo = function(aGen) {
    return 0;
 }
 
-var zrfCapture = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_CAPTURE] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -274,7 +276,7 @@ var zrfCapture = function(aGen) {
    return 0;
 }
 
-var zrfFlip = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_FLIP] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -287,46 +289,19 @@ var zrfFlip = function(aGen) {
    return 0;
 }
 
-var zrfEnd = function(aGen) {
+Model.Game.commands[Model.Move.ZRF_END] = function(aGen) {
    return -(aGen.cc + 2);
 }
 
-Model.Game.commands = {
-  ZRF_JUMP: 	 zrfJump,
-  ZRF_IF:	 zrfIf,
-  ZRF_FORK:	 zrfFork,
-  ZRF_FUNCTION:  zrFunction,
-  ZRF_IN_ZONE:	 zrfInZone,
-  ZRF_GET_FLAG:	 zrfGetFlag,
-  ZRF_SET_FLAG:	 zrfSetFlag,
-  ZRF_GET_PFLAG: zrfGetPosFlag,
-  ZRF_SET_PFLAG: zrfSetPosFlag,
-  ZRF_GET_ATTR:	 zrfGetAttr,
-  ZRF_SET_ATTR:	 zrfSetAttr,
-  ZRF_PROMOTE:   zrfPromote,
-  ZRF_MODE:      zrfMode,
-  ZRF_ON_BOARDD: zrfOnBoardDir,
-  ZRF_ON_BOARDP: zrfOnBoardPos,
-  ZRF_PARAM:     zrfParam,
-  ZRF_LITERAL:	 zrfLiteral,
-  ZRF_VERIFY:	 zrfVerify,
-  ZRF_SET_POS:	 zrfSetPos,
-  ZRF_OPPOSITE:	 zrfOpposite,
-  ZRF_NAVIGATE:	 zrfNavigate,
-  ZRF_FROM:	 zrfFrom,
-  ZRF_TO:	 zrfTo,
-  ZRF_CAPTURE:	 zrfCapture,
-  ZRF_FLIP:	 zrfFlip,
-  ZRF_END:	 zrfEnd
-}
+Model.Game.functions = [];
 
-var zrfNot = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_NOT] = function(aGen) {
    var f = aGen.stack.pop();
    aGen.stack.push(!f);
    return 0;
 }
 
-var zrfEmpty = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_IS_EMPTY] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -335,7 +310,7 @@ var zrfEmpty = function(aGen) {
    return 0;
 }
 
-var zrfEnemy = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_IS_ENEMY] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -345,7 +320,7 @@ var zrfEnemy = function(aGen) {
    return 0;
 }
 
-var zrfFriend = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_IS_FRIEND] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -355,7 +330,7 @@ var zrfFriend = function(aGen) {
    return 0;
 }
 
-var zrfLastFrom = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_IS_LASTF] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -363,7 +338,7 @@ var zrfLastFrom = function(aGen) {
    return 0;
 }
 
-var zrfLastTo = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_IS_LASTT] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -371,12 +346,12 @@ var zrfLastTo = function(aGen) {
    return 0;
 }
 
-var zrfMark = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_MARK] = function(aGen) {
    aGen.mark = aGen.stack.pop();
    return 0;
 }
 
-var zrfBack = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_BACK] = function(aGen) {
    if (aGen.mark !== null) {
       aGen.cp = aGen.mark;
    } else {
@@ -385,27 +360,14 @@ var zrfBack = function(aGen) {
    return 0;
 }
 
-var zrfPush = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_PUSH] = function(aGen) {
    aGen.backs.push(aGen.cp);
    return 0;
 }
 
-var zrfPop = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_POP] = function(aGen) {
    aGen.cp = aGen.backs.pop();
    return 0;
-}
-
-Model.Game.functions = {
-  ZRF_NOT:	 zrfNot,
-  ZRF_IS_EMPTY:	 zrfEmpty,
-  ZRF_IS_ENEMY:	 zrfEnemy,
-  ZRF_IS_FRIEND: zrfFriend,
-  ZRF_IS_LASTF:  zrfLastFrom,
-  ZRF_IS_LASTT:  zrfLastTo,
-  ZRF_MARK:	 zrfMark,
-  ZRF_BACK:	 zrfBack,
-  ZRF_PUSH:	 zrfPush,
-  ZRF_POP:	 zrfPop
 }
 
 if ([].indexOf) {
@@ -421,6 +383,18 @@ if ([].indexOf) {
    }
 }
 
+if (typeof Int32Array !== "undefined") {
+   Model.int32Array = function(array) {
+      var a = new Int32Array(array.length);
+      a.set(array);
+      return a;
+   }
+} else {
+   Model.int32Array = function(array) {
+      return array;
+   }
+}
+
 function PosToString(pos) {
   // TODO:
 }
@@ -428,15 +402,18 @@ function PosToString(pos) {
 Model.Game.posToString = PosToString;
 
 function ZrfDesign() {
-  this.players   = [];
+  this.players   = {};
   this.positions = [];
   this.zones     = [];
   this.pieces    = {};
   this.attrs     = [];
 }
 
-Model.Game.newZrfDesign = function() {
-  return new ZrfDesign();
+Model.Game.getDesign = function() {
+  if (typeof Model.Game.design === "undefined") {
+      Model.Game.design = new ZrfDesign();
+  }
+  return Model.Game.design;
 }
 
 ZrfDesign.prototype.addAttribute = function(aType, aName, aVal) {
@@ -482,11 +459,11 @@ ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams) {
 }
 
 ZrfDesign.prototype.addPlayer = function(aPlayer, aSymmetries) {
-  this.players[aPlayer] = aSymmetries;
+  this.players[aPlayer] = Model.int32Array(aSymmetries);
 }
 
 ZrfDesign.prototype.addPosition = function(aLinks) {
-  this.positions.push(aLinks);
+  this.positions.push(Model.int32Array(aLinks));
 }
 
 ZrfDesign.prototype.navigate = function(aPlayer, aPos, aDir) {
@@ -496,7 +473,7 @@ ZrfDesign.prototype.navigate = function(aPlayer, aPos, aDir) {
           dir = this.players[aPlayer][aDir];
       }
   }
-  if (this.positions[aPos][dir] !== null) {
+  if (this.positions[aPos][dir] !== 0) {
       return aPos + this.positions[aPos][dir];
   } else {
       return null;
@@ -504,8 +481,10 @@ ZrfDesign.prototype.navigate = function(aPlayer, aPos, aDir) {
 }
 
 ZrfDesign.prototype.addZone = function(aZone, aPlayer, aPositions) {
-  this.zones[aZone] = [];
-  this.zones[aZone][aPlayer] = aPositions;
+  if (typeof this.zones[aZone] === "undefined") {
+      this.zones[aZone] = [];
+  }
+  this.zones[aZone][aPlayer] = Model.int32Array(aPositions);
 }
 
 ZrfDesign.prototype.inZone = function(aZone, aPlayer, aPos) {
@@ -521,23 +500,30 @@ function ZrfMoveTemplate() {
   this.commands = [];
 }
 
+Model.Game.createTemplate = function() {
+  return new ZrfMoveTemplate();
+}
+
 ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
   if (typeof aGame.commands[aName] !== "undefined") {
-      if (typeof aGame.cache[aName] === "undefined") {
-          aGame.cache[aName] = [];
-      }
-      var offset = aParam;
-      if (typeof aGame.cache[aName][offset] !== "undefined") {
-          this.commands.push(aGame.cache[aName][offset]);
-      } else {
-          if (aName < ZRF_VERIFY) {
+      if (aName < Model.Move.ZRF_VERIFY) {
+          if (typeof aGame.cache === "undefined") {
+              aGame.cache = [];
+          }
+          if (typeof aGame.cache[aName] === "undefined") {
+              aGame.cache[aName] = [];
+          }
+          var offset = aParam;
+          if (typeof aGame.cache[aName][offset] !== "undefined") {
+              this.commands.push(aGame.cache[aName][offset]);
+          } else {
               aGame.cache[aName][offset] = function(x) {
                   (aGame.commands[aName])(x, offset);
               }
-              this.commands.push(aGame.cache[aName][offset]);
-          } else {
-              this.commands.push(aGame.commands[aName]);
           }
+          this.commands.push(aGame.cache[aName][offset]);
+      } else {
+          this.commands.push(aGame.commands[aName]);
       }
   }
 }
@@ -749,9 +735,7 @@ Model.Game.PieceList = [];
 
 Model.Game.InitGame = function() {
   this.pieces = [];
-  this.design = new ZrfDesign();
   this.BuildDesign();
-  this.cache = [];
   this.zobrist = new JocGame.Zobrist({
      board: {
         type: "array",
