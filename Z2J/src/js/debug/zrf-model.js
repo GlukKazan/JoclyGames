@@ -514,11 +514,9 @@ ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
               aGame.cache[aName] = [];
           }
           var offset = aParam;
-          if (typeof aGame.cache[aName][offset] !== "undefined") {
-              this.commands.push(aGame.cache[aName][offset]);
-          } else {
+          if (typeof aGame.cache[aName][offset] === "undefined") {
               aGame.cache[aName][offset] = function(x) {
-                  (aGame.commands[aName])(x, offset);
+                  return (aGame.commands[aName])(x, offset);
               }
           }
           this.commands.push(aGame.cache[aName][offset]);

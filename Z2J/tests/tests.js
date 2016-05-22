@@ -52,9 +52,16 @@ QUnit.test( "ZrfMoveTemplate", function( assert ) {
   var template = Model.Game.createTemplate();
   assert.ok( template !== null, "ZrfMoveTemplate" );
   var game = Model.Game;
-  template.addCommand(game, Model.Move.ZRF_JUMP, 10);
-  template.addCommand(game, Model.Move.ZRF_JUMP, -10);
-  template.addCommand(game, Model.Move.ZRF_JUMP, 10);
+  template.addCommand(game, Model.Move.ZRF_JUMP, 10);                      // 0
+  template.addCommand(game, Model.Move.ZRF_JUMP, -10);                     // 1
+  template.addCommand(game, Model.Move.ZRF_JUMP, 10);                      // 2
   assert.ok( template.commands[0] !== template.commands[1], "Not equals" );
   assert.ok( template.commands[0] === template.commands[2], "Equals" );
+  assert.ok( (template.commands[0])(null) === 9, "ZRF_JUMP" );
+  template.addCommand(game, Model.Move.ZRF_IF, 5);                         // 3
+  var gen = { stack: [] }
+  gen.stack.push(true);
+  assert.ok( (template.commands[3])(gen) === 4, "ZRF_IF (succeed)" );
+  gen.stack.push(false);
+  assert.ok( (template.commands[3])(gen) === 0, "ZRF_IF (failed)" );
 });
