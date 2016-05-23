@@ -54,8 +54,8 @@ Model.Game.commands[Model.Move.ZRF_IF] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_FORK] = function(aGen, aParam) {
-   var g = new ZrfMoveGenerator(aGen.template, aGen.params);
-   g.CopyFrom(aGen);
+   var g = Model.Game.createGen(aGen.template, aGen.params);
+   g.copyFrom(aGen);
    g.cc += aParam - 1;
    aGen.board.addFork(g);
    return 0;
@@ -347,7 +347,10 @@ Model.Game.functions[Model.Move.ZRF_IS_LASTT] = function(aGen) {
 }
 
 Model.Game.functions[Model.Move.ZRF_MARK] = function(aGen) {
-   aGen.mark = aGen.stack.pop();
+   if (aGen.cp === null) {
+       return null;
+   }
+   aGen.mark = aGen.cp;
    return 0;
 }
 
@@ -366,6 +369,9 @@ Model.Game.functions[Model.Move.ZRF_PUSH] = function(aGen) {
 }
 
 Model.Game.functions[Model.Move.ZRF_POP] = function(aGen) {
+   if (aGen.backs.length === 0) {
+       return null;
+   }
    aGen.cp = aGen.backs.pop();
    return 0;
 }
@@ -528,7 +534,7 @@ ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
 
 function ZrfMoveGenerator(aTemplate, aParams) {
   this.template = aTemplate;
-  this.params   = aParams;
+  this.params   = Model.int32Array(aParams);
   this.mode     = null;
   this.board    = null;
   this.cp       = null;
@@ -543,7 +549,11 @@ function ZrfMoveGenerator(aTemplate, aParams) {
   this.backs	= [];
 }
 
-ZrfMoveGenerator.prototype.CopyFrom = function(aGen) {
+Model.Game.createGen = function(aTemplate, aParams) {
+  return new ZrfMoveGenerator(aTemplate, aParams);
+}
+
+ZrfMoveGenerator.prototype.copyFrom = function(aGen) {
   this.template = aGen.template;
   this.params   = aGen.params;
   this.mode     = aGen.mode;
@@ -768,6 +778,9 @@ Model.Board.PostActions = function(aGame, aMoves) {
 }
 
 Model.Board.addFork = function(aGen) {
+  if (typeof this.forks === "undefined") {
+      this.forks = [];
+  }
   this.forks.push(aGen);
 }
 
@@ -793,12 +806,14 @@ var CompleteMove = function(aGame, aGen, aMove) {
 
 Model.Board.GenerateMoves = function(aGame) {
   var moves = [];
+  if (typeof this.forks === "undefined") {
+      this.forks = [];
+  }
   for (var pos in this.pieces) {
        var piece = this.pieces[pos];
        if (piece.player === this.mWho) {
            for (var move in aGame.design.pieces[piece.type]) {
                if (move.type === 0) {
-                   this.forks = [];
                    var m = { 
                        moves: [], 
                    };

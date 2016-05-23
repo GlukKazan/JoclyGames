@@ -52,16 +52,67 @@ QUnit.test( "ZrfMoveTemplate", function( assert ) {
   var template = Model.Game.createTemplate();
   assert.ok( template !== null, "ZrfMoveTemplate" );
   var game = Model.Game;
-  template.addCommand(game, Model.Move.ZRF_JUMP, 10);                      // 0
-  template.addCommand(game, Model.Move.ZRF_JUMP, -10);                     // 1
-  template.addCommand(game, Model.Move.ZRF_JUMP, 10);                      // 2
+  var board = Model.Board;
+  var m = Model.Move;
+  template.addCommand(game, m.ZRF_JUMP, 10);                               // 0
+  template.addCommand(game, m.ZRF_JUMP, -10);                              // 1
+  template.addCommand(game, m.ZRF_JUMP, 10);                               // 2
   assert.ok( template.commands[0] !== template.commands[1], "Not equals" );
   assert.ok( template.commands[0] === template.commands[2], "Equals" );
   assert.ok( (template.commands[0])(null) === 9, "ZRF_JUMP" );
-  template.addCommand(game, Model.Move.ZRF_IF, 5);                         // 3
-  var gen = { stack: [] }
+  template.addCommand(game, m.ZRF_IF, 5);                                  // 3
+  var gen = Model.Game.createGen();
   gen.stack.push(true);
   assert.ok( (template.commands[3])(gen) === 4, "ZRF_IF (succeed)" );
   gen.stack.push(false);
   assert.ok( (template.commands[3])(gen) === 0, "ZRF_IF (failed)" );
+  template.addCommand(game, m.ZRF_FORK, 2);                                // 4
+  assert.ok( (template.commands[4])(gen) === 0, "ZRF_FORK" );
+  gen = board.forks[0];
+  assert.ok( gen.cc === 1, "ZRF_FORK" );
+  template.addCommand(game, m.ZRF_FUNCTION, -1);                           // 5
+  assert.ok( (template.commands[5])(gen) === null, "ZRF_FUNCTION" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_NOT);                    // 6
+  gen.stack.push(true);
+  assert.ok( (template.commands[6])(gen) === 0, "ZRF_NOT" );
+  assert.ok( !gen.stack.pop(), "ZRF_NOT" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_IS_EMPTY);               // 7
+  assert.ok( (template.commands[7])(gen) === null, "ZRF_IS_EMPTY" );
+  gen.cp = 0;
+  assert.ok( (template.commands[7])(gen) === 0, "ZRF_IS_EMPTY" );
+  assert.ok( gen.stack.pop(), "ZRF_IS_EMPTY" );
+  board.pieces[0] = { player: 1 };
+  assert.ok( (template.commands[7])(gen) === 0, "ZRF_IS_EMPTY" );
+  assert.ok( !gen.stack.pop(), "ZRF_IS_EMPTY" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_IS_ENEMY);               // 8
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_IS_FRIEND);              // 9
+  assert.ok( (template.commands[8])(gen) === 0, "ZRF_IS_ENEMY" );
+  assert.ok( !gen.stack.pop(), "ZRF_IS_ENEMY" );
+  assert.ok( (template.commands[9])(gen) === 0, "ZRF_IS_FRIEND" );
+  assert.ok( gen.stack.pop(), "ZRF_IS_FRIEND" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_IS_LASTF);               // 10
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_IS_LASTT);               // 11
+  assert.ok( (template.commands[10])(gen) === 0, "ZRF_IS_LASTF" );
+  assert.ok( !gen.stack.pop(), "ZRF_IS_LASTF" );
+  assert.ok( (template.commands[11])(gen) === 0, "ZRF_IS_LASTT" );
+  assert.ok( !gen.stack.pop(), "ZRF_IS_LASTT" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_MARK);                   // 12
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_BACK);                   // 13
+  assert.ok( (template.commands[13])(gen) === null, "ZRF_BACK" );
+  assert.ok( (template.commands[12])(gen) === 0, "ZRF_MARK" );
+  gen.cp = 1;
+  assert.ok( (template.commands[13])(gen) === 0, "ZRF_BACK" );
+  assert.ok( gen.cp === 0, "ZRF_BACK" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_PUSH);                   // 14
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_POP);                    // 15
+  assert.ok( (template.commands[15])(gen) === null, "ZRF_POP" );
+  assert.ok( (template.commands[14])(gen) === 0, "ZRF_PUSH" );
+  gen.cp = 1;
+  assert.ok( (template.commands[14])(gen) === 0, "ZRF_PUSH" );
+  assert.ok( (template.commands[15])(gen) === 0, "ZRF_POP" );
+  assert.ok( gen.cp === 1, "ZRF_POP" );
+  assert.ok( (template.commands[15])(gen) === 0, "ZRF_POP" );
+  assert.ok( gen.cp === 0, "ZRF_POP" );
+  assert.ok( (template.commands[15])(gen) === null, "ZRF_POP" );
+
 });
