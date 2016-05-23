@@ -37,7 +37,7 @@ Model.Move.ZRF_MARK      = 6;
 Model.Move.ZRF_BACK      = 7;
 Model.Move.ZRF_PUSH      = 8;
 Model.Move.ZRF_POP       = 9;
-
+ 
 Model.Game.commands = [];
 
 Model.Game.commands[Model.Move.ZRF_JUMP] = function(aGen, aParam) {
