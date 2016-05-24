@@ -376,9 +376,9 @@ Model.Game.functions[Model.Move.ZRF_POP] = function(aGen) {
    return 0;
 }
 
-if ([].indexOf) {
+if (typeof Array.indexOf !== "undefined") {
    Model.find = function(array, value) {
-     return array.indexOf(value);
+     return Array.prototype.indexOf.call(array, value);
    }
 } else {
    Model.find = function(array, value) {
