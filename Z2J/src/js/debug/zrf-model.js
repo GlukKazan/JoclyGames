@@ -184,7 +184,9 @@ Model.Game.commands[Model.Move.ZRF_LITERAL] = function(aGen, aParam) {
    return 0;
 }
 
-Model.Game.commands[Model.Move.ZRF_VERIFY] = function(aGen) {
+Model.Game.functions = [];
+
+Model.Game.functions[Model.Move.ZRF_VERIFY] = function(aGen) {
    var f = aGen.stack.pop();
    if (f) {
        return 0;
@@ -193,7 +195,7 @@ Model.Game.commands[Model.Move.ZRF_VERIFY] = function(aGen) {
    }
 }
 
-Model.Game.commands[Model.Move.ZRF_SET_POS] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_SET_POS] = function(aGen) {
    var pos = aGen.stack.pop();
    var design = aGen.board.game.design;
    if (pos < design.positions.length) {
@@ -204,7 +206,7 @@ Model.Game.commands[Model.Move.ZRF_SET_POS] = function(aGen) {
    }
 }
 
-Model.Game.commands[Model.Move.ZRF_NAVIGATE] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_NAVIGATE] = function(aGen) {
    var dir = aGen.stack.pop();
    var design = aGen.board.game.design;
    var player = aGen.board.mWho;
@@ -224,7 +226,7 @@ Model.Game.commands[Model.Move.ZRF_NAVIGATE] = function(aGen) {
    }
 }
 
-Model.Game.commands[Model.Move.ZRF_OPPOSITE] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_OPPOSITE] = function(aGen) {
    var dir = aGen.stack.pop();
    var design = aGen.board.game.design;
    if (typeof design.players[0] === "undefined") {
@@ -238,7 +240,7 @@ Model.Game.commands[Model.Move.ZRF_OPPOSITE] = function(aGen) {
    return 0;
 }
 
-Model.Game.commands[Model.Move.ZRF_FROM] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_FROM] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -251,7 +253,7 @@ Model.Game.commands[Model.Move.ZRF_FROM] = function(aGen) {
    return 0;
 }
 
-Model.Game.commands[Model.Move.ZRF_TO] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_TO] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -267,7 +269,7 @@ Model.Game.commands[Model.Move.ZRF_TO] = function(aGen) {
    return 0;
 }
 
-Model.Game.commands[Model.Move.ZRF_CAPTURE] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_CAPTURE] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -276,7 +278,7 @@ Model.Game.commands[Model.Move.ZRF_CAPTURE] = function(aGen) {
    return 0;
 }
 
-Model.Game.commands[Model.Move.ZRF_FLIP] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_FLIP] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
@@ -289,11 +291,9 @@ Model.Game.commands[Model.Move.ZRF_FLIP] = function(aGen) {
    return 0;
 }
 
-Model.Game.commands[Model.Move.ZRF_END] = function(aGen) {
+Model.Game.functions[Model.Move.ZRF_END] = function(aGen) {
    return -(aGen.cc + 2);
 }
-
-Model.Game.functions = [];
 
 Model.Game.functions[Model.Move.ZRF_NOT] = function(aGen) {
    var f = aGen.stack.pop();
@@ -512,23 +512,19 @@ Model.Game.createTemplate = function() {
 
 ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
   if (typeof aGame.commands[aName] !== "undefined") {
-      if (aName < Model.Move.ZRF_VERIFY) {
-          if (typeof aGame.cache === "undefined") {
-              aGame.cache = [];
-          }
-          if (typeof aGame.cache[aName] === "undefined") {
-              aGame.cache[aName] = [];
-          }
-          var offset = aParam;
-          if (typeof aGame.cache[aName][offset] === "undefined") {
-              aGame.cache[aName][offset] = function(x) {
-                  return (aGame.commands[aName])(x, offset);
-              }
-          }
-          this.commands.push(aGame.cache[aName][offset]);
-      } else {
-          this.commands.push(aGame.commands[aName]);
+      if (typeof aGame.cache === "undefined") {
+          aGame.cache = [];
       }
+      if (typeof aGame.cache[aName] === "undefined") {
+          aGame.cache[aName] = [];
+      }
+      var offset = aParam;
+      if (typeof aGame.cache[aName][offset] === "undefined") {
+          aGame.cache[aName][offset] = function(x) {
+              return (aGame.commands[aName])(x, offset);
+          }
+      }
+      this.commands.push(aGame.cache[aName][offset]);
   }
 }
 
