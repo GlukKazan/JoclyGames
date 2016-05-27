@@ -1,44 +1,4 @@
-(define checker-shift (
-   $1 (verify empty?)
-   (if (in-zone? promotion)
-      (add King)
-    else
-      add
-   )
-))
-
-(define checker-jump (
-   $1 (verify enemy?) 
-   capture 
-   $1 (verify empty?)
-   (if (not-in-zone? promotion)
-      (add-partial jumptype)
-    else
-      (add-partial King notype)
-   )
-))
-
-(define king-shift (
-   $1 (while empty?
-       add $1
-   )
-))
-
-(define king-jump (
-   $1 (while empty? 
-       $1 (verify not-last-from?)
-   )
-   (verify enemy?)
-   $1 (while empty?
-       mark
-       (while empty? 
-          (opposite $1)
-       ) 
-       capture
-       back
-       (add-partial jumptype) $1
-   )
-))
+(include "code.zrf")
 
 (game
   (title "Turkish Dama")

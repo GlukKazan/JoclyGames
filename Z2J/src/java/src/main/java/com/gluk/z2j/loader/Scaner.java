@@ -85,4 +85,12 @@ public class Scaner implements IScaner {
 		}
 		isEscaped = false;
 	}
+
+	public void open() throws Exception {
+		parser.open();
+	}
+
+	public void close() throws Exception {
+		parser.close(true);
+	}
 }

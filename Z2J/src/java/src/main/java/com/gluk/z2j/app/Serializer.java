@@ -7,6 +7,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import com.gluk.z2j.model.AbstractDoc;
@@ -18,14 +19,20 @@ public class Serializer extends AbstractDoc {
 	public Serializer(String dir, String name) {
 		StringBuffer sb = new StringBuffer();
 		sb.append(dir);
+		sb.append("/");
 		int ix = name.lastIndexOf('.');
 		if (ix > 0) {
-			sb.append(name.substring(0, ix - 1));
+			sb.append(name.substring(0, ix));
 		} else {
 			sb.append(name);
 		}
 		sb.append(".xml");
 		this.name = sb.toString();
+	}
+	
+	public TransformerHandler getHandler() throws Exception {
+		init();
+		return handler;
 	}
 	
     protected void init() throws Exception {

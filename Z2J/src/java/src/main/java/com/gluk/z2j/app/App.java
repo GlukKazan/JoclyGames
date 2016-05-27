@@ -18,11 +18,19 @@ public class App {
     private static final Logger LOGGER = Logger.getLogger(App.class);
 
     private static void exec(String dir, String name) {
+    	StringBuffer sb = new StringBuffer();
 		int ix = Math.max(name.lastIndexOf('/'), name.lastIndexOf('\\'));
 		if (ix >= 0) {
 			if ((ix == 0) || (name.charAt(0) == '/') || (name.charAt(0) == '\\') || (name.charAt(1) == ':')) {
-				dir = name.substring(0, ix);
+				sb.append(name.substring(0, ix));
+			} else {
+				sb.append(dir);
+				if (!dir.isEmpty() && dir.charAt(dir.length() - 1) != '/' && dir.charAt(dir.length() - 1) != '\\') {
+					sb.append("/");
+				}
+				sb.append(name.substring(0, ix));
 			}
+			dir  = sb.toString();
 			name = name.substring(ix + 1);
 		}
 		ILibrary   lib = new Library();

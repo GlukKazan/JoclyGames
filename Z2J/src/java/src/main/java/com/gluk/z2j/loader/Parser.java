@@ -24,7 +24,7 @@ public class Parser implements IParser {
 	private final static String LIST_TAG = "l";
 	private final static String ATOM_TAG = "a";
 	
-	private ILibrary lib;
+	private ILibrary lib = null;
 	private String dir = "";
 	
 	private int deep = 0;
@@ -33,6 +33,10 @@ public class Parser implements IParser {
     
     public Parser(ILibrary lib) {
     	this.lib = lib;
+    }
+
+    public Parser(TransformerHandler handler) {
+    	this.handler = handler;
     }
 
 	public void setDirectory(String dir) {
@@ -47,17 +51,19 @@ public class Parser implements IParser {
 
 	public void open() throws Exception {
 		if (deep == 0) {
-			TransformerFactory tf = TransformerFactory.newInstance();
-			if (tf.getFeature(SAXSource.FEATURE) && tf.getFeature(DOMResult.FEATURE)) {
-				SAXTransformerFactory stf = (SAXTransformerFactory)tf;
-				handler = stf.newTransformerHandler();
-				DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
-				doc = df.newDocumentBuilder().newDocument();
-				Result out = new DOMResult(doc);
-				handler.setResult(out);
+			if (handler == null) {
+				TransformerFactory tf = TransformerFactory.newInstance();
+				if (tf.getFeature(SAXSource.FEATURE) && tf.getFeature(DOMResult.FEATURE)) {
+					SAXTransformerFactory stf = (SAXTransformerFactory)tf;
+					handler = stf.newTransformerHandler();
+					DocumentBuilderFactory df = DocumentBuilderFactory.newInstance();
+					doc = df.newDocumentBuilder().newDocument();
+					Result out = new DOMResult(doc);
+					handler.setResult(out);
+				} else {
+					throw new Exception("Feature unsupported");
+				}
 				handler.startDocument();
-			} else {
-				throw new Exception("Feature unsupported");
 			}
 		}
 		handler.startElement("", LIST_TAG, LIST_TAG, new AttributesImpl());
@@ -72,18 +78,30 @@ public class Parser implements IParser {
 		deep--;
 		if (deep == 0) {
 			handler.endDocument();
-			if (lib.getHead(doc).equals(INCLUDE_CMD)) {
-				NodeIterator nl = lib.getTail(doc);
-				Node n;
-				while ((n = nl.nextNode())!= null) {
-					include(n.getTextContent());
+			if (doc != null) {
+				if (lib.getHead(doc).equals(INCLUDE_CMD)) {
+					NodeIterator nl = lib.getTail(doc);
+					Node n;
+					while ((n = nl.nextNode())!= null) {
+						include(n.getTextContent());
+					}
+				} else {
+					lib.add(doc);
 				}
-			} else {
-				lib.add(doc);
 			}
 			handler = null;
 			doc = null;
 		}
+	}
+	
+	public void close(boolean isForced) throws Exception {
+		if (isForced) {
+			while (deep > 1) {
+				deep--;
+				handler.endElement("", LIST_TAG, LIST_TAG);
+			}
+		}
+		close();
 	}
 	
 	private void include(String s) throws Exception {
