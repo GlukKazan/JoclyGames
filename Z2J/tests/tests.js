@@ -34,8 +34,8 @@ QUnit.test( "ZrfDesign", function( assert ) {
   var syms = [1, 0];
   design.addPlayer(player_b, syms);
   assert.ok( design.players[player_b][1] === 0, "addPlayer" );
-  design.addPosition([0, 1]);
-  design.addPosition([-1, 0]);
+  design.addPosition("p0", [0, 1]);
+  design.addPosition("p1", [-1, 0]);
   assert.ok( design.positions[0][0] === 0, "addPosition" );
   assert.ok( design.navigate(player_a, 0, 1) === 1, "navigate (succeed)" );
   assert.ok( design.navigate(player_b, 1, 1) === 0, "navigate (succeed)" );
@@ -178,9 +178,52 @@ QUnit.test( "ZrfMoveTemplate", function( assert ) {
   gen.piece = Model.Game.createPiece(1, 1);
   assert.ok( (template.commands[23])(gen) === 0, "ZRF_PROMOTE" );
   assert.ok( gen.piece.type === 2, "ZRF_PROMOTE" );
-  template.addCommand(game, m.ZRF_MODE, 1)   ;                             // 24
+  template.addCommand(game, m.ZRF_MODE, 1);                                // 24
   assert.ok( (template.commands[24])(gen) === 0, "ZRF_MODE" );
   assert.ok( gen.mode === 1, "ZRF_MODE" );
+  design.names = [];
+  design.positions = [];
+  design.players = [];
+  var syms = [1, 0];
+  design.addPlayer(0, syms);
+  design.addPosition("p0", [1, 0]);
+  design.addPosition("p1", [0, -1]);
+  template.addCommand(game, m.ZRF_ON_BOARDP, 2);                           // 25
+  template.addCommand(game, m.ZRF_ON_BOARDD, 0);                           // 26
+  assert.ok( (template.commands[25])(gen) === 0, "ZRF_ON_BOARDP" );
+  assert.ok( !gen.stack.pop(), "ZRF_ON_BOARDP" );
+  gen.cp = null;
+  assert.ok( (template.commands[26])(gen) === null, "ZRF_ON_BOARDD" );
+  gen.cp = 0;
+  assert.ok( (template.commands[26])(gen) === 0, "ZRF_ON_BOARDD" );
+  assert.ok( design.navigate(1, 0, 0) === 1, "ZRF_ON_BOARDD" );
+  assert.ok( gen.stack.pop(), "ZRF_ON_BOARDD" );
+  template.addCommand(game, m.ZRF_LITERAL, 1);                             // 27
+  template.addCommand(game, m.ZRF_PARAM, 0);                               // 28
+  assert.ok( (template.commands[27])(gen) === 0, "ZRF_LITERAL" );
+  assert.ok( gen.stack.pop() === 1, "ZRF_LITERAL" );
+  gen.params = [3, 2, 1];
+  assert.ok( (template.commands[28])(gen) === 0, "ZRF_PARAM" );
+  assert.ok( gen.stack.pop() === 3, "ZRF_LITERAL" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_VERIFY);                 // 29
+  assert.ok( (template.commands[29])(gen) === null, "ZRF_VERIFY" );
+  gen.stack.push(false);
+  assert.ok( (template.commands[29])(gen) === null, "ZRF_VERIFY" );
+  gen.stack.push(true);
+  assert.ok( (template.commands[29])(gen) === 0, "ZRF_VERIFY" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_SET_POS);                // 30
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_NAVIGATE);               // 31
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_OPPOSITE);               // 32
+  gen.cp = null;
+  gen.stack.push(1);
+  assert.ok( (template.commands[30])(gen) === 0, "ZRF_SET_POS" );
+  assert.ok( gen.cp === 1, "ZRF_SET_POS" );
+  gen.stack.push(1);
+  assert.ok( (template.commands[31])(gen) === 0, "ZRF_NAVIGATE" );
+  assert.ok( gen.cp === 0, "ZRF_NAVIGATE" );
+  gen.stack.push(1);
+  assert.ok( (template.commands[32])(gen) === 0, "ZRF_OPPOSITE" );
+  assert.ok( gen.stack.pop() === 0, "ZRF_OPPOSITE" );
 
 });
 

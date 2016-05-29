@@ -177,15 +177,17 @@ Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(aGen, aParam) {
    } else {
        aGen.stack.push(false);
    }
+   return 0;
 }
 
 Model.Game.commands[Model.Move.ZRF_ON_BOARDP] = function(aGen, aParam) {
    var design = aGen.board.game.getDesign();
-   if ((aParam >= 0) && (aParam < this.positions.length)) {
+   if ((aParam >= 0) && (aParam < design.positions.length)) {
        aGen.stack.push(true);
    } else {
        aGen.stack.push(false);
    }
+   return 0;
 }
 
 Model.Game.commands[Model.Move.ZRF_PARAM] = function(aGen, aParam) {
@@ -218,7 +220,7 @@ Model.Game.functions[Model.Move.ZRF_SET_POS] = function(aGen) {
        return null;
    }
    var pos = aGen.stack.pop();
-   var design = aGen.board.game.design;
+   var design = aGen.board.game.getDesign();
    if (pos < design.positions.length) {
       aGen.cp = pos;
       return 0;
@@ -232,7 +234,7 @@ Model.Game.functions[Model.Move.ZRF_NAVIGATE] = function(aGen) {
        return null;
    }
    var dir = aGen.stack.pop();
-   var design = aGen.board.game.design;
+   var design = aGen.board.game.getDesign();
    var player = aGen.board.mWho;
    var pos = aGen.cp;
    if (pos === null) {
@@ -255,7 +257,7 @@ Model.Game.functions[Model.Move.ZRF_OPPOSITE] = function(aGen) {
        return null;
    }
    var dir = aGen.stack.pop();
-   var design = aGen.board.game.design;
+   var design = aGen.board.game.getDesign();
    if (typeof design.players[0] === "undefined") {
        return null;
    }
@@ -431,11 +433,14 @@ if (typeof Int32Array !== "undefined") {
    }
 }
 
-function PosToString(pos) {
-  // TODO:
+Model.Game.posToString = function(pos) {
+   var design = Model.Game.getDesign();
+   if (pos < design.names.length) {
+       return design.names[pos];
+   } else {
+       return "?";
+   }
 }
-
-Model.Game.posToString = PosToString;
 
 function ZrfDesign() {
   this.players   = {};
@@ -443,6 +448,7 @@ function ZrfDesign() {
   this.zones     = [];
   this.pieces    = {};
   this.attrs     = [];
+  this.names     = [];
 }
 
 Model.Game.getDesign = function() {
@@ -498,7 +504,8 @@ ZrfDesign.prototype.addPlayer = function(aPlayer, aSymmetries) {
   this.players[aPlayer] = Model.int32Array(aSymmetries);
 }
 
-ZrfDesign.prototype.addPosition = function(aLinks) {
+ZrfDesign.prototype.addPosition = function(aName, aLinks) {
+  this.names.push(aName);
   this.positions.push(Model.int32Array(aLinks));
 }
 
