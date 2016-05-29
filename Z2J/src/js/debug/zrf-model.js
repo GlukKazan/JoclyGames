@@ -276,7 +276,7 @@ Model.Game.functions[Model.Move.ZRF_FROM] = function(aGen) {
    if (aGen.getPiece(aGen.cp) === null) {
        return null;
    }
-   aGen.starts.push[aGen.cp];
+   aGen.starts.push(aGen.cp);
    aGen.from  = aGen.cp;
    aGen.piece = aGen.getPiece(aGen.cp);
    return 0;
@@ -289,10 +289,10 @@ Model.Game.functions[Model.Move.ZRF_TO] = function(aGen) {
    if (typeof aGen.piece === "undefined") {
        return null;
    }
-   aGen.move.MovePiece(aGen.from, aGen.cp, aGen.piece);
+   aGen.move.movePiece(aGen.from, aGen.cp, aGen.piece);
    aGen.setPiece(aGen.from, null);
    aGen.setPiece(aGen.cp, aGen.piece);
-   aGen.stops.push[aGen.cp];
+   aGen.stops.push(aGen.cp);
    delete aGen.from;
    delete aGen.piece;
    return 0;
@@ -302,7 +302,7 @@ Model.Game.functions[Model.Move.ZRF_CAPTURE] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
-   aGen.move.CapturePiece(aGen.cp);
+   aGen.move.capturePiece(aGen.cp);
    aGen.setPiece(aGen.cp, null);
    return 0;
 }
@@ -315,7 +315,7 @@ Model.Game.functions[Model.Move.ZRF_FLIP] = function(aGen) {
        return null;
    }
    var piece = aGen.getPiece(aGen.cp).flip();
-   aGen.move.MovePiece(aGen.cp, aGen.cp, piece);
+   aGen.move.movePiece(aGen.cp, aGen.cp, piece);
    aGen.setPiece(aGen.cp, piece);
    return 0;
 }
@@ -689,7 +689,7 @@ ZrfMoveGenerator.prototype.setPiece = function(aPos, aPiece) {
   this.pieces[aPos] = aPiece;
 }
 
-Model.Game.getValue = function (aThis, aName, aPos) {
+Model.Game.getValue = function(aThis, aName, aPos) {
   return null;
 }
 
@@ -724,7 +724,7 @@ ZrfMoveGenerator.prototype.generate = function() {
            for (var name in this.attrs[pos]) {
                piece = piece.setValue(name, this.attrs[pos][name]);
            }
-           this.move.MovePiece(pos, pos, piece);
+           this.move.movePiece(pos, pos, piece);
         }
      } else {
         this.move.SetAttr(pos, this.attrs[pos]);
@@ -957,19 +957,39 @@ Model.Move.Init = function(args) {
   }
 }
 
-Model.Move.ToString = function() {
-  // TODO:
+Model.Move.toString = function() {
+  var r = "";
+  for (var i in this.moves) {
+      if (r !== "") {
+          r = r + " ";
+      }
+      if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
+          r = r + Model.Game.posToString(this.moves[i][0]);
+          r = r + " - ";
+          r = r + Model.Game.posToString(this.moves[i][1]);
+      } else {
+          if (this.moves[i][1] === null) {
+              r = r + "x ";
+              r = r + Model.Game.posToString(this.moves[i][0]);
+          } else {
+              r = r + Model.Game.posToString(this.moves[i][1]);
+              r = r + " = ";
+              r = r + this.moves[i][2].toString();
+          }
+      }
+  }
+  return r;
 }
 
-Model.Move.MovePiece = function(aFrom, aTo, aPiece) {
+Model.Move.movePiece = function(aFrom, aTo, aPiece) {
   this.moves.push([aFrom, aTo, aPiece]);
 }
 
-Model.Move.CreatePiece = function(aPos, aPiece) {
+Model.Move.createPiece = function(aPos, aPiece) {
   this.moves.push([null, aTo, aPiece]);
 }
 
-Model.Move.CapturePiece = function(aPos) {
+Model.Move.capturePiece = function(aPos) {
   this.moves.push([aFrom, null, null]);
 }
 

@@ -224,7 +224,38 @@ QUnit.test( "ZrfMoveTemplate", function( assert ) {
   gen.stack.push(1);
   assert.ok( (template.commands[32])(gen) === 0, "ZRF_OPPOSITE" );
   assert.ok( gen.stack.pop() === 0, "ZRF_OPPOSITE" );
-
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_FROM);                   // 33
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_TO);                     // 34
+  gen.cp = 0;
+  gen.piece = null;
+  board.pieces[0] = Model.Game.createPiece(0, 1);
+  board.pieces[1] = null;
+  assert.ok( (template.commands[33])(gen) === 0, "ZRF_FROM" );
+  assert.ok( gen.starts[0] === gen.cp, "ZRF_FROM" );
+  assert.ok( gen.from === gen.cp, "ZRF_FROM" );
+  assert.ok( gen.piece === board.pieces[gen.cp], "ZRF_FROM" );
+  gen.cp = 1;
+  assert.ok( (template.commands[34])(gen) === 0, "ZRF_TO" );
+//assert.ok( board.pieces[0] === undefined, "ZRF_TO" );
+//assert.ok( board.pieces[1].toString() === "1/0", "ZRF_TO" );
+  assert.ok( gen.stops[0] === gen.cp, "ZRF_TO" );
+  assert.ok( gen.from === undefined, "ZRF_TO" );
+  assert.ok( gen.piece === undefined, "ZRF_TO" );
+  assert.ok( gen.move.toString() === "p0 - p1", "ZRF_TO" );
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_CAPTURE);                // 35
+  assert.ok( (template.commands[35])(gen) === 0, "ZRF_CAPTURE" );
+//assert.ok( board.pieces[1] === undefined, "ZRF_TO" );
+  assert.ok( gen.move.toString() === "p0 - p1 x p1", "ZRF_TO" );
+  gen.cp = 0;
+  gen.move.moves = [];
+  board.pieces[0] = Model.Game.createPiece(0, 1);
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_FLIP);                   // 36
+  assert.ok( (template.commands[36])(gen) === 0, "ZRF_FLIP" );
+//assert.ok( board.pieces[0].toString() === "-1/0", "ZRF_TO" );
+  assert.equal(gen.move.toString(), "p0 = -1/0", "ZRF_TO");
+  template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_END);                    // 37
+  gen.cc = 0;
+  assert.ok( (template.commands[37])(gen) === -2, "ZRF_END" );
 });
 
 QUnit.test( "ZrfPiece", function( assert ) {

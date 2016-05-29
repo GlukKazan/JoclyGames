@@ -29,18 +29,64 @@ Model.Board = {
          return null;
      }
      return this.pieces[aPos];
+  },
+  setPiece: function(aPos, aPiece) {
+     if (aPiece === null) {
+        delete this.pieces[aPos];
+     } else {
+        this.pieces[aPos] = aPiece;
+     }
   }
 };
 Model.Move  = {};
 
+function ZrfMoveStub() {
+  this.moves = [];
+}
+
+ZrfMoveStub.prototype.toString = function() {
+  var r = "";
+  for (var i in this.moves) {
+      if (r !== "") {
+          r = r + " ";
+      }
+      if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
+          r = r + Model.Game.posToString(this.moves[i][0]);
+          r = r + " - ";
+          r = r + Model.Game.posToString(this.moves[i][1]);
+      } else {
+          if (this.moves[i][1] === null) {
+              r = r + "x ";
+              r = r + Model.Game.posToString(this.moves[i][0]);
+          } else {
+              r = r + Model.Game.posToString(this.moves[i][1]);
+              r = r + " = ";
+              r = r + this.moves[i][2].toString();
+          }
+      }
+  }
+  return r;
+}
+
+ZrfMoveStub.prototype.movePiece = function(aFrom, aTo, aPiece) {
+  this.moves.push([aFrom, aTo, aPiece]);
+}
+
+ZrfMoveStub.prototype.capturePiece = function(aPos) {
+  this.moves.push([aPos, null, null]);
+}
+
 function ZrfGenStub() {
-  this.board = Model.Board;
-  this.cc = 0;
-  this.cp = null;
-  this.stack = [];
-  this.mark = null;
-  this.backs = [];
-  this.flags = [];
+  this.board  = Model.Board;
+  this.cc     = 0;
+  this.cp     = null;
+  this.stack  = [];
+  this.mark   = null;
+  this.backs  = [];
+  this.flags  = [];
+  this.move   = new ZrfMoveStub();
+  this.starts = [];
+  this.stops  = [];
 }
 
 Model.Game.createGen = function(aTemplate, aParams) {
@@ -84,4 +130,8 @@ ZrfGenStub.prototype.getPiece = function(aPos) {
 
 ZrfGenStub.prototype.getAttribute = function(aType, aName) {
   return false;
+}
+
+ZrfGenStub.prototype.setPiece = function(aPos, aPiece) {
+  this.board.setPiece(aPos, aPiece);
 }
