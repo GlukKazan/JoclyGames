@@ -5,8 +5,24 @@ Model.Board = {
   mWho: 1,
   forks: [],
   pieces: [],
+  names: [],
   addFork: function(aGen) {
      this.forks.push(aGen);
+  },
+  getValue: function(aName, aPos) {
+     if (typeof this.names[aName] === "undefined") {
+         return null;
+     }
+     if (typeof this.names[aName][aPos] === "undefined") {
+         return null;
+     }
+     return this.names[aName][aPos];
+  },
+  setValue: function(aName, aPos, aValue) {
+     if (typeof this.names[aName] === "undefined") {
+         this.names[aName] = [];
+     }
+     this.names[aName][aPos] = aValue;
   },
   getPiece: function(aPos) {
      if (typeof this.pieces[aPos] === "undefined") {
@@ -24,6 +40,7 @@ function ZrfGenStub() {
   this.stack = [];
   this.mark = null;
   this.backs = [];
+  this.flags = [];
 }
 
 Model.Game.createGen = function(aTemplate, aParams) {
@@ -40,5 +57,31 @@ ZrfGenStub.prototype.isLastFrom = function(aPos) {
 }
 
 ZrfGenStub.prototype.isLastTo = function(aPos) {
+  return false;
+}
+
+ZrfGenStub.prototype.getValue = function(aName, aPos) {
+  if (aPos >= 0) {
+      return this.board.getValue(aName, aPos);
+  }
+  if (typeof this.flags[aName] === "undefined") {
+      return false;
+  }
+  return this.flags[aName];
+}
+
+ZrfGenStub.prototype.setValue = function(aName, aPos, aValue) {
+  if (aPos < 0) {
+      this.flags[aName] = aValue;
+  } else {
+      this.board.setValue(aName, aPos, aValue);
+  }
+}
+
+ZrfGenStub.prototype.getPiece = function(aPos) {
+  return this.board.getPiece(aPos);
+}
+
+ZrfGenStub.prototype.getAttribute = function(aType, aName) {
   return false;
 }

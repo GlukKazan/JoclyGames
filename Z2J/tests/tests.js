@@ -114,5 +114,86 @@ QUnit.test( "ZrfMoveTemplate", function( assert ) {
   assert.ok( (template.commands[15])(gen) === 0, "ZRF_POP" );
   assert.ok( gen.cp === 0, "ZRF_POP" );
   assert.ok( (template.commands[15])(gen) === null, "ZRF_POP" );
+  var design = Model.Game.getDesign();
+  var zone = 0;
+  design.addZone(zone, 1, [0]);
+  template.addCommand(game, m.ZRF_IN_ZONE, zone);                          // 16
+  gen.cp = null;
+  assert.ok( (template.commands[16])(gen) === null, "ZRF_IN_ZONE" );
+  gen.cp = 0;
+  assert.ok( (template.commands[16])(gen) === 0, "ZRF_IN_ZONE" );
+  assert.ok( gen.stack.pop(), "ZRF_IN_ZONE" );
+  gen.cp = 1;
+  assert.ok( (template.commands[16])(gen) === 0, "ZRF_IN_ZONE" );
+  assert.ok( !gen.stack.pop(), "ZRF_IN_ZONE" );
+  var flag = 0;
+  template.addCommand(game, m.ZRF_GET_FLAG, flag);                         // 17
+  assert.ok( (template.commands[17])(gen) === 0, "ZRF_GET_FLAG" );
+  assert.ok( !gen.stack.pop(), "ZRF_GET_FLAG" );
+  template.addCommand(game, m.ZRF_SET_FLAG, flag);                         // 18
+  gen.stack.push(1);
+  assert.ok( (template.commands[18])(gen) === 0, "ZRF_SET_FLAG" );
+  assert.ok( gen.stack.length === 0, "ZRF_SET_FLAG" );
+  assert.ok( (template.commands[17])(gen) === 0, "ZRF_GET_FLAG" );
+  assert.ok( gen.stack.pop() === 1, "ZRF_GET_FLAG" );
+  assert.ok( gen.stack.length === 0, "ZRF_GET_FLAG" );
+  gen.cp = null;
+  template.addCommand(game, m.ZRF_GET_PFLAG, flag);                        // 19
+  template.addCommand(game, m.ZRF_SET_PFLAG, flag);                        // 20
+  assert.ok( (template.commands[19])(gen) === null, "ZRF_GET_PFLAG" );
+  assert.ok( (template.commands[20])(gen) === null, "ZRF_SET_PFLAG" );
+  gen.cp = 0;
+  gen.stack.push(1);
+  assert.ok( (template.commands[20])(gen) === 0, "ZRF_SET_PFLAG" );
+  assert.ok( gen.stack.length === 0, "ZRF_SET_PFLAG" );
+  gen.cp = 1;
+  gen.stack.push(2);
+  assert.ok( (template.commands[20])(gen) === 0, "ZRF_SET_PFLAG" );
+  assert.ok( gen.stack.length === 0, "ZRF_SET_PFLAG" );
+  assert.ok( (template.commands[19])(gen) === 0, "ZRF_GET_PFLAG" );
+  assert.ok( gen.stack.pop() === 2, "ZRF_GET_PFLAG" );
+  gen.cp = 0;
+  assert.ok( (template.commands[19])(gen) === 0, "ZRF_GET_PFLAG" );
+  assert.ok( gen.stack.pop() === 1, "ZRF_GET_PFLAG" );
+  template.addCommand(game, m.ZRF_GET_ATTR, flag);                         // 21
+  template.addCommand(game, m.ZRF_SET_ATTR, flag);                         // 22
+  gen.cp = null;
+  assert.ok( (template.commands[21])(gen) === null, "ZRF_GET_ATTR" );
+  assert.ok( (template.commands[22])(gen) === null, "ZRF_SET_ATTR" );
+  gen.cp = 0;
+  board.pieces = [];
+  assert.ok( (template.commands[21])(gen) === 0, "ZRF_GET_ATTR" );
+  assert.ok( !gen.stack.pop(), "ZRF_GET_ATTR" );
+  board.pieces[gen.cp] = Model.Game.createPiece(0, 1);
+  assert.ok( (template.commands[21])(gen) === 0, "ZRF_GET_ATTR" );
+  assert.ok( !gen.stack.pop(), "ZRF_GET_ATTR" );
+  board.pieces[gen.cp] = board.pieces[gen.cp].setValue(0, true);
+  assert.ok( (template.commands[21])(gen) === 0, "ZRF_GET_ATTR" );
+  assert.ok( gen.stack.pop(), "ZRF_GET_ATTR" );
+  gen.stack.push(true);
+  assert.ok( (template.commands[22])(gen) === 0, "ZRF_SET_ATTR" );
+  assert.ok( gen.attrs[gen.cp][flag], "ZRF_SET_ATTR" );
+  template.addCommand(game, m.ZRF_PROMOTE, 2);                             // 23
+  assert.ok( (template.commands[23])(gen) === null, "ZRF_PROMOTE" );
+  gen.piece = Model.Game.createPiece(1, 1);
+  assert.ok( (template.commands[23])(gen) === 0, "ZRF_PROMOTE" );
+  assert.ok( gen.piece.type === 2, "ZRF_PROMOTE" );
+  template.addCommand(game, m.ZRF_MODE, 1)   ;                             // 24
+  assert.ok( (template.commands[24])(gen) === 0, "ZRF_MODE" );
+  assert.ok( gen.mode === 1, "ZRF_MODE" );
 
+});
+
+QUnit.test( "ZrfPiece", function( assert ) {
+  var pieceType = 0;
+  var player = 1;
+  var piece = Model.Game.createPiece(pieceType, player);
+  assert.ok( !piece.getValue(0), "ZrfPiece.getValue" );
+  var newPiece = piece.setValue(0, true);
+  assert.ok( piece !== newPiece , "ZrfPiece.setValue" );
+  assert.ok( newPiece.getValue(0), "ZrfPiece.setValue" );
+  newPiece = piece.promote(1);
+  assert.ok( newPiece.toString() === "1/1", "ZrfPiece.promote" );
+  newPiece = piece.flip();
+  assert.ok( newPiece.toString() === "-1/0", "ZrfPiece.flip" );
 });

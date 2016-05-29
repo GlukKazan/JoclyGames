@@ -45,6 +45,9 @@ Model.Game.commands[Model.Move.ZRF_JUMP] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_IF] = function(aGen, aParam) {
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    var f = aGen.stack.pop();
    if (f) {
       return aParam - 1;
@@ -70,7 +73,7 @@ Model.Game.commands[Model.Move.ZRF_FUNCTION] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_IN_ZONE] = function(aGen, aParam) {
-   var design = aGen.board.game.design;
+   var design = aGen.board.game.getDesign();
    var player = aGen.board.mWho;
    if (aGen.cp === null) {
        return null;
@@ -85,6 +88,9 @@ Model.Game.commands[Model.Move.ZRF_GET_FLAG] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_SET_FLAG] = function(aGen, aParam) {
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    value = aGen.stack.pop();
    aGen.setValue(aParam, -1, value);
    return 0;
@@ -102,6 +108,9 @@ Model.Game.commands[Model.Move.ZRF_SET_PFLAG] = function(aGen, aParam) {
    if (aGen.cp === null) {
        return null;
    }
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    value = aGen.stack.pop();
    aGen.setValue(aParam, aGen.cp, value);
    return 0;
@@ -116,11 +125,11 @@ Model.Game.commands[Model.Move.ZRF_GET_ATTR] = function(aGen, aParam) {
    if (piece !== null) {
        value = piece.getValue(aParam);
        if (value === null) {
-           var design = aGen.board.game.design;
+           var design = aGen.board.game.getDesign();
            value = design.getAttribute(piece.type, aParam);
        }
    }
-   aGen.stack.push(!!value);
+   aGen.stack.push(value);
    return 0;
 }
 
@@ -128,9 +137,15 @@ Model.Game.commands[Model.Move.ZRF_SET_ATTR] = function(aGen, aParam) {
    if (aGen.cp === null) {
        return null;
    }
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    var value = aGen.stack.pop();
+   if (typeof aGen.attrs === "undefined") {
+       aGen.attrs = [];
+   }
    if (typeof aGen.attrs[aGen.cp] === "undefined") {
-       aGen.attrs[aGen.cp] = {};
+       aGen.attrs[aGen.cp] = [];
    }
    aGen.attrs[aGen.cp][aParam] = value;
    return 0;
@@ -150,7 +165,7 @@ Model.Game.commands[Model.Move.ZRF_MODE] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(aGen, aParam) {
-   var design = aGen.board.game.design;
+   var design = aGen.board.game.getDesign();
    var player = aGen.board.mWho;
    var pos = aGen.cp;
    if (pos === null) {
@@ -165,7 +180,7 @@ Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_ON_BOARDP] = function(aGen, aParam) {
-   var design = aGen.board.game.design;
+   var design = aGen.board.game.getDesign();
    if ((aParam >= 0) && (aParam < this.positions.length)) {
        aGen.stack.push(true);
    } else {
@@ -187,6 +202,9 @@ Model.Game.commands[Model.Move.ZRF_LITERAL] = function(aGen, aParam) {
 Model.Game.functions = [];
 
 Model.Game.functions[Model.Move.ZRF_VERIFY] = function(aGen) {
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    var f = aGen.stack.pop();
    if (f) {
        return 0;
@@ -196,6 +214,9 @@ Model.Game.functions[Model.Move.ZRF_VERIFY] = function(aGen) {
 }
 
 Model.Game.functions[Model.Move.ZRF_SET_POS] = function(aGen) {
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    var pos = aGen.stack.pop();
    var design = aGen.board.game.design;
    if (pos < design.positions.length) {
@@ -207,6 +228,9 @@ Model.Game.functions[Model.Move.ZRF_SET_POS] = function(aGen) {
 }
 
 Model.Game.functions[Model.Move.ZRF_NAVIGATE] = function(aGen) {
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    var dir = aGen.stack.pop();
    var design = aGen.board.game.design;
    var player = aGen.board.mWho;
@@ -227,6 +251,9 @@ Model.Game.functions[Model.Move.ZRF_NAVIGATE] = function(aGen) {
 }
 
 Model.Game.functions[Model.Move.ZRF_OPPOSITE] = function(aGen) {
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    var dir = aGen.stack.pop();
    var design = aGen.board.game.design;
    if (typeof design.players[0] === "undefined") {
@@ -296,6 +323,9 @@ Model.Game.functions[Model.Move.ZRF_END] = function(aGen) {
 }
 
 Model.Game.functions[Model.Move.ZRF_NOT] = function(aGen) {
+   if (aGen.stack.length === 0) {
+       return null;
+   }
    var f = aGen.stack.pop();
    aGen.stack.push(!f);
    return 0;
@@ -619,7 +649,7 @@ Model.Game.getPieceInternal = function(aThis, aPos) {
   return aThis.board.getPiece(aPos);
 }
 
-Model.Game.GetPiece = function(aThis, aPos) {
+Model.Game.getPiece = function(aThis, aPos) {
   if (aThis.parent !== null) {
       return Model.Game.getPieceInternal(aThis.parent, aPos);
   }
@@ -645,14 +675,14 @@ ZrfMoveGenerator.prototype.isLastTo = function(aPos) {
 }
 
 ZrfMoveGenerator.prototype.getPiece = function(aPos) {
-  return Model.Game.GetPiece(this, aPos)
+  return Model.Game.getPiece(this, aPos)
 }
 
 ZrfMoveGenerator.prototype.setPiece = function(aPos, aPiece) {
   this.pieces[aPos] = aPiece;
 }
 
-Model.Game.GetValue = function (aThis, aName, aPos) {
+Model.Game.getValue = function (aThis, aName, aPos) {
   return null;
 }
 
@@ -662,7 +692,7 @@ ZrfMoveGenerator.prototype.getValue = function(aName, aPos) {
           return this.values[aName][aPos];
       }
   }
-  return Model.Game.GetValue(this, aName, aPos);
+  return Model.Game.getValue(this, aName, aPos);
 }
 
 ZrfMoveGenerator.prototype.setValue = function(aName, aPos, aValue) {
@@ -701,6 +731,10 @@ function ZrfPiece(aType, aPlayer) {
   this.player = aPlayer;
 }
 
+Model.Game.createPiece = function(aType, aPlayer) {
+  return new ZrfPiece(aType, aPlayer);
+}
+
 ZrfPiece.prototype.toString = function() {
   return this.player + "/" + this.type;
 }
@@ -711,15 +745,7 @@ ZrfPiece.prototype.getValue = function(aName) {
          return this.values[aName];
      }
   }
-  return null;
-}
-
-ZrfPiece.prototype.promote = function(aType) {
-  return new ZrfPiece(aType, this.player);
-}
-
-ZrfPiece.prototype.flip = function() {
-  return new ZrfPiece(this.type, -this.player);
+  return false;
 }
 
 ZrfPiece.prototype.setValue = function(aName, aValue) {
@@ -728,10 +754,18 @@ ZrfPiece.prototype.setValue = function(aName, aValue) {
   }
   var piece = new ZrfPiece(this.type, this.player);
   if (typeof piece.values === "undefined") {
-     piece.values = {};
+     piece.values = [];
   }
   piece.values[aName] = aValue;
   return piece;
+}
+
+ZrfPiece.prototype.promote = function(aType) {
+  return new ZrfPiece(aType, this.player);
+}
+
+ZrfPiece.prototype.flip = function() {
+  return new ZrfPiece(this.type, -this.player);
 }
 
 Model.Game.BuildDesign = function() {}
