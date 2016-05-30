@@ -1,5 +1,7 @@
 package com.gluk.z2j.loader;
 
+import java.util.Stack;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Result;
 import javax.xml.transform.TransformerFactory;
@@ -9,13 +11,10 @@ import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 
 import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.helpers.AttributesImpl;
 
 import com.gluk.z2j.api.loader.IParser;
 import com.gluk.z2j.api.loader.IScaner;
-import com.gluk.z2j.api.model.ILibrary;
 
 public class Parser implements IParser {
 	
@@ -24,17 +23,17 @@ public class Parser implements IParser {
 	private final static String LIST_TAG = "l";
 	private final static String ATOM_TAG = "a";
 	
-	private ILibrary lib = null;
 	private String dir = "";
 	
 	private int deep = 0;
     private TransformerHandler handler = null;
     private Document doc = null;
     
-    public Parser(ILibrary lib) {
-    	this.lib = lib;
-    }
-
+    private boolean isOpened = false;
+    private Stack<Integer> includeDeeps = new Stack<Integer>();
+    
+    public Parser() {}
+    
     public Parser(TransformerHandler handler) {
     	this.handler = handler;
     }
@@ -43,13 +42,38 @@ public class Parser implements IParser {
 		this.dir = dir;
 	}
 	
+	private boolean isIncludeScope() {
+		if (includeDeeps.isEmpty()) {
+			return false;
+		}
+		return includeDeeps.peek() == deep;
+	}
+	
 	public void add(String s) throws Exception {
+		if (isOpened) {
+			isOpened = false;
+			if (s.equals(INCLUDE_CMD)) {
+				includeDeeps.push(deep);
+				return;
+			} else {
+				handler.startElement("", LIST_TAG, LIST_TAG, new AttributesImpl());
+				deep++;
+			}
+		}
+		if (isIncludeScope()) {
+			include(s);
+			return;
+		}
 		handler.startElement("", ATOM_TAG, ATOM_TAG, new AttributesImpl());
 		handler.characters(s.toCharArray(), 0, s.length());
 		handler.endElement("", ATOM_TAG, ATOM_TAG);
 	}
 
 	public void open() throws Exception {
+		if (isOpened) {
+			handler.startElement("", LIST_TAG, LIST_TAG, new AttributesImpl());
+			deep++;
+		}
 		if (deep == 0) {
 			if (handler == null) {
 				TransformerFactory tf = TransformerFactory.newInstance();
@@ -66,11 +90,17 @@ public class Parser implements IParser {
 				handler.startDocument();
 			}
 		}
-		handler.startElement("", LIST_TAG, LIST_TAG, new AttributesImpl());
-		deep++;
+		isOpened = true;
 	}
 
 	public void close() throws Exception {
+		if (isOpened) {
+			throw new Exception("Syntax error");
+		}
+		if (isIncludeScope()) {
+			includeDeeps.pop();
+			return;
+		}
 		if ((handler == null) || (deep <= 0)) {
 			throw new Exception("Internal error");
 		}
@@ -78,17 +108,6 @@ public class Parser implements IParser {
 		deep--;
 		if (deep == 0) {
 			handler.endDocument();
-			if (doc != null) {
-				if (lib.getHead(doc).equals(INCLUDE_CMD)) {
-					NodeIterator nl = lib.getTail(doc);
-					Node n;
-					while ((n = nl.nextNode())!= null) {
-						include(n.getTextContent());
-					}
-				} else {
-					lib.add(doc);
-				}
-			}
 			handler = null;
 			doc = null;
 		}
@@ -106,8 +125,15 @@ public class Parser implements IParser {
 	
 	private void include(String s) throws Exception {
 		IScaner scaner = new Scaner(this);
-		Loader  loader = new Loader(scaner);
+		Loader  loader = new Loader(scaner, false);
 		loader.load(dir, s);
+	}
+
+	public Document getDoc() throws Exception {
+		if (doc == null) {
+			throw new Exception("Internal error");
+		}
+		return doc;
 	}
 }
 

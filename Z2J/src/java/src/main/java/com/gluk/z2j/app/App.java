@@ -33,12 +33,12 @@ public class App {
 			dir  = sb.toString();
 			name = name.substring(ix + 1);
 		}
-		ILibrary   lib = new Library();
-		IParser parser = new Parser(lib);
+		IParser parser = new Parser();
 		IScaner scaner = new Scaner(parser);
 		ILoader loader = new Loader(scaner);
 		try {
 			loader.load(dir, name);
+			ILibrary lib = new Library(parser.getDoc());
 			Game game = new Game();
 			lib.extract(game);
 			Serializer out = new Serializer(dir, name);

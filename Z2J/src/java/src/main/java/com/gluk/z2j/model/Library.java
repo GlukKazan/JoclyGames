@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.xpath.XPathAPI;
+import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
@@ -30,8 +31,18 @@ public class Library extends XpeFactory implements ILibrary {
 	private final static String MACRO_XP    = "/l/*[position() > 2]";
 	private final static String NM_XP       = "l[a/text() = \'name\']";
 
-	Map<String, Node> macro = new HashMap<String, Node>();
-	List<Node> games = new ArrayList<Node>();
+	private Document root;
+	private Map<String, Node> macro = new HashMap<String, Node>();
+	private List<Node> games = new ArrayList<Node>();
+	
+	public Library(Document root) throws Exception {
+		this.root = root;
+	}
+	
+	private void parse() throws Exception {
+		// TODO: Use add(Node doc)
+		
+	}
 	
 	public String getHead(Node doc) throws Exception {
 		return getXpe(HEAD_XP).evaluate(doc);
@@ -45,7 +56,7 @@ public class Library extends XpeFactory implements ILibrary {
 		return XPathAPI.selectNodeIterator(doc, TAIL_XP);
 	}
 
-	public void add(Node doc) throws Exception {
+	private void add(Node doc) throws Exception {
 		String t = getHead(doc); 
 		if (t.equals(DEFINE_TAG)) {
 			macro.put(getName(doc), doc);
@@ -107,6 +118,7 @@ public class Library extends XpeFactory implements ILibrary {
 	}
 
 	public void extract(Node doc, IDoc dest, IEnvironment env) throws Exception {
+		parse();
 		Node n;
 		NodeIterator nl;
 		String h = getHead(doc);
