@@ -1,9 +1,7 @@
 package com.gluk.z2j.model;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,98 +14,83 @@ import com.gluk.z2j.api.loader.IDoc;
 import com.gluk.z2j.api.loader.IEnvironment;
 import com.gluk.z2j.api.model.ILibrary;
 
-public class Library extends XpeFactory implements ILibrary {
+public class Library implements ILibrary {
 	
-	private final static String DEFINE_TAG  = "define";
 	private final static String GAME_TAG    = "game";
-	private final static String VAR_TAG     = "variant";
-	private final static String L_TAG       = "l";
-	private final static String A_TAG       = "a";
 	
-	private final static String DEF_XP      = "/l/a[text() = 'default']";
-	private final static String HEAD_XP     = "/l/a[1]";
-	private final static String NAME_XP     = "/l/a[2]";
-	private final static String TAIL_XP     = "/l/*[position() > 1]";
-	private final static String MACRO_XP    = "/l/*[position() > 2]";
-	private final static String NM_XP       = "l[a/text() = \'name\']";
-
+	private final static String L_XP        = "l";
+	private final static String ALL_XP      = "*";
+	private final static String TAIL_XP     = "*[position() > 1]";
+	private final static String BODY_XP     = "*[position() > 2]";
+	private final static String TYPE_XP     = "a[1]";
+	private final static String MACRO_XP    = "a[2]";
+	private final static String DEF_XP      = "l/a[text() = 'default']";
+	private final static String NAME_XP     = "l[a[1] = 'name']/a[2]";
+	private final static String DEFINE_XP   = "/l/l[a[1]/text() = 'define']";
+	private final static String GAME_XP     = "/l/l[a[1]/text() = 'game']";
+	private final static String VAR_XP      = "/l/l[a[1]/text() = 'variant']";
+	
 	private Document root;
 	private Map<String, Node> macro = new HashMap<String, Node>();
-	private List<Node> games = new ArrayList<Node>();
 	
 	public Library(Document root) throws Exception {
 		this.root = root;
+		parse();
+	}
+	
+	private String getValue(Node doc, String xp) throws Exception {
+		Node n;
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, xp);
+		if ((n = nl.nextNode())!= null) {
+			if (n.getNodeType() == Node.TEXT_NODE) {
+				return n.getNodeValue();
+			} else {
+				return n.getTextContent();
+			}
+		}
+		return "";
 	}
 	
 	private void parse() throws Exception {
-		// TODO: Use add(Node doc)
-		
-	}
-	
-	public String getHead(Node doc) throws Exception {
-		return getXpe(HEAD_XP).evaluate(doc);
-	}
-	
-	private String getName(Node doc) throws Exception {
-		return getXpe(NAME_XP).evaluate(doc);
-	}
-	
-	public NodeIterator getTail(Node doc) throws Exception {
-		return XPathAPI.selectNodeIterator(doc, TAIL_XP);
-	}
-
-	private void add(Node doc) throws Exception {
-		String t = getHead(doc); 
-		if (t.equals(DEFINE_TAG)) {
-			macro.put(getName(doc), doc);
-			return;
+		Node n;
+		NodeIterator nl = XPathAPI.selectNodeIterator(root, DEFINE_XP);
+		while ((n = nl.nextNode())!= null) {
+			String name = getValue(n, MACRO_XP);
+			if (!name.isEmpty()) {
+				macro.put(name, n);
+			}
 		}
-		if (t.equals(GAME_TAG) || t.equals(VAR_TAG)) {
-			games.add(doc);
+	}
+	
+	public Node getGame() throws Exception {
+		Node res = null;
+		NodeIterator nl = XPathAPI.selectNodeIterator(root, GAME_XP);
+		res = nl.nextNode();
+		if (res == null) {
+			throw new Exception("Game not found");
 		}
+		return res;
 	}
 
 	public Node getDefault() throws Exception {
-		for (Node r: games) {
-			NodeIterator nl = XPathAPI.selectNodeIterator(r, DEF_XP);
-			if (nl.nextNode() !=  null) {
-				return r;
+		Node res = getGame();
+		Node n;
+		NodeIterator nl = XPathAPI.selectNodeIterator(root, VAR_XP);
+		while ((n = nl.nextNode())!= null) {
+			NodeIterator dl = XPathAPI.selectNodeIterator(n, DEF_XP);
+			if (dl.nextNode() != null) {
+				res = n;
 			}
 		}
-		if (games.size() > 0) {
-			return games.get(0);
-		}
-		throw new Exception("Game not found");
+		return res;
 	}
 
-	public Node getGame() throws Exception {
-		for (Node r: games) {
-			String h = getHead(r);
-			if (h.equals(GAME_TAG)) {
-				return r;
-			}
-		}
-		throw new Exception("Game not found");
-	}
-	
-	private String getSign(Node doc) throws Exception {
-		Node n;
-		StringBuffer sb = new StringBuffer();
-		sb.append(getHead(doc));
-		NodeIterator nl = XPathAPI.selectNodeIterator(doc, NM_XP);
-		if ((n = nl.nextNode())!= null) {
-			sb.append("/");
-			sb.append(getName(n));
-		}
-		return sb.toString();
-	}
-	
 	private boolean isCorrectName(String name) {
 		int i = 0;
 		for (Character c: name.toCharArray()) {
 			i++;
 			if (((c >= '0') && (c <= '9')) || (c == '-')) {
-				if (i == 1) continue;
+				if (i > 1) continue;
 			}
 			if ((c >= 'a') && (c <= 'z')) continue;
 			if ((c >= 'A') && (c <= 'Z')) continue;
@@ -118,73 +101,80 @@ public class Library extends XpeFactory implements ILibrary {
 	}
 
 	public void extract(Node doc, IDoc dest, IEnvironment env) throws Exception {
-		parse();
 		Node n;
-		NodeIterator nl;
-		String h = getHead(doc);
-		Node m = macro.get(h);
+		String type = getValue(doc, TYPE_XP);
+		Node m = macro.get(type);
 		if (m != null) {
 			Environment e = new Environment(env);
-			nl = XPathAPI.selectNodeIterator(doc, TAIL_XP);
+			NodeIterator nl = XPathAPI.selectNodeIterator(doc, TAIL_XP);
 			while ((n = nl.nextNode())!= null) {
-				if (n.getLocalName().equals("l")) {
+				if (n.getLocalName().equals(L_XP)) {
 					throw new Exception("Syntax error");
 				}
-				String s = n.getTextContent();
-				e.addValue(env.getValue(s));
+				String value = n.getTextContent();
+				if (env != null) {
+					value = env.getValue(value);
+				}
+				e.addValue(value);
 			}
-			extract(m, dest, e);
-			return;
-		}
-		if (h.equals(DEFINE_TAG)) {
-			nl = XPathAPI.selectNodeIterator(doc, MACRO_XP);
+			nl = XPathAPI.selectNodeIterator(m, BODY_XP);
+			while ((n = nl.nextNode())!= null) {
+				extract(n, dest, e);
+			}
 		} else {
-			nl = XPathAPI.selectNodeIterator(doc, TAIL_XP);
-			if (isCorrectName(h)) {
-				dest.open(h);
+			String t = doc.getLocalName();
+			if (t.equals(L_XP)) {
+				String xp;
+				if (isCorrectName(type)) {
+					dest.open(type);
+					xp = TAIL_XP;
+				} else {
+					dest.open(t);
+					xp = ALL_XP;
+				}
+				NodeIterator nl = XPathAPI.selectNodeIterator(doc, xp);
+				while ((n = nl.nextNode())!= null) {
+					extract(n, dest, env);
+				}
+				dest.close();
 			} else {
-				dest.open(L_TAG);
-				dest.open(A_TAG); dest.add(h); dest.close();
+				String value = doc.getTextContent();
+				if (env != null) {
+					value = env.getValue(value);
+				}
+				if (isCorrectName(value)) {
+					dest.open(value);
+					dest.close();
+				} else {
+					dest.open(t);
+					dest.add(value);
+					dest.close();
+				}
 			}
-		}
-		while ((n = nl.nextNode())!= null) {
-			String t = n.getLocalName(); 
-			if (t.equals("l")) {
-				extract(n, dest, env);
-			} else {
-				String s = n.getTextContent();
-				dest.add(env.getValue(s));
-			}
-		}
-		if (!h.equals(DEFINE_TAG)) {
-			dest.close();
 		}
 	}
 	
 	public void extract(IDoc dest, Node doc) throws Exception {
 		Node n;
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, L_XP);
 		Set<String> nodes = new HashSet<String>();
-		String h = getHead(doc);
-		NodeIterator nl = XPathAPI.selectNodeIterator(doc, TAIL_XP);
 		while ((n = nl.nextNode())!= null) {
-			String t = n.getLocalName(); 
-			if (!t.equals("l")) {
-				throw new Exception("Syntax error");
-			}
-			String sign = getSign(n);
-			nodes.add(sign);
+			StringBuffer sb = new StringBuffer();
+			sb.append(getValue(n, TYPE_XP));
+			sb.append("@");
+			sb.append(getValue(n, NAME_XP));
+			nodes.add(sb.toString());
 			extract(n, dest, null);
 		}
-		if (h.equals(VAR_TAG)) {
-			Node game = getGame();
-			nl = XPathAPI.selectNodeIterator(game, TAIL_XP);
+		Node game = getGame();
+		if (doc != game) {
+			nl = XPathAPI.selectNodeIterator(game, L_XP);
 			while ((n = nl.nextNode())!= null) {
-				String t = n.getLocalName();
-				if (!t.equals("l")) {
-					throw new Exception("Syntax error");
-				}
-				String sign = getSign(n);
-				if (!nodes.contains(sign)) {
+				StringBuffer sb = new StringBuffer();
+				sb.append(getValue(n, TYPE_XP));
+				sb.append("@");
+				sb.append(getValue(n, NAME_XP));
+				if (!nodes.contains(sb.toString())) {
 					extract(n, dest, null);
 				}
 			}
@@ -192,6 +182,8 @@ public class Library extends XpeFactory implements ILibrary {
 	}
 
 	public void extract(IDoc dest) throws Exception {
+		dest.open(GAME_TAG);
 		extract(dest, getDefault());
+		dest.close();
 	}
 }

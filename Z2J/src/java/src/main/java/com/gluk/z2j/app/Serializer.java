@@ -46,4 +46,11 @@ public class Serializer extends AbstractDoc {
 			throw new Exception("Feature unsupported");
 		}
     }
+
+	public void add(String s) throws Exception {
+		if (handler == null) {
+			throw new Exception("Internal error");
+		}
+		handler.characters(s.toCharArray(), 0, s.length());
+	}
 }

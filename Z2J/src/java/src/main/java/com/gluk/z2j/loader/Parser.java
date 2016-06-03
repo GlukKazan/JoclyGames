@@ -109,7 +109,6 @@ public class Parser implements IParser {
 		if (deep == 0) {
 			handler.endDocument();
 			handler = null;
-			doc = null;
 		}
 	}
 	

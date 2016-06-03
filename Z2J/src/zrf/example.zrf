@@ -64,3 +64,8 @@
 
   (loss-condition (White Black) stalemated)
 )
+
+(variant 
+  (title "Turkish Dama (variant)")
+  (default)
+)
