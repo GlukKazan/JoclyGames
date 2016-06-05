@@ -794,7 +794,7 @@ Model.Game.DestroyGame = function() {}
 
 Model.Board.Init = function(aGame) {
   this.zSign = 0;
-  this.pieces = {};
+  this.pieces = [];
 }
 
 Model.Board.GetSignature = function() {
@@ -803,11 +803,45 @@ Model.Board.GetSignature = function() {
 
 Model.Board.InitialPosition = function(aGame) {
   this.game = aGame;
-  // TODO:
+  var sizes = aGame.mOptions.dimensions;
+  var inits = aGame.mOptions.initial;
+  for(var i in inits.a) {
+      var player = JocGame.PLAYER_A;
+      for(var t in inits.a[i]) {
+          var piece = Model.Game.createPiece(t, player);
+          var pos = 0;
+          for (var j = inits.a[i][t].length - 1; j >= 0; j--) {
+              pos += inits.a[i][t][j];
+              if (j > 0) {
+                  pos *= sizes[j - 1];
+              }
+          }
+          this.pieces[pos] = piece;
+          this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
+      }
+  }
+  for(var i in inits.b) {
+      var player = JocGame.PLAYER_B;
+      for(var t in inits.b[i]) {
+          var piece = Model.Game.createPiece(t, player);
+          var pos = 0;
+          for (var j = inits.b[i][t].length - 1; j >= 0; j--) {
+              pos += inits.b[i][t][j];
+              if (j > 0) {
+                  pos *= sizes[j - 1];
+              }
+          }
+          this.pieces[pos] = piece;
+          this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
+      }
+  }
 }
 
 Model.Board.CopyFrom = function(aBoard) {
-  // TODO:
+  this.zSign = aBoard.zSign;
+  for (var pos in aBoard.pieces) {
+      this..pieces[pos] = aBoard.pieces[pos];
+  }
 }
 
 Model.Board.PostActions = function(aGame, aMoves) {
