@@ -18,6 +18,7 @@ public class Game extends AbstractDoc implements IGame {
 	
 	private final static String   GAME_TAG  = "game";
 	private final static String   BOARD_TAG = "board";
+	private final static String     POS_TAG = "pos";
 	private final static String PLAYERS_TAG = "players";
 	private final static String  PLAYER_TAG = "player";
 	private final static String    MODE_TAG = "mode";
@@ -34,8 +35,7 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String   ATTRS_XP  = "/game/piece/attribute/a[1]";
 	private final static String  PIECES_XP  = "/game/piece";
 	private final static String   SETUP_XP  = "/game/board-setup/*";
-	private final static String     ALL_XP  = "/*";
-	private final static String     POS_XP  = "/a";
+	private final static String     ALL_XP  = "*";
 	
 	private AbstractDoc               proxy = null;
 	private Map<String, Integer>    players = new HashMap<String, Integer>();
@@ -138,7 +138,7 @@ public class Game extends AbstractDoc implements IGame {
 			if (r) {
 				proxy = null;
 			}
-			return r;
+			return false;
 		}
 		return super.close();
 	}
@@ -244,16 +244,16 @@ public class Game extends AbstractDoc implements IGame {
 				f = true;
 			}
 			dest.open(n.getLocalName());
-			NodeIterator al = XPathAPI.selectNodeIterator(doc, ALL_XP);
+			NodeIterator al = XPathAPI.selectNodeIterator(n, ALL_XP);
 			Node a;
 			while ((a = al.nextNode())!= null) {
 				dest.open(a.getLocalName());
-				NodeIterator pl = XPathAPI.selectNodeIterator(doc, POS_XP);
+				NodeIterator pl = XPathAPI.selectNodeIterator(a, ALL_XP);
 				Node p;
 				while ((p = pl.nextNode())!= null) {
-					String pos = p.getTextContent();
+					String pos = p.getLocalName();
 					if (pos.equals(OFF_TAG)) break;
-					dest.open(pos); dest.close();
+					dest.open(POS_TAG); dest.add(pos); dest.close();
 				}
 				dest.close();
 			}

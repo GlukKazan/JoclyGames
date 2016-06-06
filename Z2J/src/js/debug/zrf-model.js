@@ -802,37 +802,29 @@ Model.Board.GetSignature = function() {
 }
 
 Model.Board.InitialPosition = function(aGame) {
-  this.game = aGame;
-  var sizes = aGame.mOptions.dimensions;
-  var inits = aGame.mOptions.initial;
+  this.game  = aGame;
+  var design = aGame.getDesign();
+  var inits  = aGame.mOptions.initial;
   for(var i in inits.a) {
       var player = JocGame.PLAYER_A;
-      for(var t in inits.a[i]) {
-          var piece = Model.Game.createPiece(t, player);
-          var pos = 0;
-          for (var j = inits.a[i][t].length - 1; j >= 0; j--) {
-              pos += inits.a[i][t][j];
-              if (j > 0) {
-                  pos *= sizes[j - 1];
-              }
-          }
-          this.pieces[pos] = piece;
-          this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
+      var piece = Model.Game.createPiece(i, player);
+      for (var j = inits.a[i].length - 1; j >= 0; j--) {
+           var pos = Model.find(design.names, inits.a[i][j]);
+           if (pos >= 0) {
+               this.pieces[pos] = piece;
+               this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
+           }
       }
   }
   for(var i in inits.b) {
       var player = JocGame.PLAYER_B;
-      for(var t in inits.b[i]) {
-          var piece = Model.Game.createPiece(t, player);
-          var pos = 0;
-          for (var j = inits.b[i][t].length - 1; j >= 0; j--) {
-              pos += inits.b[i][t][j];
-              if (j > 0) {
-                  pos *= sizes[j - 1];
-              }
-          }
-          this.pieces[pos] = piece;
-          this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
+      var piece = Model.Game.createPiece(i, player);
+      for (var j = inits.b[i].length - 1; j >= 0; j--) {
+           var pos = Model.find(design.names, inits.b[i][j]);
+           if (pos >= 0) {
+               this.pieces[pos] = piece;
+               this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
+           }
       }
   }
 }

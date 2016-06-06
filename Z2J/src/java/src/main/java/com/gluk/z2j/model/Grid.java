@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Node;
@@ -14,9 +15,9 @@ import com.gluk.z2j.api.model.IGrid;
 
 public class Grid extends AbstractDoc implements IGrid {
 	
-	private final static String DIM_XP = "/grid/dimensions/l/a[1]";
+	private final static String DIM_XP = "/grid/dimensions/l/a";
 	private final static String DIR_XP = "/grid/directions/*";
-	private final static String ALL_XP = "/l/a[1]";
+	private final static String ALL_XP = "a";
 
 	private List<List<String>> dims = new ArrayList<List<String>>();
 	private Map<String, List<Integer>> dirs = new HashMap<String, List<Integer>>();
@@ -149,9 +150,13 @@ public class Grid extends AbstractDoc implements IGrid {
 		dirs.put(name, deltas);
 	}
 	
-	private void extractPositions(int ix, StringBuffer sb) throws Exception {
-		int sz = sb.length();
-		if (ix >= dims.size()) {
+	private void extractPositions(int ix, Stack<String> stack) throws Exception {
+		int sz = stack.size();
+		if (ix < 0) {
+			StringBuffer sb = new StringBuffer();
+			for (int i = stack.size() - 1; i >= 0; i--) {
+				sb.append(stack.get(i));
+			}
 			board.addPos(sb.toString());
 			return;
 		}
@@ -160,9 +165,11 @@ public class Grid extends AbstractDoc implements IGrid {
 			throw new Exception("Dimension [" + Integer.toString(ix) + "] is empty");
 		}
 		for (String s: d) {
-			sb.setLength(sz);
-			sb.append(s);
-			extractPositions(ix + 1, sb);
+			while (stack.size() > sz) {
+				stack.pop();
+			}
+			stack.add(s);
+			extractPositions(ix - 1, stack);
 		}
 	}
 	
@@ -219,7 +226,7 @@ public class Grid extends AbstractDoc implements IGrid {
 	public void extract() throws Exception {
 		getDims();
 		getDirs();
-		extractPositions(0, new StringBuffer());
+		extractPositions(dims.size() - 1, new Stack<String>());
 		for (String dir: dirs.keySet()) {
 			List<Integer> deltas = dirs.get(dir);
 			extractLinks(0, dir, deltas, new StringBuffer(), new StringBuffer());
