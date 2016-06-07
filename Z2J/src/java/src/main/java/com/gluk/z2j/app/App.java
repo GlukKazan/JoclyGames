@@ -39,7 +39,7 @@ public class App {
 		try {
 			loader.load(dir, name);
 			ILibrary lib = new Library(parser.getDoc());
-			Game game = new Game();
+			Game game = new Game(name);
 			lib.extract(game);
 			Serializer out = new Serializer(dir, name);
 			game.extract(out);

@@ -239,7 +239,6 @@ public class Board extends AbstractDoc implements IBoard {
 	
 	private void extractOpposite(IDoc dest) throws Exception {
 		dest.open(PLAYER_TAG);
-		dest.open(NAME_TAG);dest.close();
 		for (String dir: dirl) {
 			Integer o = getOpposite(dir);
 			dest.open(DIR_TAG);
@@ -256,6 +255,7 @@ public class Board extends AbstractDoc implements IBoard {
 		for (String player: syms.keySet()) {
 			dest.open(NAME_TAG);dest.add(player);dest.close();
 			Map<String, String> l = syms.get(player);
+			int i = 0;
 			for (String from: dirl) {
 				dest.open(DIR_TAG);
 				String to = l.get(from);
@@ -266,7 +266,7 @@ public class Board extends AbstractDoc implements IBoard {
 					}
 					dest.add(n.toString());
 				} else {
-					dest.add("0");
+					dest.add(Integer.toString(i++));
 				}
 				dest.close();
 			}

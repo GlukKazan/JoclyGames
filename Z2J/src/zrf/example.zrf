@@ -1,14 +1,6 @@
 (include "code.zrf")
 
-(game
-  (title "Turkish Dama")
-
-  (option "maximal captures" true)
-
-  (players White Black)
-  (turn-order White Black)
-  (move-priorities jumptype normaltype)
-
+(define board-def
   (board
      (image "images/Checkers/Shaag/checkbd2.bmp")
      (grid
@@ -27,6 +19,19 @@
            (positions a1 b1 c1 d1 e1 f1 g1 h1)
      )
   )
+)
+
+(game
+  (title "Turkish Dama")
+  (description "Turkish Dama example game.")
+
+  (option "maximal captures" true)
+
+  (players White Black)
+  (turn-order White Black)
+  (move-priorities jumptype normaltype)
+
+  (board-def)
 
   (piece
      (name Man)

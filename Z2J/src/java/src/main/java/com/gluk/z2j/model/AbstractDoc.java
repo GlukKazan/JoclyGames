@@ -70,9 +70,7 @@ public abstract class AbstractDoc implements IDoc, ISource {
 		if (handler == null) {
 			throw new Exception("Internal error");
 		}
-		handler.startElement("", ATOM_TAG, ATOM_TAG, new AttributesImpl());
 		handler.characters(s.toCharArray(), 0, s.length());
-		handler.endElement("", ATOM_TAG, ATOM_TAG);
 	}
 
 	protected void extract(IDoc dest, Node d) throws Exception {
