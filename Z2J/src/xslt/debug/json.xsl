@@ -13,18 +13,16 @@
     "module": "checkers",
     "maxLevel": 20,
     "summary": "<xsl:value-of select="description"/>",
-    "thumbnail": "draughts-thumb3d.png",
-    "rules": "rules-draughts.html",
+    "thumbnail": "turkish-thumb3d.png",
+    "rules": "rules-turkish-draughts.html",
     "description": "description.html",
-    "credits": "credits.html",
+    "credits": "credits-turkish-draughts.html",
     "js": [
       "zrf-model.js",
       "<xsl:value-of select="name"/>.js"
     ],
     "gameOptions": {
       "preventRepeat": true,
-      "width": 5,
-      "height": 10,
       "initial": {
         <xsl:call-template name="apply-setup"/>
       },
@@ -94,102 +92,65 @@
         "maxLoops": 8000
       }
     ],
-    "name": "draughts",
-    "title": "International Draughts",
+    "name": "turkish-draughts",
+    "title": "Turkish Draughts",
     "strings": [],
     "excludeFromAds": false,
     "defaultLevel": 1,
     "path": "sites/all/modules/checkers",
     "fullPath": "http://embed.jocly.net/sites/all/modules/checkers",
-    "$$hashKey": "object:67"
+    "$$hashKey": "object:114"
   },
   "view": {
     "js": [
       "checkers-xd-view.js",
-      "draughts10-xd-view.js"
+      "turkish-xd-view.js"
     ],
+    "visuals": {
+      "600x600": [
+        "res/visuals/turkish-draughts-600x600-3d.jpg",
+        "res/visuals/turkish-draughts-600x600-2d.jpg"
+      ]
+    },
     "xdView": true,
     "css": [
       "checkersbase.css",
-      "draughts.css"
+      "turkish.css"
     ],
-    "title-en": "Draughts View",
+    "title-en": "Turkish Draughts View",
+    "module": "checkers",
+    "preferredRatio": 1,
     "skins": [
       {
-        "name": "classic3d",
+        "name": "turkish3d",
         "title": "3D Classic",
-        "3d": true,
-        "camera": {
-          "radius": 24,
-          "elevationAngle": 65,
-          "limitCamMoves": true,
-          "distMax": 30,
-          "fov": 35
-        },
-        "world": {
-          "lightIntensity": 1.1,
-          "skyLightIntensity": 1.2,
-          "lightPosition": {
-            "x": -15,
-            "y": 15,
-            "z": 0
-          },
-          "lightShadowDarkness": 0.45,
-          "ambientLightColor": 8947848,
-          "color": 4686804,
-          "fog": false
-        },
-        "preload": [
-          "image|/res/images/wood-chipboard-5.jpg",
-          "image|/res/xd-view/meshes/piecetop-bump.jpg",
-          "image|/res/xd-view/meshes/piecediff.jpg",
-          "image|/res/xd-view/meshes/piecetop-queen-mask.png",
-          "smoothedfilegeo|0|/res/xd-view/meshes/ring-target.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/piece-v2.js"
-        ]
-      },
-      {
-        "name": "turtles3d",
-        "title": "3D Turtles",
         "3d": true,
         "camera": {
           "radius": 14,
           "elevationAngle": 45,
-          "limitCamMoves": true,
-          "distMax": 40
+          "limitCamMoves": true
         },
         "world": {
-          "lightIntensity": 1,
-          "skyLightIntensity": 1,
-          "fog": true,
-          "color": 3645658,
+          "lightIntensity": 0.8,
+          "color": 0,
+          "fog": false,
           "lightPosition": {
-            "x": -5,
+            "x": -10,
             "y": 18,
-            "z": 5
+            "z": 0
           },
-          "lightShadowDarkness": 0.55,
-          "ambientLightColor": 4473924
+          "ambientLightColor": 0
         },
         "preload": [
           "image|/res/images/wood-chipboard-5.jpg",
-          "image|/res/xd-view/meshes/turtle.png",
-          "image|/res/xd-view/meshes/star.png",
-          "image|/res/xd-view/meshes/rock.jpg",
-          "smoothedfilegeo|0|/res/xd-view/meshes/turtle-legs-smoothed.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/turtle-head-smoothed.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/turtle-tail-smoothed.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/turtle-hotel.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/turtle-house.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/rainbowflat.js",
           "smoothedfilegeo|0|/res/xd-view/meshes/ring-target.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/rocksmoothed.js",
-          "smoothedfilegeo|0|/res/xd-view/meshes/turtle-fences.js"
+          "smoothedfilegeo|0|/res/xd-view/meshes/turkish.js",
+          "smoothedfilegeo|0|/res/xd-view/meshes/turkish-queen.js"
         ]
       },
       {
-        "name": "classical",
-        "title": "Classic"
+        "name": "green",
+        "title": "Green"
       },
       {
         "name": "wood0",
@@ -200,23 +161,10 @@
         "title": "Marble"
       },
       {
-        "name": "green",
-        "title": "Green"
+        "name": "classical",
+        "title": "Classic"
       }
     ],
-    "module": "checkers",
-    "preferredRatio": 1,
-    "switchable": true,
-    "animateSelfMoves": false,
-    "useNotation": true,
-    "useShowMoves": true,
-    "useAutoComplete": true,
-    "defaultOptions": {
-      "sounds": true,
-      "notation": false,
-      "moves": true,
-      "autocomplete": true
-    },
     "sounds": {
       "move1": "move1",
       "move2": "move2",
@@ -228,15 +176,18 @@
       "promo": "promo",
       "usermove": null
     },
-    "visuals": {
-      "600x600": [
-        "res/visuals/draughts-600x600-3d.jpg",
-        "res/visuals/draughts-600x600-2d.jpg"
-      ]
+    "switchable": true,
+    "animateSelfMoves": false,
+    "useNotation": true,
+    "useShowMoves": true,
+    "defaultOptions": {
+      "sounds": true,
+      "notation": false,
+      "moves": true
     },
-    "title": "Draughts View",
+    "title": "Turkish Draughts View",
     "model": [
-      "draughts"
+      "turkish-draughts"
     ],
     "path": "sites/all/modules/checkers",
     "fullPath": "http://embed.jocly.net/sites/all/modules/checkers"
