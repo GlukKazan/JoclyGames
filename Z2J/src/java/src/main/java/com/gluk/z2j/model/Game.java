@@ -19,23 +19,22 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String   GAME_TAG  = "game";
 	private final static String   BOARD_TAG = "board";
 	private final static String     POS_TAG = "pos";
-	private final static String   TITLE_TAG = "title";
 	private final static String PLAYERS_TAG = "players";
+	private final static String   PIECE_TAG = "piece";
 	private final static String    MODE_TAG = "mode";
 	private final static String    NAME_TAG = "name";
-	private final static String   INDEX_TAG = "index";
 	private final static String   PRIOR_TAG = "is_mandatory";
-	private final static String   PIECE_TAG = "piece";
 	private final static String   SETUP_TAG = "board-setup";
 	private final static String     OFF_TAG = "off";
 
 	private final static String   TITLE_XP  = "/game/title | /game/description";
 	private final static String PLAYERS_XP  = "/game/turn-order/*";
-	private final static String  PRIORS_XP  = "/game/move-priorities/a";
-	private final static String   MODES_XP  = "/game/piece/*/move-type/a";
-	private final static String   ATTRS_XP  = "/game/piece/attribute/a[1]";
+	private final static String  PRIORS_XP  = "/game/move-priorities/*";
+	private final static String   MODES_XP  = "/game/piece/*/move-type/*";
+	private final static String   ATTRS_XP  = "/game/piece/attribute/*[1]";
 	private final static String  PIECES_XP  = "/game/piece";
 	private final static String   SETUP_XP  = "/game/board-setup/*";
+	
 	private final static String       A_XP  = "a";
 	private final static String     ALL_XP  = "*";
 	
@@ -236,12 +235,12 @@ public class Game extends AbstractDoc implements IGame {
 		NodeIterator nl = XPathAPI.selectNodeIterator(doc, PRIORS_XP);
 		Node n;
 		while ((n = nl.nextNode())!= null) {
-			addMode(n.getTextContent());
+			addMode(n.getLocalName());
 		}
 		priorities = modes.size();
 		nl = XPathAPI.selectNodeIterator(doc, MODES_XP);
 		while ((n = nl.nextNode())!= null) {
-			addMode(n.getTextContent());
+			addMode(n.getLocalName());
 		}
 		for (int i = 0; i < modes.size(); i++) {
 			dest.open(MODE_TAG);
@@ -297,12 +296,24 @@ public class Game extends AbstractDoc implements IGame {
 		NodeIterator nl = XPathAPI.selectNodeIterator(doc, ATTRS_XP);
 		Node n;
 		while ((n = nl.nextNode())!= null) {
-			String name = n.getTextContent();
+			String name = n.getLocalName();
 			Integer r = attrs.get(name);
 			if (r == null) {
 				r = attrs.size();
 				attrs.put(name, r);
 			}
+		}
+	}
+
+	private void extractPieces(IDoc dest) throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, PIECES_XP);
+		Node n;
+		for (int i = 0; (n = nl.nextNode())!= null; i++) {
+			Piece p = new Piece(this, i);
+			p.open(PIECE_TAG);
+			extract(p, n);
+			p.close();
+			p.extract(dest);
 		}
 	}
 	
@@ -316,15 +327,7 @@ public class Game extends AbstractDoc implements IGame {
 		board.extract(dest);
 		extractModes(dest);
 		extractAttrs();
-		NodeIterator nl = XPathAPI.selectNodeIterator(doc, PIECES_XP);
-		Node n;
-		for (int i = 0; (n = nl.nextNode())!= null; i++) {
-			Piece p = new Piece(this, i);
-			p.open(PIECE_TAG);
-			extract(p, n);
-			p.close();
-			p.extract(dest);
-		}
+		extractPieces(dest);
 		extractSetup(dest);
 		dest.close();
 	}

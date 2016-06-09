@@ -17,7 +17,7 @@ public class Piece extends AbstractDoc implements IPiece {
 	private final static String MOVES_TAG = "moves";
 	private final static String DROPS_TAG = "drops";
 
-	private final static String NAME_XP   = "/piece/name/a[1]";
+	private final static String NAME_XP   = "/piece/name/*[1]";
 
 	private IGame game;
 	private int ix;
@@ -52,7 +52,7 @@ public class Piece extends AbstractDoc implements IPiece {
 			if (r) {
 				proxy = null;
 			}
-			return r;
+			return false;
 		}
 		return super.close();
 	}
@@ -70,7 +70,7 @@ public class Piece extends AbstractDoc implements IPiece {
 		NodeIterator nl = XPathAPI.selectNodeIterator(doc, NAME_XP);
 		Node n;
 		while ((n = nl.nextNode())!= null) {
-			dest.open(NAME_TAG); dest.add(n.getTextContent()); dest.close();
+			dest.open(NAME_TAG); dest.add(n.getLocalName()); dest.close();
 			dest.open(IX_TAG); dest.add(Integer.toString(ix)); dest.close();
 		}
 		dest.close();

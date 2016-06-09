@@ -16,13 +16,11 @@ import org.w3c.dom.traversal.NodeIterator;
 import org.xml.sax.helpers.AttributesImpl;
 
 import com.gluk.z2j.api.loader.IDoc;
-import com.gluk.z2j.api.model.ISource;
 
-public abstract class AbstractDoc implements IDoc, ISource {
+public abstract class AbstractDoc implements IDoc {
 	
-	private final static String ATOM_TAG = "a";
-
-	private final static String ALL_XP   = "/*";
+	private final static String A_TAG  = "a";
+	private final static String ALL_XP = "*";
 	
 	protected Node doc = null;
     protected TransformerHandler handler = null;
@@ -78,26 +76,13 @@ public abstract class AbstractDoc implements IDoc, ISource {
 		NodeIterator nl = XPathAPI.selectNodeIterator(d, ALL_XP);
 		while ((n = nl.nextNode())!= null) {
 			String t = n.getLocalName();
-			if (t.equals(ATOM_TAG)) {
+			dest.open(t);
+			if (t.equals(A_TAG)) {
 				dest.add(n.getTextContent());
 			} else {
 				extract(dest, n);
 			}
-		}
-	}
-
-	public void extract(IDoc dest) throws Exception {
-		Node n;
-		NodeIterator nl = XPathAPI.selectNodeIterator(doc, ALL_XP);
-		while ((n = nl.nextNode())!= null) {
-			String t = n.getLocalName();
-			if (t.equals(ATOM_TAG)) {
-				dest.add(n.getTextContent());
-			} else {
-				dest.open(n.getLocalName());
-				extract(dest, n);
-				dest.close();
-			}
+			dest.close();
 		}
 	}
 }
