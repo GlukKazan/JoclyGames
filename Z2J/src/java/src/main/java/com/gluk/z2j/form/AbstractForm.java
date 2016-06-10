@@ -2,6 +2,7 @@ package com.gluk.z2j.form;
 
 import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.form.IMoveParser;
+import com.gluk.z2j.api.model.IPiece;
 
 public abstract class AbstractForm implements IForm {
 
@@ -16,6 +17,10 @@ public abstract class AbstractForm implements IForm {
 		throw new Exception("Not supported");
 	}
 
+	public void addMove(IPiece piece, String mode) throws Exception {
+		piece.addMove(this, mode);
+	}
+	
 	public void open(String tag) throws Exception {
 		if (form != null) {
 			form.open(tag);

@@ -6,25 +6,34 @@ import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.form.IMoveParser;
 import com.gluk.z2j.api.model.IGame;
 import com.gluk.z2j.api.model.IMoveTemplate;
+import com.gluk.z2j.api.model.IPiece;
 
 public class ModeForm implements IForm {
 
-	IMoveParser parser;
+	private IMoveParser parser;
+	private int deep = 0;
 	
 	public ModeForm(IMoveParser parser) {
 		this.parser = parser;
 	}
 
 	public void open(String tag) throws Exception {
-		throw new Exception("Not supported");
+		if (deep > 1) {
+			throw new Exception("Not supported");
+		}
+		if (deep == 1) {
+			parser.setMode(tag);
+		}
+		deep++;
 	}
 
 	public boolean close() throws Exception {
-		return true;
+		deep--;
+		return (deep == 0);
 	}
 
 	public void add(String s) throws Exception {
-		parser.setMode(s);
+		throw new Exception("Not supported");
 	}
 
 	public void addForm(IForm form) throws Exception {
@@ -38,4 +47,6 @@ public class ModeForm implements IForm {
 	public String getName() throws Exception {
 		throw new Exception("Not supported");
 	}
+
+	public void addMove(IPiece piece, String mode) throws Exception {}
 }

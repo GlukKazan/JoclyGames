@@ -27,7 +27,8 @@ public class MoveParser implements IDoc, IMoveParser {
 	private boolean isDrop;
 	
 	private String mode = "";
-	private IForm form = null;
+	private IForm form  = null;
+	private int deep    = 0;
 	
 	public MoveParser(IPiece piece, IGame game, boolean isDrop) {
 		this.piece  = piece;
@@ -73,11 +74,14 @@ public class MoveParser implements IDoc, IMoveParser {
 	}
 
 	public void open(String tag) throws Exception {
-		if (form != null) {
-			form.open(tag);
-		} else {
+		if (deep == 0) {
+			deep++;
+			return;
+		}
+		if (form == null) {
 			form = createForm(tag, true);
 		}
+		form.open(tag);
 	}
 
 	public boolean close() throws Exception {
@@ -85,7 +89,7 @@ public class MoveParser implements IDoc, IMoveParser {
 			return true;
 		}
 		if (form.close()) {
-			piece.addMove(form, mode);
+			form.addMove(piece, mode);
 			form = null;
 		}
 		return false;
