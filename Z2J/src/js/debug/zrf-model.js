@@ -756,7 +756,7 @@ Model.Game.createPiece = function(aType, aPlayer) {
   return new ZrfPiece(aType, aPlayer);
 }
 
-ZrfPiece.prototype.toString = function() {
+ZrfPiece.prototype.ToString = function() {
   return this.player + "/" + this.type;
 }
 
@@ -805,8 +805,11 @@ Model.Game.InitGame = function() {
 Model.Game.DestroyGame = function() {}
 
 Model.Board.Init = function(aGame) {
-  this.zSign = 0;
+  this.game   = aGame;
+  this.zSign  = 0;
   this.pieces = [];
+  this.forks  = [];
+  this.names  = [];
 }
 
 Model.Board.GetSignature = function() {
@@ -814,7 +817,7 @@ Model.Board.GetSignature = function() {
 }
 
 Model.Board.InitialPosition = function(aGame) {
-  this.game  = aGame;
+  this.Init(aGame);
   var design = aGame.getDesign();
   var inits  = aGame.mOptions.initial;
   var player = JocGame.PLAYER_A;
@@ -826,7 +829,7 @@ Model.Board.InitialPosition = function(aGame) {
                   var pos = Model.find(design.names, inits[p][t][i]);
                   if (pos >= 0) {
                       this.pieces[pos] = piece;
-                      this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
+                      this.zSign = aGame.zobrist.update(this.zSign, "board", piece.ToString(), pos);
                   }
               }
           }
@@ -844,6 +847,23 @@ Model.Board.CopyFrom = function(aBoard) {
 
 Model.Board.PostActions = function(aGame, aMoves) {
   this.mMoves = aMoves;
+}
+
+Model.Board.getValue = function(aName, aPos) {
+  if (typeof this.names[aName] === "undefined") {
+      return null;
+  }
+  if (typeof this.names[aName][aPos] === "undefined") {
+      return null;
+  }
+  return this.names[aName][aPos];
+}
+
+Model.Board.setValue = function(aName, aPos, aValue) {
+  if (typeof this.names[aName] === "undefined") {
+      this.names[aName] = [];
+  }
+  this.names[aName][aPos] = aValue;
 }
 
 Model.Board.addFork = function(aGen) {
@@ -935,7 +955,7 @@ Model.Board.ApplyMove = function(aGame, move) {
       if (fp !== null) {
           var piece = this.pieces[fp];
           if (typeof piece !== "undefined") {
-              this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), fp);
+              this.zSign = aGame.zobrist.update(this.zSign, "board", piece.ToString(), fp);
               delete this.pieces[fp];
           }
       }
@@ -946,9 +966,9 @@ Model.Board.ApplyMove = function(aGame, move) {
       if (tp !== null) {
           var op = this.pieces[tp];
           if (typeof op !== "undefined") {
-              this.zSign = aGame.zobrist.update(this.zSign, "board", op.toString(), tp);
+              this.zSign = aGame.zobrist.update(this.zSign, "board", op.ToString(), tp);
           }
-          this.zSign = aGame.zobrist.update(this.zSign, "board", np.toString(), tp);
+          this.zSign = aGame.zobrist.update(this.zSign, "board", np.ToString(), tp);
           this.pieces[fp] = np;
       }
   }
@@ -962,7 +982,7 @@ Model.Board.QuickEvaluate = function(aGame) {
   // TODO:
 }
 
-Model.Board.IsValidMove = function(aGame,move) {
+Model.Board.IsValidMove = function(aGame, aMove) {
   return true;
 }
 
@@ -989,7 +1009,7 @@ Model.Move.Init = function(args) {
   }
 }
 
-Model.Move.toString = function() {
+Model.Move.ToString = function() {
   var r = "";
   for (var i in this.moves) {
       if (r !== "") {
@@ -1006,7 +1026,7 @@ Model.Move.toString = function() {
           } else {
               r = r + Model.Game.posToString(this.moves[i][1]);
               r = r + " = ";
-              r = r + this.moves[i][2].toString();
+              r = r + this.moves[i][2].ToString();
           }
       }
   }
@@ -1018,11 +1038,11 @@ Model.Move.movePiece = function(aFrom, aTo, aPiece) {
 }
 
 Model.Move.createPiece = function(aPos, aPiece) {
-  this.moves.push([null, aTo, aPiece]);
+  this.moves.push([null, aPos, aPiece]);
 }
 
 Model.Move.capturePiece = function(aPos) {
-  this.moves.push([aFrom, null, null]);
+  this.moves.push([aPos, null, null]);
 }
 
 Model.Move.SetAttr = function(aPos, aValues) {

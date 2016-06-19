@@ -1,79 +1,36 @@
+JocGame     = {
+  PLAYER_A: 1,
+  PLAYER_B: -1
+};
 var Model   = {};
-Model.Game  = {};
-Model.Board = {
-  game: Model.Game,
-  mWho: 1,
-  forks: [],
-  pieces: [],
-  names: [],
-  addFork: function(aGen) {
-     this.forks.push(aGen);
+Model.Game  = {
+  mOptions: {
+     initial: {
+        "White": {
+            "Man": ["a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3"]
+        },
+        "Black": {
+            "Man": ["a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6"]
+        }
+      }
   },
-  getValue: function(aName, aPos) {
-     if (typeof this.names[aName] === "undefined") {
-         return null;
-     }
-     if (typeof this.names[aName][aPos] === "undefined") {
-         return null;
-     }
-     return this.names[aName][aPos];
-  },
-  setValue: function(aName, aPos, aValue) {
-     if (typeof this.names[aName] === "undefined") {
-         this.names[aName] = [];
-     }
-     this.names[aName][aPos] = aValue;
-  },
-  getPiece: function(aPos) {
-     if (typeof this.pieces[aPos] === "undefined") {
-         return null;
-     }
-     return this.pieces[aPos];
-  },
-  setPiece: function(aPos, aPiece) {
-     if (aPiece === null) {
-        delete this.pieces[aPos];
-     } else {
-        this.pieces[aPos] = aPiece;
-     }
+  zobrist: {
+      update: function(zSign, aType, aName, aPos) {
+         return zSign;
+      }
   }
 };
-Model.Move  = {};
+Model.Board = {
+  game:   Model.Game,
+  mWho:   1,
+  forks:  [],
+  pieces: [],
+  names:  []
+};
+Model.Move = {};
 
-function ZrfMoveStub() {
+ZrfMove = function() {
   this.moves = [];
-}
-
-ZrfMoveStub.prototype.toString = function() {
-  var r = "";
-  for (var i in this.moves) {
-      if (r !== "") {
-          r = r + " ";
-      }
-      if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
-          r = r + Model.Game.posToString(this.moves[i][0]);
-          r = r + " - ";
-          r = r + Model.Game.posToString(this.moves[i][1]);
-      } else {
-          if (this.moves[i][1] === null) {
-              r = r + "x ";
-              r = r + Model.Game.posToString(this.moves[i][0]);
-          } else {
-              r = r + Model.Game.posToString(this.moves[i][1]);
-              r = r + " = ";
-              r = r + this.moves[i][2].toString();
-          }
-      }
-  }
-  return r;
-}
-
-ZrfMoveStub.prototype.movePiece = function(aFrom, aTo, aPiece) {
-  this.moves.push([aFrom, aTo, aPiece]);
-}
-
-ZrfMoveStub.prototype.capturePiece = function(aPos) {
-  this.moves.push([aPos, null, null]);
 }
 
 function ZrfGenStub() {
@@ -84,7 +41,7 @@ function ZrfGenStub() {
   this.mark   = null;
   this.backs  = [];
   this.flags  = [];
-  this.move   = new ZrfMoveStub();
+  this.move   = new ZrfMove();
   this.starts = [];
   this.stops  = [];
 }

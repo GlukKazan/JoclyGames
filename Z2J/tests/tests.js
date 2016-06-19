@@ -237,22 +237,22 @@ QUnit.test( "ZrfMoveTemplate", function( assert ) {
   gen.cp = 1;
   assert.ok( (template.commands[34])(gen) === 0, "ZRF_TO" );
 //assert.ok( board.pieces[0] === undefined, "ZRF_TO" );
-//assert.ok( board.pieces[1].toString() === "1/0", "ZRF_TO" );
+//assert.ok( board.pieces[1].ToString() === "1/0", "ZRF_TO" );
   assert.ok( gen.stops[0] === gen.cp, "ZRF_TO" );
   assert.ok( gen.from === undefined, "ZRF_TO" );
   assert.ok( gen.piece === undefined, "ZRF_TO" );
-  assert.ok( gen.move.toString() === "p0 - p1", "ZRF_TO" );
+  assert.ok( gen.move.ToString() === "p0 - p1", "ZRF_TO" );
   template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_CAPTURE);                // 35
   assert.ok( (template.commands[35])(gen) === 0, "ZRF_CAPTURE" );
 //assert.ok( board.pieces[1] === undefined, "ZRF_TO" );
-  assert.ok( gen.move.toString() === "p0 - p1 x p1", "ZRF_TO" );
+  assert.ok( gen.move.ToString() === "p0 - p1 x p1", "ZRF_TO" );
   gen.cp = 0;
   gen.move.moves = [];
   board.pieces[0] = Model.Game.createPiece(0, 1);
   template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_FLIP);                   // 36
   assert.ok( (template.commands[36])(gen) === 0, "ZRF_FLIP" );
-//assert.ok( board.pieces[0].toString() === "-1/0", "ZRF_TO" );
-  assert.equal(gen.move.toString(), "p0 = -1/0", "ZRF_TO");
+//assert.ok( board.pieces[0].ToString() === "-1/0", "ZRF_TO" );
+  assert.equal(gen.move.ToString(), "p0 = -1/0", "ZRF_TO");
   template.addCommand(game, m.ZRF_FUNCTION, m.ZRF_END);                    // 37
   gen.cc = 0;
   assert.ok( (template.commands[37])(gen) === -2, "ZRF_END" );
@@ -267,7 +267,12 @@ QUnit.test( "ZrfPiece", function( assert ) {
   assert.ok( piece !== newPiece , "ZrfPiece.setValue" );
   assert.ok( newPiece.getValue(0), "ZrfPiece.setValue" );
   newPiece = piece.promote(1);
-  assert.ok( newPiece.toString() === "1/1", "ZrfPiece.promote" );
+  assert.ok( newPiece.ToString() === "1/1", "ZrfPiece.promote" );
   newPiece = piece.flip();
-  assert.ok( newPiece.toString() === "-1/0", "ZrfPiece.flip" );
+  assert.ok( newPiece.ToString() === "-1/0", "ZrfPiece.flip" );
+});
+
+QUnit.test( "Board", function( assert ) {
+  Model.Board.Init(Model.Game);
+  assert.ok( Model.Board.GetSignature() === 0, "Board.GetSignature" );
 });
