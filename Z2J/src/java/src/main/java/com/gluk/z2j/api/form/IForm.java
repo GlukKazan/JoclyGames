@@ -47,6 +47,7 @@ public interface IForm extends IDoc {
 	final static int ZRF_PUSH      = 8;
 	final static int ZRF_POP       = 9;
 	
+	void setParent(IForm parent);
 	void addMove(IPiece piece, String mode) throws Exception;
 	void addForm(IForm form) throws Exception;
 	void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception;

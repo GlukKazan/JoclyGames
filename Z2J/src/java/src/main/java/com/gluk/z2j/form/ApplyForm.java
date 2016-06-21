@@ -48,12 +48,24 @@ public class ApplyForm extends AbstractForm {
 	
 	private final static int FROM_FLAG     = 0x01;
 
-	private String func;
+	private String func = "";
 	private List<IForm> args = new ArrayList<IForm>();
 	
 	public ApplyForm(String func, IMoveParser parser) {
 		super(parser);
 		this.func = func;
+	}
+
+	public ApplyForm(IMoveParser parser) {
+		super(parser);
+	}
+
+	public void add(String s) throws Exception {
+		if (func.isEmpty()) {
+			func = s;
+		} else {
+			throw new Exception("Not supported");
+		}
 	}
 
 	public void addForm(IForm form) {

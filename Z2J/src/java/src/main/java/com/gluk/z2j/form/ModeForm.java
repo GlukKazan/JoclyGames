@@ -49,4 +49,6 @@ public class ModeForm implements IForm {
 	}
 
 	public void addMove(IPiece piece, String mode) throws Exception {}
+
+	public void setParent(IForm parent) {}
 }

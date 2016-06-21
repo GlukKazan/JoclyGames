@@ -17,6 +17,8 @@ public abstract class AbstractForm implements IForm {
 		throw new Exception("Not supported");
 	}
 
+	public void setParent(IForm parent) {}
+	
 	public void addMove(IPiece piece, String mode) throws Exception {
 		piece.addMove(this, mode);
 	}
@@ -25,7 +27,8 @@ public abstract class AbstractForm implements IForm {
 		if (form != null) {
 			form.open(tag);
 		} else {
-			form = parser.createForm(tag, false);
+			form = parser.createForm(tag);
+			form.setParent(this);
 		}
 	}
 	
@@ -41,7 +44,6 @@ public abstract class AbstractForm implements IForm {
 	}
 
 	public void add(String s) throws Exception {
-		IForm f = new ApplyForm(s, parser);
-		addForm(f);
+		throw new Exception("Not supported");
 	}
 }

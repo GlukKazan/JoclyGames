@@ -5,6 +5,7 @@ import com.gluk.z2j.api.form.IMoveParser;
 import com.gluk.z2j.api.loader.IDoc;
 import com.gluk.z2j.api.model.IGame;
 import com.gluk.z2j.api.model.IPiece;
+import com.gluk.z2j.form.AForm;
 import com.gluk.z2j.form.AndForm;
 import com.gluk.z2j.form.ApplyForm;
 import com.gluk.z2j.form.IfForm;
@@ -21,6 +22,8 @@ public class MoveParser implements IDoc, IMoveParser {
 	private final static String AND_TAG     = "and";
 	private final static String OR_TAG      = "or";
 	private final static String FROM_TAG    = "from";
+	private final static String L_TAG       = "l";
+	private final static String A_TAG       = "a";
 	
 	private IGame game;
 	private IPiece piece;
@@ -44,7 +47,21 @@ public class MoveParser implements IDoc, IMoveParser {
 		return game.isDirection(name) || game.isPosition(name);
 	}
 	
-	public IForm createForm(String tag, boolean seqExpected) throws Exception {
+	public IForm createForm(String tag) throws Exception {
+		if (tag.equals(L_TAG)) {
+			if (deep == 1) {
+				IForm r = new SeqForm(this);
+				if (!isDrop) {
+					r.add(FROM_TAG);
+				}
+				return r;
+			} else {
+				return new ApplyForm(this); 
+			}
+		}
+		if (tag.equals(A_TAG)) {
+			return new AForm(this);
+		}
 		if (tag.equals(MODE_TAG)) {
 			return new ModeForm(this);
 		}
@@ -60,17 +77,7 @@ public class MoveParser implements IDoc, IMoveParser {
 		if (tag.equals(OR_TAG)) {
 			return new OrForm(this);
 		}
-		IForm r;
-		if (seqExpected) {
-			r = new SeqForm(this);
-			if (!isDrop) {
-				r.add(FROM_TAG);
-			}
-			r.add(tag);
-		} else {
-			r = new ApplyForm(tag, this);
-		}
-		return r;
+		return new ApplyForm(tag, this);
 	}
 
 	public void open(String tag) throws Exception {
@@ -79,7 +86,7 @@ public class MoveParser implements IDoc, IMoveParser {
 			return;
 		}
 		if (form == null) {
-			form = createForm(tag, true);
+			form = createForm(tag);
 		}
 		form.open(tag);
 	}

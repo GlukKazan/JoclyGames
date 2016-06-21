@@ -13,7 +13,6 @@ public class Piece extends AbstractDoc implements IPiece {
 
 	private final static String PIECE_TAG = "piece";
 	private final static String NAME_TAG  = "name";
-	private final static String IX_TAG    = "ix";
 	private final static String MOVES_TAG = "moves";
 	private final static String DROPS_TAG = "drops";
 
@@ -71,7 +70,6 @@ public class Piece extends AbstractDoc implements IPiece {
 		Node n;
 		while ((n = nl.nextNode())!= null) {
 			dest.open(NAME_TAG); dest.add(n.getLocalName()); dest.close();
-			dest.open(IX_TAG); dest.add(Integer.toString(ix)); dest.close();
 		}
 		dest.close();
 	}
