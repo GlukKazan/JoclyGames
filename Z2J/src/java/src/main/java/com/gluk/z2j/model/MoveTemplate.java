@@ -1,6 +1,7 @@
 package com.gluk.z2j.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.gluk.z2j.api.model.IMoveTemplate;
@@ -8,6 +9,10 @@ import com.gluk.z2j.api.model.IMoveTemplate;
 public class MoveTemplate implements IMoveTemplate {
 	
 	private List<Command> commands = new ArrayList<Command>();
+	
+	public Collection<Command> getCommands() {
+		return commands;
+	}
 
 	public int getOffset() {
 		return commands.size();
@@ -25,7 +30,7 @@ public class MoveTemplate implements IMoveTemplate {
 		if (offset >= commands.size()) {
 			throw new Exception("Invalid offset");
 		}
-		commands.get(offset).param = param;
+		commands.get(offset).setParam(param);
 	}
 
 	public boolean isEqual(MoveTemplate t) {

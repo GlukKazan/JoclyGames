@@ -30,13 +30,21 @@ public class MoveParser implements IDoc, IMoveParser {
 	private boolean isDrop;
 	
 	private String mode = "";
-	private IForm form  = null;
-	private int deep    = 0;
+	private IForm  form = null;
+	private int    deep = 0;
 	
 	public MoveParser(IPiece piece, IGame game, boolean isDrop) {
 		this.piece  = piece;
 		this.game   = game;
 		this.isDrop = isDrop;
+	}
+	
+	public IPiece getPiece() {
+		return piece;
+	}
+	
+	public String getMode() {
+		return mode;
 	}
 	
 	public void setMode(String mode) {
@@ -52,7 +60,7 @@ public class MoveParser implements IDoc, IMoveParser {
 			if (deep == 1) {
 				IForm r = new SeqForm(this);
 				if (!isDrop) {
-					r.add(FROM_TAG);
+					r.open(FROM_TAG);r.close();
 				}
 				return r;
 			} else {
@@ -88,7 +96,9 @@ public class MoveParser implements IDoc, IMoveParser {
 		if (form == null) {
 			form = createForm(tag);
 		}
-		form.open(tag);
+		if (!tag.equals(L_TAG)) {
+			form.open(tag);
+		}
 	}
 
 	public boolean close() throws Exception {

@@ -11,7 +11,6 @@ import com.gluk.z2j.api.model.IPiece;
 
 public class Piece extends AbstractDoc implements IPiece {
 
-	private final static String PIECE_TAG = "piece";
 	private final static String NAME_TAG  = "name";
 	private final static String MOVES_TAG = "moves";
 	private final static String DROPS_TAG = "drops";
@@ -26,6 +25,10 @@ public class Piece extends AbstractDoc implements IPiece {
 	public Piece(IGame game, int ix) {
 		this.game = game;
 		this.ix = ix;
+	}
+	
+	public Integer getIx() {
+		return ix;
 	}
 	
 	public void addMove(IForm form, String mode) throws Exception {
@@ -65,12 +68,10 @@ public class Piece extends AbstractDoc implements IPiece {
 	}
 
 	public void extract(IDoc dest) throws Exception {
-		dest.open(PIECE_TAG);
 		NodeIterator nl = XPathAPI.selectNodeIterator(doc, NAME_XP);
 		Node n;
 		while ((n = nl.nextNode())!= null) {
 			dest.open(NAME_TAG); dest.add(n.getLocalName()); dest.close();
 		}
-		dest.close();
 	}
 }

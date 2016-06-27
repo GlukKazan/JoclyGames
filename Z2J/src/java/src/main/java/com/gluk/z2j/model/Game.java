@@ -16,35 +16,43 @@ import com.gluk.z2j.api.model.IGame;
 
 public class Game extends AbstractDoc implements IGame {
 	
-	private final static String   GAME_TAG  = "game";
-	private final static String   BOARD_TAG = "board";
-	private final static String     POS_TAG = "pos";
-	private final static String PLAYERS_TAG = "players";
-	private final static String   PIECE_TAG = "piece";
-	private final static String    MODE_TAG = "mode";
-	private final static String    NAME_TAG = "name";
-	private final static String   PRIOR_TAG = "is_mandatory";
-	private final static String   SETUP_TAG = "board-setup";
-	private final static String     OFF_TAG = "off";
+	private final static String    GAME_TAG  = "game";
+	private final static String    BOARD_TAG = "board";
+	private final static String      POS_TAG = "pos";
+	private final static String  PLAYERS_TAG = "players";
+	private final static String    PIECE_TAG = "piece";
+	private final static String     MODE_TAG = "mode";
+	private final static String     NAME_TAG = "name";
+	private final static String    PRIOR_TAG = "is_mandatory";
+	private final static String    SETUP_TAG = "board-setup";
+	private final static String      OFF_TAG = "off";
+	private final static String     MOVE_TAG = "move";
+	private final static String TEMPLATE_TAG = "template";
+	private final static String    PARAM_TAG = "param";
+ 	private final static String       IX_TAG = "index";
+ 	private final static String      CMD_TAG = "c";
+ 	private final static String        C_TAG = "c";
+ 	private final static String        P_TAG = "p";
+ 	private final static String        N_TAG = "n";
 
-	private final static String   TITLE_XP  = "/game/title | /game/description";
-	private final static String PLAYERS_XP  = "/game/turn-order/*";
-	private final static String  PRIORS_XP  = "/game/move-priorities/*";
-	private final static String   MODES_XP  = "/game/piece/*/move-type/*";
-	private final static String   ATTRS_XP  = "/game/piece/attribute/*[1]";
-	private final static String  PIECES_XP  = "/game/piece";
-	private final static String   SETUP_XP  = "/game/board-setup/*";
+	private final static String   TITLE_XP   = "/game/title | /game/description";
+	private final static String PLAYERS_XP   = "/game/turn-order/*";
+	private final static String  PRIORS_XP   = "/game/move-priorities/*";
+	private final static String   MODES_XP   = "/game/piece/*/move-type/*";
+	private final static String   ATTRS_XP   = "/game/piece/attribute/*[1]";
+	private final static String  PIECES_XP   = "/game/piece";
+	private final static String   SETUP_XP   = "/game/board-setup/*";
 	
-	private final static String       A_XP  = "a";
-	private final static String     ALL_XP  = "*";
+	private final static String       A_XP   = "a";
+	private final static String     ALL_XP   = "*";
 	
-	private AbstractDoc               proxy = null;
-	private Map<String, Integer>    players = new HashMap<String, Integer>();
-	private List<String>              modes = new ArrayList<String>();
-	private List<MoveTemplate>    templates = new ArrayList<MoveTemplate>();
-	private Map<Integer, List<Move>>  moves = new HashMap<Integer, List<Move>>();
-	private Map<String, Integer>      names = new HashMap<String, Integer>();
-	private Map<String, Integer>      attrs = new HashMap<String, Integer>();
+	private AbstractDoc               proxy  = null;
+	private Map<String, Integer>    players  = new HashMap<String, Integer>();
+	private List<String>              modes  = new ArrayList<String>();
+	private List<MoveTemplate>    templates  = new ArrayList<MoveTemplate>();
+	private Map<Integer, List<Move>>  moves  = new HashMap<Integer, List<Move>>();
+	private Map<String, Integer>      names  = new HashMap<String, Integer>();
+	private Map<String, Integer>      attrs  = new HashMap<String, Integer>();
 	
 	private int flags;
 	private int priorities = 0;
@@ -313,7 +321,38 @@ public class Game extends AbstractDoc implements IGame {
 			p.open(PIECE_TAG);
 			extract(p, n);
 			p.close();
+			dest.open(PIECE_TAG);
 			p.extract(dest);
+			List<Move> ml = moves.get(p.getIx());
+			if (ml != null) {
+				for (Move m: ml) {
+					dest.open(MOVE_TAG);
+					dest.open(MODE_TAG); dest.add(m.getMode().toString()); dest.close();
+					dest.open(TEMPLATE_TAG); dest.add(m.getTemplate().toString()); dest.close();
+					for (Integer v: m.getParams()) {
+						dest.open(PARAM_TAG); dest.add(v.toString()); dest.close();
+					}
+					dest.close();
+				}
+			}
+			dest.close();
+		}
+	}
+	
+	private void extractTemplates(IDoc dest) throws Exception {
+		Integer ix = 0;
+		for (MoveTemplate t: templates) {
+			dest.open(TEMPLATE_TAG);
+			dest.open(IX_TAG); dest.add(ix.toString()); dest.close();
+			for (Command c: t.getCommands()) {
+				dest.open(CMD_TAG);
+				dest.open(C_TAG); dest.add(c.getCode().toString()); dest.close();
+				dest.open(P_TAG); dest.add(c.getParam().toString()); dest.close();
+				dest.open(N_TAG); dest.add(c.getName()); dest.close();
+				dest.close();
+			}
+			dest.close();
+			ix++;
 		}
 	}
 	
@@ -327,6 +366,7 @@ public class Game extends AbstractDoc implements IGame {
 		board.extract(dest);
 		extractModes(dest);
 		extractAttrs();
+		extractTemplates(dest);
 		extractPieces(dest);
 		extractSetup(dest);
 		dest.close();
