@@ -55,9 +55,9 @@ public class MoveParser implements IDoc, IMoveParser {
 		return game.isDirection(name) || game.isPosition(name);
 	}
 	
-	public IForm createForm(String tag) throws Exception {
+	public IForm createForm(String tag, boolean isTop) throws Exception {
 		if (tag.equals(L_TAG)) {
-			if (deep == 1) {
+			if (isTop) {
 				IForm r = new SeqForm(this);
 				if (!isDrop) {
 					r.open(FROM_TAG);r.close();
@@ -94,11 +94,9 @@ public class MoveParser implements IDoc, IMoveParser {
 			return;
 		}
 		if (form == null) {
-			form = createForm(tag);
+			form = createForm(tag, true);
 		}
-		if (!tag.equals(L_TAG)) {
-			form.open(tag);
-		}
+		form.open(tag);
 	}
 
 	public boolean close() throws Exception {

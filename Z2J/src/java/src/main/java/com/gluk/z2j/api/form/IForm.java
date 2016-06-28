@@ -50,6 +50,7 @@ public interface IForm extends IDoc {
 	void setParent(IForm parent);
 	void addMove(IPiece piece, String mode) throws Exception;
 	void addForm(IForm form) throws Exception;
+	void addToParent(IForm parent) throws Exception;
 	void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception;
 	String getName() throws Exception;
 }

@@ -27,7 +27,7 @@ public abstract class AbstractForm implements IForm {
 		if (form != null) {
 			form.open(tag);
 		} else {
-			form = parser.createForm(tag);
+			form = parser.createForm(tag, false);
 			form.setParent(this);
 		}
 	}
@@ -37,13 +37,19 @@ public abstract class AbstractForm implements IForm {
 			return true;
 		}
 		if (form.close()) {
-			addForm(form);
+			form.addToParent(this);
 			form = null;
 		}
 		return false;
 	}
 
 	public void add(String s) throws Exception {
-		throw new Exception("Not supported");
+		if (form != null) {
+			form.add(s);
+		}
+	}
+
+	public void addToParent(IForm parent) throws Exception {
+		parent.addForm(this);
 	}
 }

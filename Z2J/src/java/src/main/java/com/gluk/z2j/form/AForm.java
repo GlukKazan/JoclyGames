@@ -41,4 +41,6 @@ public class AForm implements IForm {
 	public String getName() throws Exception {
 		throw new Exception("Not supported");
 	}
+
+	public void addToParent(IForm parent) throws Exception {}
 }

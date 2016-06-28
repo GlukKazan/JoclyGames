@@ -64,7 +64,8 @@ public class ApplyForm extends AbstractForm {
 		if (func.isEmpty()) {
 			func = s;
 		} else {
-			throw new Exception("Not supported");
+			IForm f = new ApplyForm(s, parser);
+			addForm(f);
 		}
 	}
 

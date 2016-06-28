@@ -16,6 +16,7 @@ public class IfForm extends AbstractForm {
 	private List<IForm> body = new ArrayList<IForm>();
 	
 	private IForm seq = null;
+	private int deep = 0;
 
 	public IfForm(IMoveParser parser) {
 		super(parser);
@@ -30,17 +31,23 @@ public class IfForm extends AbstractForm {
 			seq.addForm(form);
 		}
 	}
-
-	public void add(String s) throws Exception {
-		if (parser.isNavigation(s) && (cond == null)) {
-			throw new Exception("Not supported");
-		}
-		if (s.equals(ELSE_TAG)) {
+	
+	public void open(String tag) throws Exception {
+		if (tag.equals(ELSE_TAG)) {
 			seq = new SeqForm(parser);
 			body.add(seq);
+			deep++;
 		} else {
-			super.add(s);
+			super.open(tag);
 		}
+	}
+
+	public boolean close() throws Exception {
+		if (deep > 0) {
+			deep--;
+			return false;
+		}
+		return super.close();
 	}
 
 	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
