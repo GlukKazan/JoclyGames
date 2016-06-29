@@ -26,10 +26,10 @@ public class WhileForm extends AbstractForm {
 	}
 
 	public void add(String s) throws Exception {
-		if (parser.isNavigation(s) && (cond == null)) {
-			throw new Exception("Not supported");
+		if (cond == null) {
+			IForm f = new ApplyForm(s, parser);
+			addForm(f);
 		}
-		super.add(s);
 	}
 
 	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {

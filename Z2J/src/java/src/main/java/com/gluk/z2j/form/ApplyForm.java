@@ -262,7 +262,7 @@ public class ApplyForm extends AbstractForm {
 		int ix = game.getNameIndex(func);
 		if (ix >= 0) {
 			if (!args.isEmpty()) {
-				throw new Exception("Not supported");
+				return false;
 			}
 			if (game.isAttribute(func)) {
 				template.addCommand(ZRF_GET_ATTR, ix, func);
@@ -326,6 +326,9 @@ public class ApplyForm extends AbstractForm {
 	
 	private boolean other(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if (func.equals(VERIFY)) {
+			for (IForm f: args) {
+				f.generate(template, params, game);
+			}
 			template.addCommand(ZRF_FUNCTION, ZRF_VERIFY, "verify");
 			return true;
 		}
@@ -367,12 +370,12 @@ public class ApplyForm extends AbstractForm {
 	}
 	
 	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
-		if (navigate(template, params, game)) return;
 		if (state(template, params, game))    return;
 		if (other(template, params, game))    return;
 		if (zone(template, params, game))     return;
 		if (flags(template, params, game))    return;
 		if (end(template, params, game))      return;
+		if (navigate(template, params, game)) return;
 		throw new Exception("Function [" + func + "] unknown");
 	}
 }
