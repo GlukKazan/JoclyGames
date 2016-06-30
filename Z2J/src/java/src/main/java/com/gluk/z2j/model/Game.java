@@ -31,7 +31,8 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String    PARAM_TAG = "param";
  	private final static String       IX_TAG = "index";
  	private final static String      CMD_TAG = "c";
- 	private final static String        C_TAG = "c";
+ 	private final static String        D_TAG = "d";
+ 	private final static String        I_TAG = "i";
  	private final static String        P_TAG = "p";
  	private final static String        N_TAG = "n";
 
@@ -252,6 +253,7 @@ public class Game extends AbstractDoc implements IGame {
 		}
 		for (int i = 0; i < modes.size(); i++) {
 			dest.open(MODE_TAG);
+			dest.open(IX_TAG); dest.add(Integer.toString(i)); dest.close();
 			dest.open(NAME_TAG); dest.add(modes.get(i)); dest.close();
 			if (i < priorities) {
 				dest.open(PRIOR_TAG); dest.close();
@@ -346,7 +348,8 @@ public class Game extends AbstractDoc implements IGame {
 			dest.open(IX_TAG); dest.add(ix.toString()); dest.close();
 			for (Command c: t.getCommands()) {
 				dest.open(CMD_TAG);
-				dest.open(C_TAG); dest.add(c.getCode().toString()); dest.close();
+				dest.open(D_TAG); dest.add(c.getDesc()); dest.close();
+				dest.open(I_TAG); dest.add(c.getCode().toString()); dest.close();
 				dest.open(P_TAG); dest.add(c.getParam().toString()); dest.close();
 				dest.open(N_TAG); dest.add(c.getName()); dest.close();
 				dest.close();
@@ -366,8 +369,8 @@ public class Game extends AbstractDoc implements IGame {
 		board.extract(dest);
 		extractModes(dest);
 		extractAttrs();
-		extractTemplates(dest);
 		extractPieces(dest);
+		extractTemplates(dest);
 		extractSetup(dest);
 		dest.close();
 	}

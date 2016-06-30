@@ -18,12 +18,12 @@ public class MoveTemplate implements IMoveTemplate {
 		return commands.size();
 	}
 
-	public void addCommand(int code, int param, String name) {
-		commands.add(new Command(code, param, name));
+	public void addCommand(int code, int param, String name, String desc) {
+		commands.add(new Command(code, param, name, desc));
 	}
 
-	public void addCommand(int code) {
-		addCommand(code, 0, "");
+	public void addCommand(int code, String desc) {
+		addCommand(code, 0, "", desc);
 	}
 
 	public void fixup(int offset, int param) throws Exception {

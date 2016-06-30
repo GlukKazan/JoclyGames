@@ -35,15 +35,15 @@ public class OrForm extends AbstractForm  {
 		for (IForm f: body) {
 			f.generate(template, params, game);
 			fixups.add(template.getOffset());
-			template.addCommand(ZRF_IF);
+			template.addCommand(ZRF_IF, "IF");
 		}
-		template.addCommand(ZRF_LITERAL, 0, "false");
+		template.addCommand(ZRF_LITERAL, 0, "false", "LITERAL");
 		int from = template.getOffset();
-		template.addCommand(ZRF_JUMP);
+		template.addCommand(ZRF_JUMP, "JUMP");
 		for (Integer o: fixups) {
 			template.fixup(o, template.getOffset() - o);
 		}
-		template.addCommand(ZRF_LITERAL, 1, "true");
+		template.addCommand(ZRF_LITERAL, 1, "true", "LITERAL");
 		template.fixup(from, template.getOffset() - from);
 	}
 }

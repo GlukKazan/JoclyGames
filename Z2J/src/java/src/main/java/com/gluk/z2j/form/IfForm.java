@@ -55,15 +55,15 @@ public class IfForm extends AbstractForm {
 			throw new Exception("Internal error");
 		}
 		cond.generate(template, params, game);
-		template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
+		template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 		int from = template.getOffset();
-		template.addCommand(ZRF_IF);
+		template.addCommand(ZRF_IF, "IF");
 		body.get(0).generate(template, params, game);
 		if (body.size() == 1) {
 			template.fixup(from, template.getOffset() - from);
 		} else {
 			int offset = template.getOffset();
-			template.addCommand(ZRF_JUMP);
+			template.addCommand(ZRF_JUMP, "JUMP");
 			template.fixup(from, template.getOffset() - from);
 			body.get(1).generate(template, params, game);
 			template.fixup(offset, template.getOffset() - offset);

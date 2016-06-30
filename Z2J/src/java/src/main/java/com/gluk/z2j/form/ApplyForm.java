@@ -86,13 +86,13 @@ public class ApplyForm extends AbstractForm {
 			int ix = game.getNameIndex(name);
 			args.get(1).generate(template, params, game);
 			if (func.equals(SET_FLAG)) {
-				template.addCommand(ZRF_SET_FLAG, ix, name);
+				template.addCommand(ZRF_SET_FLAG, ix, name, "SET_FLAG");
 			}
 			if (func.equals(SET_PFLAG)) {
-				template.addCommand(ZRF_SET_PFLAG, ix, name);
+				template.addCommand(ZRF_SET_PFLAG, ix, name, "SET_POS_FLAG");
 			}
 			if (func.equals(SET_ATTR)) {
-				template.addCommand(ZRF_SET_ATTR, ix, name);
+				template.addCommand(ZRF_SET_ATTR, ix, name, "SET_POS_ATTR");
 			}
 			return true;
 		}
@@ -102,9 +102,9 @@ public class ApplyForm extends AbstractForm {
 			}
 			String name = args.get(0).getName();
 			int ix = game.getNameIndex(name);
-			template.addCommand(ZRF_GET_FLAG, ix, name);
+			template.addCommand(ZRF_GET_FLAG, ix, name, "FLAG");
 			if (func.equals(NOT_FLAG)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
+				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 			}
 			return true;
 		}
@@ -113,27 +113,27 @@ public class ApplyForm extends AbstractForm {
 				throw new Exception("Not supported");
 			}
 			if (args.size() == 2) {
-				template.addCommand(ZRF_PUSH);
+				template.addCommand(ZRF_PUSH, "PUSH");
 				args.get(1).generate(template, params, game);
 			}
 			String name = args.get(0).getName();
 			int ix = game.getNameIndex(name);
-			template.addCommand(ZRF_GET_PFLAG, ix, name);
+			template.addCommand(ZRF_GET_PFLAG, ix, name, "POS_FLAG");
 			if (func.equals(NOT_PFLAG)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
+				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 			}
 			if (args.size() == 2) {
-				template.addCommand(ZRF_POP);
+				template.addCommand(ZRF_POP, "POP");
 			}
 			return true;
 		}
 		if (func.equals(FALSE)) {
-			template.addCommand(ZRF_PARAM, params.size(), "false");
+			template.addCommand(ZRF_PARAM, params.size(), "false", "PARAM");
 			params.add(0);
 			return true;
 		}
 		if (func.equals(TRUE)) {
-			template.addCommand(ZRF_PARAM, params.size(), "true");
+			template.addCommand(ZRF_PARAM, params.size(), "true", "PARAM");
 			params.add(1);
 			return true;
 		}
@@ -143,7 +143,7 @@ public class ApplyForm extends AbstractForm {
 	private boolean end(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if (func.equals(ADD)) {
 			int offset = template.getOffset();
-			template.addCommand(ZRF_FORK);
+			template.addCommand(ZRF_FORK, "FORK");
 			int o = template.getOffset();
 			for (int i = 0; i < args.size(); i++) {
 				if (i > 0) {
@@ -151,22 +151,22 @@ public class ApplyForm extends AbstractForm {
 				}
 				if (i < args.size() - 1) {
 					o = template.getOffset();
-					template.addCommand(ZRF_FORK);
+					template.addCommand(ZRF_FORK, "FORK");
 				}
 				String name = args.get(i).getName();
 				int ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Piece [" + name + "] unknown");
 				}
-				template.addCommand(ZRF_PROMOTE, ix, name);
+				template.addCommand(ZRF_PROMOTE, ix, name, "PROMOTE");
 				if (i < args.size() - 1) {
-					template.addCommand(ZRF_FUNCTION, ZRF_END, "end");
+					template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
 				}
 			}
 			if (game.checkFlag(FROM_FLAG)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to");
+				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to", "FUNCTION");
 			}
-			template.addCommand(ZRF_FUNCTION, ZRF_END, "end");
+			template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
 			template.fixup(offset, template.getOffset() - offset);
 			return true;
 		}
@@ -175,52 +175,52 @@ public class ApplyForm extends AbstractForm {
 				throw new Exception("Not supported");
 			}
 			int offset = template.getOffset();
-			template.addCommand(ZRF_FORK);
+			template.addCommand(ZRF_FORK, "FORK");
 			if (args.size() > 1) {
 				String name = args.get(0).getName();
 				int ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Piece [" + name + "] unknown");
 				}
-				template.addCommand(ZRF_PROMOTE, ix, name);
+				template.addCommand(ZRF_PROMOTE, ix, name, "PROMOTE");
 				name = args.get(1).getName();
 				ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Mode [" + name + "] unknown");
 				}
-				template.addCommand(ZRF_MODE, ix, name);
+				template.addCommand(ZRF_MODE, ix, name, "MODE");
 			} else {
 				String name = args.get(0).getName();
 				int ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Mode [" + name + "] unknown");
 				}
-				template.addCommand(ZRF_MODE, ix, name);
+				template.addCommand(ZRF_MODE, ix, name, "MODE");
 			}
 			if (game.checkFlag(FROM_FLAG)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to");
+				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to", "FUNCTION");
 			}
-			template.addCommand(ZRF_FUNCTION, ZRF_END, "end");
+			template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
 			template.fixup(offset, template.getOffset() - offset);
 			return true;
 		}
 		if (func.equals(FROM)) {
-			template.addCommand(ZRF_FUNCTION, ZRF_FROM, "from");
+			template.addCommand(ZRF_FUNCTION, ZRF_FROM, "from", "FUNCTION");
 			game.setFlag(FROM_FLAG, 1);
 			return true;
 		}
 		if (func.equals(TO)) {
 			if (game.checkFlag(FROM_FLAG)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to");
+				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to", "FUNCTION");
 				game.setFlag(FROM_FLAG, 0);
 			}
 			return true;
 		}
 		if (func.equals(CASCADE)) {
 			if (game.checkFlag(FROM_FLAG)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to");
+				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to", "FUNCTION");
 			}
-			template.addCommand(ZRF_FUNCTION, ZRF_FROM, "from");
+			template.addCommand(ZRF_FUNCTION, ZRF_FROM, "from", "FUNCTION");
 			game.setFlag(FROM_FLAG, 1);
 			return true;
 		}
@@ -235,12 +235,12 @@ public class ApplyForm extends AbstractForm {
 			String name = args.get(0).getName();
 			int ix = game.getNameIndex(name);
 			if (game.isDirection(name)) {
-				template.addCommand(ZRF_ON_BOARDD, ix, "name");
+				template.addCommand(ZRF_ON_BOARDD, ix, "name", "ON_BOARD_DIR");
 			} else {
-				template.addCommand(ZRF_ON_BOARDP, ix, "name");
+				template.addCommand(ZRF_ON_BOARDP, ix, "name", "ON_BOARD_POS");
 			}
 			if (func.equals(NOT_BOARD)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
+				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 			}
 			return true;
 		}
@@ -253,10 +253,10 @@ public class ApplyForm extends AbstractForm {
 			if (!game.isDirection(name)) {
 				throw new Exception("Not direction [" + name + "]");
 			}
-			template.addCommand(ZRF_PARAM, params.size(), name);
+			template.addCommand(ZRF_PARAM, params.size(), name, "PARAM");
 			params.add(ix);
-			template.addCommand(ZRF_FUNCTION, ZRF_OPPOSITE, "opposite");
-			template.addCommand(ZRF_FUNCTION, ZRF_NAVIGATE, "navigate");
+			template.addCommand(ZRF_FUNCTION, ZRF_OPPOSITE, "opposite", "FUNCTION");
+			template.addCommand(ZRF_FUNCTION, ZRF_NAVIGATE, "navigate", "FUNCTION");
 			return true;
 		}
 		int ix = game.getNameIndex(func);
@@ -265,16 +265,16 @@ public class ApplyForm extends AbstractForm {
 				return false;
 			}
 			if (game.isAttribute(func)) {
-				template.addCommand(ZRF_GET_ATTR, ix, func);
+				template.addCommand(ZRF_GET_ATTR, ix, func, "ATTR");
 				return true;
 			}
-			template.addCommand(ZRF_PARAM, params.size(), func);
+			template.addCommand(ZRF_PARAM, params.size(), func, "PARAM");
 			params.add(ix);
 			if (game.isDirection(func)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_NAVIGATE, "navigate");
+				template.addCommand(ZRF_FUNCTION, ZRF_NAVIGATE, "navigate", "FUNCTION");
 			}
 			if (game.isPosition(func)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_SET_POS, "position");
+				template.addCommand(ZRF_FUNCTION, ZRF_SET_POS, "position", "FUNCTION");
 			}
 			return true;
 		}
@@ -289,35 +289,35 @@ public class ApplyForm extends AbstractForm {
 				throw new Exception("Not supported");
 			}
 			if (!args.isEmpty()) {
-				template.addCommand(ZRF_PUSH);
+				template.addCommand(ZRF_PUSH, "PUSH");
 				args.get(0).generate(template, params, game);
 			}
 			if (func.equals(EMPTY) || func.equals(NOT_EMPTY)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_IS_EMPTY, "empty?");
+				template.addCommand(ZRF_FUNCTION, ZRF_IS_EMPTY, "empty?", "FUNCTION");
 			}
 			if (func.equals(ENEMY) || func.equals(NOT_ENEMY)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_IS_ENEMY, "enemy?");
+				template.addCommand(ZRF_FUNCTION, ZRF_IS_ENEMY, "enemy?", "FUNCTION");
 			}
 			if (func.equals(FRIEND) || func.equals(NOT_FRIEND)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_IS_FRIEND, "friend?");
+				template.addCommand(ZRF_FUNCTION, ZRF_IS_FRIEND, "friend?", "FUNCTION");
 			}
 			if (func.equals(LASTF) || func.equals(NOT_LASTF)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_IS_LASTF, "last-from?");
+				template.addCommand(ZRF_FUNCTION, ZRF_IS_LASTF, "last-from?", "FUNCTION");
 			}
 			if (func.equals(LASTT) || func.equals(NOT_LASTT)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_IS_LASTT, "last-to?");
+				template.addCommand(ZRF_FUNCTION, ZRF_IS_LASTT, "last-to?", "FUNCTION");
 			}
 			if (func.equals(NOT_EMPTY) || func.equals(NOT_ENEMY) || func.equals(NOT_FRIEND) || func.equals(NOT_LASTF) || func.equals(NOT_LASTT)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
+				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 			}
 			if (func.equals(CAPTURE)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_CAPTURE, "capture");
+				template.addCommand(ZRF_FUNCTION, ZRF_CAPTURE, "capture", "FUNCTION");
 			}
 			if (func.equals(FLIP) || func.equals(CHG_OWN)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_FLIP, "flip");
+				template.addCommand(ZRF_FUNCTION, ZRF_FLIP, "flip", "FUNCTION");
 			}
 			if (!args.isEmpty()) {
-				template.addCommand(ZRF_POP);
+				template.addCommand(ZRF_POP, "POP");
 			}
 			return true;
 		}
@@ -329,15 +329,15 @@ public class ApplyForm extends AbstractForm {
 			for (IForm f: args) {
 				f.generate(template, params, game);
 			}
-			template.addCommand(ZRF_FUNCTION, ZRF_VERIFY, "verify");
+			template.addCommand(ZRF_FUNCTION, ZRF_VERIFY, "verify", "FUNCTION");
 			return true;
 		}
 		if (func.equals(MARK)) {
-			template.addCommand(ZRF_FUNCTION, ZRF_MARK, "mark");
+			template.addCommand(ZRF_FUNCTION, ZRF_MARK, "mark", "FUNCTION");
 			return true;
 		}
 		if (func.equals(BACK)) {
-			template.addCommand(ZRF_FUNCTION, ZRF_BACK, "back");
+			template.addCommand(ZRF_FUNCTION, ZRF_BACK, "back", "FUNCTION");
 			return true;
 		}
 		return false;
@@ -349,7 +349,7 @@ public class ApplyForm extends AbstractForm {
 				throw new Exception("Not supported");
 			}
 			if (args.size() == 2) {
-				template.addCommand(ZRF_PUSH);
+				template.addCommand(ZRF_PUSH, "PUSH");
 				args.get(1).generate(template, params, game);
 			}
 			String name = args.get(0).getName();
@@ -357,12 +357,12 @@ public class ApplyForm extends AbstractForm {
 			if (ix < 0) {
 				throw new Exception("Zone [" + name + "] unknown");
 			}
-			template.addCommand(ZRF_IN_ZONE, ix, name);
+			template.addCommand(ZRF_IN_ZONE, ix, name, "IN_ZONE");
 			if (func.equals(NOT_ZONE)) {
-				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
+				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 			}
 			if (args.size() == 2) {
-				template.addCommand(ZRF_POP);
+				template.addCommand(ZRF_POP, "POP");
 			}
 			return true;
 		}

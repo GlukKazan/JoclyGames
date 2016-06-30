@@ -38,11 +38,11 @@ public class WhileForm extends AbstractForm {
 		}
 		int start = template.getOffset();
 		cond.generate(template, params, game);
-		template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not");
+		template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 		int from = template.getOffset();
-		template.addCommand(ZRF_IF);
+		template.addCommand(ZRF_IF, "IF");
 		body.generate(template, params, game);
-		template.addCommand(ZRF_JUMP, start - template.getOffset(), "");
+		template.addCommand(ZRF_JUMP, start - template.getOffset(), "", "JUMP");
 		template.fixup(from, template.getOffset() - from);
 	}
 }
