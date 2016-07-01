@@ -27,9 +27,9 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String    SETUP_TAG = "board-setup";
 	private final static String      OFF_TAG = "off";
 	private final static String     MOVE_TAG = "move";
+	private final static String     DROP_TAG = "drop";
 	private final static String TEMPLATE_TAG = "template";
 	private final static String    PARAM_TAG = "param";
- 	private final static String       IX_TAG = "index";
  	private final static String      CMD_TAG = "c";
  	private final static String        D_TAG = "d";
  	private final static String        I_TAG = "i";
@@ -204,7 +204,7 @@ public class Game extends AbstractDoc implements IGame {
 		return modes.size() - 1;
 	}
 	
-	public void addMove(int piece, IForm form, String mode) throws Exception {
+	public void addMove(int piece, IForm form, String mode, boolean isDrop) throws Exception {
 		flags = 0;
 		List<Integer> params = new ArrayList<Integer>();
 		MoveTemplate template = new MoveTemplate();
@@ -216,7 +216,7 @@ public class Game extends AbstractDoc implements IGame {
 			ml = new ArrayList<Move>();
 			moves.put(piece, ml);
 		}
-		ml.add(new Move(tx, params, mx));
+		ml.add(new Move(tx, params, mx, isDrop));
 	}
 	
 	private void extractPlayers(IDoc dest) throws Exception {
@@ -253,7 +253,6 @@ public class Game extends AbstractDoc implements IGame {
 		}
 		for (int i = 0; i < modes.size(); i++) {
 			dest.open(MODE_TAG);
-			dest.open(IX_TAG); dest.add(Integer.toString(i)); dest.close();
 			dest.open(NAME_TAG); dest.add(modes.get(i)); dest.close();
 			if (i < priorities) {
 				dest.open(PRIOR_TAG); dest.close();
@@ -328,7 +327,11 @@ public class Game extends AbstractDoc implements IGame {
 			List<Move> ml = moves.get(p.getIx());
 			if (ml != null) {
 				for (Move m: ml) {
-					dest.open(MOVE_TAG);
+					if (m.isDrop()) {
+						dest.open(DROP_TAG);
+					} else {
+						dest.open(MOVE_TAG);
+					}
 					dest.open(MODE_TAG); dest.add(m.getMode().toString()); dest.close();
 					dest.open(TEMPLATE_TAG); dest.add(m.getTemplate().toString()); dest.close();
 					for (Integer v: m.getParams()) {
@@ -345,7 +348,6 @@ public class Game extends AbstractDoc implements IGame {
 		Integer ix = 0;
 		for (MoveTemplate t: templates) {
 			dest.open(TEMPLATE_TAG);
-			dest.open(IX_TAG); dest.add(ix.toString()); dest.close();
 			for (Command c: t.getCommands()) {
 				dest.open(CMD_TAG);
 				dest.open(D_TAG); dest.add(c.getDesc()); dest.close();

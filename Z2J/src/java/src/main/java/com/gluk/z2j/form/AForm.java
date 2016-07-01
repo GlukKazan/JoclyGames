@@ -32,7 +32,7 @@ public class AForm implements IForm {
 		}
 	}
 
-	public void addMove(IPiece piece, String mode) throws Exception {}
+	public void addMove(IPiece piece, String mode, boolean isDrop) throws Exception {}
 
 	public void addForm(IForm form) throws Exception {}
 

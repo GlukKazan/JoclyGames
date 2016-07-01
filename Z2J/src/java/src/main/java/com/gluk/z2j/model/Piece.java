@@ -31,8 +31,8 @@ public class Piece extends AbstractDoc implements IPiece {
 		return ix;
 	}
 	
-	public void addMove(IForm form, String mode) throws Exception {
-		game.addMove(ix, form, mode);
+	public void addMove(IForm form, String mode, boolean isDrop) throws Exception {
+		game.addMove(ix, form, mode, isDrop);
 	}
 
 	public void open(String tag) throws Exception {

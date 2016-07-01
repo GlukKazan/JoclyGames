@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.model.IMoveTemplate;
 
 public class MoveTemplate implements IMoveTemplate {
@@ -19,6 +20,13 @@ public class MoveTemplate implements IMoveTemplate {
 	}
 
 	public void addCommand(int code, int param, String name, String desc) {
+		if ((code == IForm.ZRF_FUNCTION) && (param == IForm.ZRF_NOT) && !commands.isEmpty()) {
+			Command c = commands.get(commands.size() - 1);
+			if ((c.getCode() == code) && (c.getParam() == param)) {
+				commands.remove(commands.size() - 1);
+				return;
+			}
+		}
 		commands.add(new Command(code, param, name, desc));
 	}
 

@@ -454,6 +454,9 @@ function ZrfDesign() {
   this.znames    = [];
 }
 
+// TODO: addCommand
+// TODO: addPriority
+
 Model.Game.getDesign = function() {
   if (typeof Model.Game.design === "undefined") {
       Model.Game.design = new ZrfDesign();
@@ -496,6 +499,7 @@ ZrfDesign.prototype.addMove = function(aType, aTemplate, aParams, aMode) {
   });
 }
 
+// TODO: aMode
 ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams) {
   if (typeof this.pieces[aType] === "undefined") {
       this.pieces[aType] = [];

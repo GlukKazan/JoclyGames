@@ -6,7 +6,7 @@ import com.gluk.z2j.api.form.IForm;
 
 public interface IGame {
 	Collection<String> getPlayers();
-	void addMove(int piece, IForm form, String mode) throws Exception;
+	void addMove(int piece, IForm form, String mode, boolean isDrop) throws Exception;
 	int addMode(String mode);
 	boolean isPlayer(String name);
 	boolean isPosition(String name);

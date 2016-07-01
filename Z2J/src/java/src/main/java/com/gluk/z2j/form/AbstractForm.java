@@ -19,8 +19,8 @@ public abstract class AbstractForm implements IForm {
 
 	public void setParent(IForm parent) {}
 	
-	public void addMove(IPiece piece, String mode) throws Exception {
-		piece.addMove(this, mode);
+	public void addMove(IPiece piece, String mode, boolean isDrop) throws Exception {
+		piece.addMove(this, mode, isDrop);
 	}
 	
 	public void open(String tag) throws Exception {

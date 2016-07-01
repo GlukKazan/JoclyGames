@@ -253,7 +253,7 @@ public class ApplyForm extends AbstractForm {
 			if (!game.isDirection(name)) {
 				throw new Exception("Not direction [" + name + "]");
 			}
-			template.addCommand(ZRF_PARAM, params.size(), name, "PARAM");
+			template.addCommand(ZRF_PARAM, params.size(), "$" + Integer.toString(params.size() + 1), "PARAM");
 			params.add(ix);
 			template.addCommand(ZRF_FUNCTION, ZRF_OPPOSITE, "opposite", "FUNCTION");
 			template.addCommand(ZRF_FUNCTION, ZRF_NAVIGATE, "navigate", "FUNCTION");
@@ -268,7 +268,7 @@ public class ApplyForm extends AbstractForm {
 				template.addCommand(ZRF_GET_ATTR, ix, func, "ATTR");
 				return true;
 			}
-			template.addCommand(ZRF_PARAM, params.size(), func, "PARAM");
+			template.addCommand(ZRF_PARAM, params.size(), "$" + Integer.toString(params.size() + 1), "PARAM");
 			params.add(ix);
 			if (game.isDirection(func)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_NAVIGATE, "navigate", "FUNCTION");

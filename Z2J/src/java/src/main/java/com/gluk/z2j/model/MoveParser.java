@@ -104,7 +104,7 @@ public class MoveParser implements IDoc, IMoveParser {
 			return true;
 		}
 		if (form.close()) {
-			form.addMove(piece, mode);
+			form.addMove(piece, mode, isDrop);
 			form = null;
 		}
 		return false;

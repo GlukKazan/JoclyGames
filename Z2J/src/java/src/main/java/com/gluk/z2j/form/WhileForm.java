@@ -29,6 +29,8 @@ public class WhileForm extends AbstractForm {
 		if (cond == null) {
 			IForm f = new ApplyForm(s, parser);
 			addForm(f);
+		} else {
+			body.add(s);
 		}
 	}
 
