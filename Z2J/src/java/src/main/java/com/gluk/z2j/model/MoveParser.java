@@ -60,7 +60,7 @@ public class MoveParser implements IDoc, IMoveParser {
 			if (isTop) {
 				IForm r = new SeqForm(this);
 				if (!isDrop) {
-					r.open(FROM_TAG);r.close();
+					r.addForm(new ApplyForm(FROM_TAG, this));
 				}
 				return r;
 			} else {
