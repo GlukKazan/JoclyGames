@@ -22,7 +22,7 @@ public class Board extends AbstractDoc implements IBoard {
 	private final static String NAME_TAG   = "name";
 	private final static String DIR_TAG    = "dir";
 	private final static String ZONE_TAG   = "zone";
-	private final static String A_TAG      = "a";
+	private final static String A_TAG      = "z2j-a";
 	
 	private final static String ALL_XP     = "*";
 	private final static String HEAD_XP    = "*[1]";

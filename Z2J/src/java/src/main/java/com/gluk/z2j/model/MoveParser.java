@@ -22,8 +22,8 @@ public class MoveParser implements IDoc, IMoveParser {
 	private final static String AND_TAG     = "and";
 	private final static String OR_TAG      = "or";
 	private final static String FROM_TAG    = "from";
-	private final static String L_TAG       = "l";
-	private final static String A_TAG       = "a";
+	private final static String L_TAG       = "z2j-l";
+	private final static String A_TAG       = "z2j-a";
 	
 	private IGame game;
 	private IPiece piece;

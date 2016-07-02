@@ -44,7 +44,7 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String  PIECES_XP   = "/game/piece";
 	private final static String   SETUP_XP   = "/game/board-setup/*";
 	
-	private final static String       A_XP   = "a";
+	private final static String       A_XP   = "z2j-a";
 	private final static String     ALL_XP   = "*";
 	
 	private AbstractDoc               proxy  = null;

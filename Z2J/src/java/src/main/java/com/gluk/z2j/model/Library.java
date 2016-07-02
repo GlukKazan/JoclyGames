@@ -18,17 +18,17 @@ public class Library implements ILibrary {
 	
 	private final static String GAME_TAG    = "game";
 	
-	private final static String L_XP        = "l";
+	private final static String L_XP        = "z2j-l";
 	private final static String ALL_XP      = "*";
 	private final static String TAIL_XP     = "*[position() > 1]";
 	private final static String BODY_XP     = "*[position() > 2]";
-	private final static String TYPE_XP     = "a[1]";
-	private final static String MACRO_XP    = "a[2]";
-	private final static String DEF_XP      = "l/a[text() = 'default']";
-	private final static String NAME_XP     = "l[a[1] = 'name']/a[2]";
-	private final static String DEFINE_XP   = "/l/l[a[1]/text() = 'define']";
-	private final static String GAME_XP     = "/l/l[a[1]/text() = 'game']";
-	private final static String VAR_XP      = "/l/l[a[1]/text() = 'variant']";
+	private final static String TYPE_XP     = "z2j-a[1]";
+	private final static String MACRO_XP    = "z2j-a[2]";
+	private final static String DEF_XP      = "z2j-l/z2j-a[text() = 'default']";
+	private final static String NAME_XP     = "z2j-l[z2j-a[1] = 'name']/z2j-a[2]";
+	private final static String DEFINE_XP   = "/z2j-l/z2j-l[z2j-a[1]/text() = 'define']";
+	private final static String GAME_XP     = "/z2j-l/z2j-l[z2j-a[1]/text() = 'game']";
+	private final static String VAR_XP      = "/z2j-l/z2j-l[z2j-a[1]/text() = 'variant']";
 	
 	private Document root;
 	private Map<String, Node> macro = new HashMap<String, Node>();

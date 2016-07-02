@@ -19,7 +19,7 @@ import com.gluk.z2j.api.loader.IDoc;
 
 public abstract class AbstractDoc implements IDoc {
 	
-	private final static String A_TAG  = "a";
+	private final static String A_TAG  = "z2j-a";
 	private final static String ALL_XP = "*";
 	
 	protected Node doc = null;

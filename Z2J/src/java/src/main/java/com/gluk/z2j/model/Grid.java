@@ -15,9 +15,9 @@ import com.gluk.z2j.api.model.IGrid;
 
 public class Grid extends AbstractDoc implements IGrid {
 	
-	private final static String DIM_XP = "/grid/dimensions/l/a";
+	private final static String DIM_XP = "/grid/dimensions/z2j-l/z2j-a";
 	private final static String DIR_XP = "/grid/directions/*";
-	private final static String ALL_XP = "a";
+	private final static String ALL_XP = "z2j-a";
 
 	private List<List<String>> dims = new ArrayList<List<String>>();
 	private Map<String, List<Integer>> dirs = new HashMap<String, List<Integer>>();

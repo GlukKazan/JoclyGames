@@ -20,8 +20,8 @@ public class Parser implements IParser {
 	
 	private final static String INCLUDE_CMD = "include";
 	
-	private final static String LIST_TAG = "l";
-	private final static String ATOM_TAG = "a";
+	private final static String L_TAG = "z2j-l";
+	private final static String A_TAG = "z2j-a";
 	
 	private String dir = "";
 	
@@ -56,7 +56,7 @@ public class Parser implements IParser {
 				includeDeeps.push(deep);
 				return;
 			} else {
-				handler.startElement("", LIST_TAG, LIST_TAG, new AttributesImpl());
+				handler.startElement("", L_TAG, L_TAG, new AttributesImpl());
 				deep++;
 			}
 		}
@@ -64,14 +64,14 @@ public class Parser implements IParser {
 			include(s);
 			return;
 		}
-		handler.startElement("", ATOM_TAG, ATOM_TAG, new AttributesImpl());
+		handler.startElement("", A_TAG, A_TAG, new AttributesImpl());
 		handler.characters(s.toCharArray(), 0, s.length());
-		handler.endElement("", ATOM_TAG, ATOM_TAG);
+		handler.endElement("", A_TAG, A_TAG);
 	}
 
 	public void open() throws Exception {
 		if (isOpened) {
-			handler.startElement("", LIST_TAG, LIST_TAG, new AttributesImpl());
+			handler.startElement("", L_TAG, L_TAG, new AttributesImpl());
 			deep++;
 		}
 		if (deep == 0) {
@@ -104,7 +104,7 @@ public class Parser implements IParser {
 		if ((handler == null) || (deep <= 0)) {
 			throw new Exception("Internal error");
 		}
-		handler.endElement("", LIST_TAG, LIST_TAG);
+		handler.endElement("", L_TAG, L_TAG);
 		deep--;
 		if (deep == 0) {
 			handler.endDocument();
@@ -116,7 +116,7 @@ public class Parser implements IParser {
 		if (isForced) {
 			while (deep > 1) {
 				deep--;
-				handler.endElement("", LIST_TAG, LIST_TAG);
+				handler.endElement("", L_TAG, L_TAG);
 			}
 		}
 		close();
