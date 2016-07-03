@@ -1,6 +1,5 @@
 package com.gluk.z2j.form;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.gluk.z2j.api.form.IForm;
@@ -8,7 +7,10 @@ import com.gluk.z2j.api.form.IMoveParser;
 import com.gluk.z2j.api.model.IGame;
 import com.gluk.z2j.api.model.IMoveTemplate;
 
-public class ApplyForm extends AbstractForm {
+public class ApplyForm extends SeqForm {
+	
+	private final static String L_TAG      = "z2j-l";
+	private final static String A_TAG      = "z2j-a";
 	
 	private final static String FALSE      = "false";
 	private final static String TRUE       = "true";
@@ -49,7 +51,6 @@ public class ApplyForm extends AbstractForm {
 	private final static int FROM_FLAG     = 0x01;
 
 	private String func = "";
-	private List<IForm> args = new ArrayList<IForm>();
 	
 	public ApplyForm(String func, IMoveParser parser) {
 		super(parser);
@@ -60,31 +61,51 @@ public class ApplyForm extends AbstractForm {
 		super(parser);
 	}
 
-	public void add(String s) throws Exception {
-		if (func.isEmpty()) {
-			func = s;
-		} else {
-			IForm f = new ApplyForm(s, parser);
-			addForm(f);
-		}
-	}
-
-	public void addForm(IForm form) {
-		args.add(form);
-	}
-
 	public String getName() throws Exception {
 		return func;
 	}
 	
+	public void open(String tag) throws Exception {
+		if (deep == 0) {
+			deep++;
+			return;
+		}
+		if (form != null) {
+			form.open(tag);
+			return;
+		}
+		if (tag.equals(A_TAG)) {
+			if (func.equals(L_TAG)) {
+				deep++;
+			} else {
+				form = new ApplyForm(tag, parser);
+				form.open("");
+			}
+			return;
+		}
+		super.open(tag);
+	}
+
+	public void add(String s) throws Exception {
+		if (form != null) {
+			form.add(s);
+		} else {
+			func = s;
+		}
+	}
+
+	public void addForm(IForm form) {
+		forms.add(form);
+	}
+	
 	private boolean flags(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if (func.equals(SET_FLAG) || func.equals(SET_PFLAG) || func.equals(SET_ATTR)) {
-			if (args.size() != 2) {
+			if (forms.size() != 2) {
 				throw new Exception("Not supported");
 			}
-			String name = args.get(0).getName();
+			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
-			args.get(1).generate(template, params, game);
+			forms.get(1).generate(template, params, game);
 			if (func.equals(SET_FLAG)) {
 				template.addCommand(ZRF_SET_FLAG, ix, name, "SET_FLAG");
 			}
@@ -97,10 +118,10 @@ public class ApplyForm extends AbstractForm {
 			return true;
 		}
 		if (func.equals(FLAG) || func.equals(NOT_FLAG)) {
-			if (args.size() != 1) {
+			if (forms.size() != 1) {
 				throw new Exception("Not supported");
 			}
-			String name = args.get(0).getName();
+			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
 			template.addCommand(ZRF_GET_FLAG, ix, name, "FLAG");
 			if (func.equals(NOT_FLAG)) {
@@ -109,20 +130,20 @@ public class ApplyForm extends AbstractForm {
 			return true;
 		}
 		if (func.equals(PFLAG) || func.equals(NOT_PFLAG)) {
-			if (args.isEmpty() || (args.size() > 2)) {
+			if (forms.isEmpty() || (forms.size() > 2)) {
 				throw new Exception("Not supported");
 			}
-			if (args.size() == 2) {
+			if (forms.size() == 2) {
 				template.addCommand(ZRF_PUSH, "PUSH");
-				args.get(1).generate(template, params, game);
+				forms.get(1).generate(template, params, game);
 			}
-			String name = args.get(0).getName();
+			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
 			template.addCommand(ZRF_GET_PFLAG, ix, name, "POS_FLAG");
 			if (func.equals(NOT_PFLAG)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 			}
-			if (args.size() == 2) {
+			if (forms.size() == 2) {
 				template.addCommand(ZRF_POP, "POP");
 			}
 			return true;
@@ -145,21 +166,21 @@ public class ApplyForm extends AbstractForm {
 			int offset = template.getOffset();
 			template.addCommand(ZRF_FORK, "FORK");
 			int o = template.getOffset();
-			for (int i = 0; i < args.size(); i++) {
+			for (int i = 0; i < forms.size(); i++) {
 				if (i > 0) {
 					template.fixup(o, template.getOffset() - o);
 				}
-				if (i < args.size() - 1) {
+				if (i < forms.size() - 1) {
 					o = template.getOffset();
 					template.addCommand(ZRF_FORK, "FORK");
 				}
-				String name = args.get(i).getName();
+				String name = forms.get(i).getName();
 				int ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Piece [" + name + "] unknown");
 				}
 				template.addCommand(ZRF_PROMOTE, ix, name, "PROMOTE");
-				if (i < args.size() - 1) {
+				if (i < forms.size() - 1) {
 					template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
 				}
 			}
@@ -171,26 +192,26 @@ public class ApplyForm extends AbstractForm {
 			return true;
 		}
 		if (func.equals(ADD_PART)) {
-			if (args.isEmpty() || (args.size() > 2)) {
+			if (forms.isEmpty() || (forms.size() > 2)) {
 				throw new Exception("Not supported");
 			}
 			int offset = template.getOffset();
 			template.addCommand(ZRF_FORK, "FORK");
-			if (args.size() > 1) {
-				String name = args.get(0).getName();
+			if (forms.size() > 1) {
+				String name = forms.get(0).getName();
 				int ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Piece [" + name + "] unknown");
 				}
 				template.addCommand(ZRF_PROMOTE, ix, name, "PROMOTE");
-				name = args.get(1).getName();
+				name = forms.get(1).getName();
 				ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Mode [" + name + "] unknown");
 				}
 				template.addCommand(ZRF_MODE, ix, name, "MODE");
 			} else {
-				String name = args.get(0).getName();
+				String name = forms.get(0).getName();
 				int ix = game.getNameIndex(name);
 				if (ix < 0) {
 					throw new Exception("Mode [" + name + "] unknown");
@@ -229,10 +250,10 @@ public class ApplyForm extends AbstractForm {
 	
 	private boolean navigate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if (func.equals(ON_BOARD) || func.equals(NOT_BOARD)) {
-			if (args.size() != 1) {
+			if (forms.size() != 1) {
 				throw new Exception("Not supported");
 			}
-			String name = args.get(0).getName();
+			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
 			if (game.isDirection(name)) {
 				template.addCommand(ZRF_ON_BOARDD, ix, "name", "ON_BOARD_DIR");
@@ -245,10 +266,10 @@ public class ApplyForm extends AbstractForm {
 			return true;
 		}
 		if (func.equals(OPPOSITE)) {
-			if (args.size() != 1) {
+			if (forms.size() != 1) {
 				throw new Exception("Not supported");
 			}
-			String name = args.get(0).getName();
+			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
 			if (!game.isDirection(name)) {
 				throw new Exception("Not direction [" + name + "]");
@@ -261,7 +282,7 @@ public class ApplyForm extends AbstractForm {
 		}
 		int ix = game.getNameIndex(func);
 		if (ix >= 0) {
-			if (!args.isEmpty()) {
+			if (!forms.isEmpty()) {
 				return false;
 			}
 			if (game.isAttribute(func)) {
@@ -285,12 +306,12 @@ public class ApplyForm extends AbstractForm {
 		if (func.equals(EMPTY) || func.equals(NOT_EMPTY) || func.equals(ENEMY) || func.equals(NOT_ENEMY) || 
 			func.equals(FRIEND) || func.equals(NOT_FRIEND) || func.equals(LASTF) || func.equals(NOT_LASTF) || 
 			func.equals(LASTT) || func.equals(NOT_LASTT) || func.equals(CAPTURE) || func.equals(FLIP) || func.equals(CHG_OWN)) {
-			if (args.size() > 1) {
+			if (forms.size() > 1) {
 				throw new Exception("Not supported");
 			}
-			if (!args.isEmpty()) {
+			if (!forms.isEmpty()) {
 				template.addCommand(ZRF_PUSH, "PUSH");
-				args.get(0).generate(template, params, game);
+				forms.get(0).generate(template, params, game);
 			}
 			if (func.equals(EMPTY) || func.equals(NOT_EMPTY)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_IS_EMPTY, "empty?", "FUNCTION");
@@ -316,7 +337,7 @@ public class ApplyForm extends AbstractForm {
 			if (func.equals(FLIP) || func.equals(CHG_OWN)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_FLIP, "flip", "FUNCTION");
 			}
-			if (!args.isEmpty()) {
+			if (!forms.isEmpty()) {
 				template.addCommand(ZRF_POP, "POP");
 			}
 			return true;
@@ -326,7 +347,7 @@ public class ApplyForm extends AbstractForm {
 	
 	private boolean other(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if (func.equals(VERIFY)) {
-			for (IForm f: args) {
+			for (IForm f: forms) {
 				f.generate(template, params, game);
 			}
 			template.addCommand(ZRF_FUNCTION, ZRF_VERIFY, "verify", "FUNCTION");
@@ -345,14 +366,14 @@ public class ApplyForm extends AbstractForm {
 
 	private boolean zone(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if (func.equals(ZONE) || func.equals(NOT_ZONE)) {
-			if ((args.size() > 2) || args.isEmpty()) {
+			if ((forms.size() > 2) || forms.isEmpty()) {
 				throw new Exception("Not supported");
 			}
-			if (args.size() == 2) {
+			if (forms.size() == 2) {
 				template.addCommand(ZRF_PUSH, "PUSH");
-				args.get(1).generate(template, params, game);
+				forms.get(1).generate(template, params, game);
 			}
-			String name = args.get(0).getName();
+			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
 			if (ix < 0) {
 				throw new Exception("Zone [" + name + "] unknown");
@@ -361,7 +382,7 @@ public class ApplyForm extends AbstractForm {
 			if (func.equals(NOT_ZONE)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 			}
-			if (args.size() == 2) {
+			if (forms.size() == 2) {
 				template.addCommand(ZRF_POP, "POP");
 			}
 			return true;

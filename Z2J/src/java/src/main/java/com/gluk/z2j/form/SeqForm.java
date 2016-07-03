@@ -10,34 +10,28 @@ import com.gluk.z2j.api.model.IMoveTemplate;
 
 public class SeqForm extends AbstractForm {
 	
-	private List<IForm> forms = new ArrayList<IForm>();
-	private int deep = 0;
+	protected List<IForm> forms = new ArrayList<IForm>();
 	
 	public SeqForm(IMoveParser parser) {
 		super(parser);
+	}
+
+	public SeqForm(IMoveParser parser, List<IForm> forms) {
+		super(parser);
+		this.forms = forms;
 	}
 
 	public void open(String tag) throws Exception {
 		if (deep == 0) {
 			deep++;
 		} else {
-			super.open(tag);
+			if (form == null) {
+				form = parser.createForm(tag);
+			}
+			form.open(tag);
 		}
 	}
 	
-	public boolean close() throws Exception {
-		if (form == null) {
-			deep--;
-			return (deep == 0);
-		} else {
-			if (form.close()) {
-				form.addToParent(this);
-				form = null;
-			}
-			return false;
-		}
-	}
-
 	public void addForm(IForm form) {
 		forms.add(form);
 	}

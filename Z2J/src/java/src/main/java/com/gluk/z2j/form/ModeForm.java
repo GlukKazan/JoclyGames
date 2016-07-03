@@ -44,13 +44,9 @@ public class ModeForm implements IForm {
 		throw new Exception("Not supported");
 	}
 
+	public void addMove(IPiece piece, String mode, boolean isDrop) throws Exception {}
+
 	public String getName() throws Exception {
 		throw new Exception("Not supported");
 	}
-
-	public void addMove(IPiece piece, String mode, boolean isDrop) throws Exception {}
-
-	public void setParent(IForm parent) {}
-
-	public void addToParent(IForm parent) throws Exception {}
 }

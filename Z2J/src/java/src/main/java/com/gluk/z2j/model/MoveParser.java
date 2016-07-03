@@ -5,7 +5,6 @@ import com.gluk.z2j.api.form.IMoveParser;
 import com.gluk.z2j.api.loader.IDoc;
 import com.gluk.z2j.api.model.IGame;
 import com.gluk.z2j.api.model.IPiece;
-import com.gluk.z2j.form.AForm;
 import com.gluk.z2j.form.AndForm;
 import com.gluk.z2j.form.ApplyForm;
 import com.gluk.z2j.form.IfForm;
@@ -22,8 +21,6 @@ public class MoveParser implements IDoc, IMoveParser {
 	private final static String AND_TAG     = "and";
 	private final static String OR_TAG      = "or";
 	private final static String FROM_TAG    = "from";
-	private final static String L_TAG       = "z2j-l";
-	private final static String A_TAG       = "z2j-a";
 	
 	private IGame game;
 	private IPiece piece;
@@ -55,24 +52,7 @@ public class MoveParser implements IDoc, IMoveParser {
 		return game.isDirection(name) || game.isPosition(name);
 	}
 	
-	public IForm createForm(String tag, boolean isTop) throws Exception {
-		if (tag.equals(L_TAG)) {
-			if (isTop) {
-				IForm r = new SeqForm(this);
-				if (!isDrop) {
-					r.addForm(new ApplyForm(FROM_TAG, this));
-				}
-				return r;
-			} else {
-				return new ApplyForm(this); 
-			}
-		}
-		if (tag.equals(A_TAG)) {
-			return new AForm(this);
-		}
-		if (tag.equals(MODE_TAG)) {
-			return new ModeForm(this);
-		}
+	public IForm createForm(String tag) throws Exception {
 		if (tag.equals(IF_TAG)) {
 			return new IfForm(this);
 		}
@@ -91,17 +71,25 @@ public class MoveParser implements IDoc, IMoveParser {
 	public void open(String tag) throws Exception {
 		if (deep == 0) {
 			deep++;
-			return;
+		} else {
+			if (form == null) {
+				if (tag.equals(MODE_TAG)) {
+					form = new ModeForm(this);
+				} else {
+					form = new SeqForm(this);
+					if (!isDrop) {
+						form.addForm(new ApplyForm(FROM_TAG, this));
+					}
+				}
+			}
+			form.open(tag);
 		}
-		if (form == null) {
-			form = createForm(tag, true);
-		}
-		form.open(tag);
 	}
 
 	public boolean close() throws Exception {
 		if (form == null) {
-			return true;
+			deep--;
+			return (deep == 0);
 		}
 		if (form.close()) {
 			form.addMove(piece, mode, isDrop);

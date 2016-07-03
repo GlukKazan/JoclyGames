@@ -50,8 +50,7 @@ public class Piece extends AbstractDoc implements IPiece {
 
 	public boolean close() throws Exception {
 		if (proxy != null) {
-			boolean r = proxy.close(); 
-			if (r) {
+			if (proxy.close()) { 
 				proxy = null;
 			}
 			return false;

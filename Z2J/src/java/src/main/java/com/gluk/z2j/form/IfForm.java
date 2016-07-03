@@ -8,46 +8,41 @@ import com.gluk.z2j.api.form.IMoveParser;
 import com.gluk.z2j.api.model.IGame;
 import com.gluk.z2j.api.model.IMoveTemplate;
 
-public class IfForm extends AbstractForm {
+public class IfForm extends SeqForm {
 	
 	private final static String ELSE_TAG = "else";
 	
 	private IForm cond = null;
 	private List<IForm> body = new ArrayList<IForm>();
-	
-	private IForm seq = null;
-	private int deep = 0;
 
 	public IfForm(IMoveParser parser) {
 		super(parser);
 	}
 
-	public void addForm(IForm form) throws Exception {
-		if (cond == null) {
-			cond = form;
-			seq = new SeqForm(parser);
-			body.add(seq);
-		} else {
-			seq.addForm(form);
-		}
-	}
-	
 	public void open(String tag) throws Exception {
-		if (tag.equals(ELSE_TAG)) {
-			seq = new SeqForm(parser);
-			body.add(seq);
+		if (deep == 0) {
 			deep++;
-		} else {
-			super.open(tag);
+			return;
 		}
-	}
-
-	public boolean close() throws Exception {
-		if (deep > 0) {
-			deep--;
-			return false;
+		if (form != null) {
+			form.open(tag);
+			return;
 		}
-		return super.close();
+		if (cond == null) {
+			cond = new ApplyForm(tag, parser);
+			cond.open(tag);
+			body.add(new SeqForm(parser, forms));
+			form = cond;
+			return;
+		}
+		if (tag.equals(ELSE_TAG)) {
+			forms = new ArrayList<IForm>();
+			body.add(new SeqForm(parser, forms));
+			deep++;
+			form = null;
+			return;
+		}
+		super.open(tag);
 	}
 
 	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
