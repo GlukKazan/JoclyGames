@@ -52,6 +52,12 @@ public class IfForm extends SeqForm {
 		return false;
 	}
 
+	public void addForm(IForm form) {
+		if (form != cond) {
+			super.addForm(form);
+		}
+	}
+	
 	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if ((cond == null) || body.isEmpty() || body.size() > 2) {
 			throw new Exception("Internal error");

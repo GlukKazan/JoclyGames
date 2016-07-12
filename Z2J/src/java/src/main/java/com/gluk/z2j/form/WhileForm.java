@@ -33,6 +33,12 @@ public class WhileForm extends SeqForm {
 		super.open(tag);
 	}
 
+	public void addForm(IForm form) {
+		if (form != cond) {
+			super.addForm(form);
+		}
+	}
+
 	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if ((cond == null) || forms.isEmpty()) {
 			throw new Exception("Internal error");
