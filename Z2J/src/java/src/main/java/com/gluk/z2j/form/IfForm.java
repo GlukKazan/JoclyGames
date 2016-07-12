@@ -31,18 +31,25 @@ public class IfForm extends SeqForm {
 		if (cond == null) {
 			cond = new ApplyForm(tag, parser);
 			cond.open(tag);
-			body.add(new SeqForm(parser, forms));
 			form = cond;
 			return;
 		}
 		if (tag.equals(ELSE_TAG)) {
-			forms = new ArrayList<IForm>();
 			body.add(new SeqForm(parser, forms));
+			forms = new ArrayList<IForm>();
 			deep++;
 			form = null;
 			return;
 		}
 		super.open(tag);
+	}
+	
+	public boolean close() throws Exception {
+		if (super.close()) {
+			body.add(new SeqForm(parser, forms));
+			return true;
+		}
+		return false;
 	}
 
 	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
