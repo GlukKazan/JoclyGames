@@ -1,4 +1,4 @@
-Model.Game.getValue = function (aThis, aName, aPos) {
+Model.Game.getValueInternal = function (aThis, aName, aPos) {
   if (aThis.parent !== null) {
       return aThis.parent.getValue(aName, aPos);
   }

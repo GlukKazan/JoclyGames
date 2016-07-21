@@ -452,16 +452,36 @@ function ZrfDesign() {
   this.types     = [];
   this.dirs      = [];
   this.znames    = [];
+  this.pnames    = [];
+  this.pall      = [];
+  this.templates = [];
+  this.modec     = 0;
 }
-
-// TODO: addCommand
-// TODO: addPriority
 
 Model.Game.getDesign = function() {
   if (typeof Model.Game.design === "undefined") {
       Model.Game.design = new ZrfDesign();
   }
   return Model.Game.design;
+}
+
+ZrfDesign.prototype.getTemplate = function(aIx) {
+  if (typeof this.templates[aIx] === "undefined") {
+      this.templates[aIx] = Model.Game.createTemplate();
+  }
+  return this.templates[aIx];
+}
+
+ZrfDesign.prototype.addCommand = function(aIx, aName, aParam) {
+  var aGame = Model.Game;
+  var aTemplate = this.getTemplate(aIx);
+  aTemplate.addCommand(aGame, aName, aParam);
+}
+
+ZrfDesign.prototype.addPriority = function(aMode) {
+  if (aMode > this.modec) {
+      this.modec = aMode;
+  }
 }
 
 ZrfDesign.prototype.addAttribute = function(aType, aName, aVal) {
@@ -484,7 +504,9 @@ ZrfDesign.prototype.getAttribute = function(aType, aName) {
 }
 
 ZrfDesign.prototype.addPiece = function(aName, aType) {
-  this.names[aName] = aType;
+  this.pnames[aType] = aName;
+  this.pall.push("1/" + aType);
+  this.pall.push("-1/" + aType);
 }
 
 ZrfDesign.prototype.addMove = function(aType, aTemplate, aParams, aMode) {
@@ -495,12 +517,11 @@ ZrfDesign.prototype.addMove = function(aType, aTemplate, aParams, aMode) {
      type: 0,
      template: aTemplate,
      params: aParams,
-     mode: aMode,
+     mode: aMode
   });
 }
 
-// TODO: aMode
-ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams) {
+ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams, aMode) {
   if (typeof this.pieces[aType] === "undefined") {
       this.pieces[aType] = [];
   }
@@ -508,6 +529,7 @@ ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams) {
      type: 1,
      template: aTemplate,
      params: aParams,
+     mode: aMode
   });
 }
 
@@ -707,7 +729,7 @@ ZrfMoveGenerator.prototype.setPiece = function(aPos, aPiece) {
   this.pieces[aPos] = aPiece;
 }
 
-Model.Game.getValue = function(aThis, aName, aPos) {
+Model.Game.getValueInternal = function(aThis, aName, aPos) {
   return null;
 }
 
@@ -717,7 +739,7 @@ ZrfMoveGenerator.prototype.getValue = function(aName, aPos) {
           return this.values[aName][aPos];
       }
   }
-  return Model.Game.getValue(this, aName, aPos);
+  return Model.Game.getValueInternal(this, aName, aPos);
 }
 
 ZrfMoveGenerator.prototype.setValue = function(aName, aPos, aValue) {
@@ -796,12 +818,13 @@ ZrfPiece.prototype.flip = function() {
 Model.Game.BuildDesign = function(design) {}
 
 Model.Game.InitGame = function() {
-  this.BuildDesign(aGame.getDesign());
+  var design = aGame.getDesign();
+  this.BuildDesign(design);
   this.zobrist = new JocGame.Zobrist({
      board: {
-        type: "array",
-        size: this.this.design.positions.length,
-        values: Model.Game.PieceList,
+        type:  "array",
+        size:   design.positions.length,
+        values: design.pall
      }
   });
 }
