@@ -796,7 +796,7 @@ ZrfPiece.prototype.getValue = function(aName) {
 }
 
 ZrfPiece.prototype.setValue = function(aName, aValue) {
-  if (this.getValue() === aValue) {
+  if (this.getValue(aName) === aValue) {
       return this;
   }
   var piece = new ZrfPiece(this.type, this.player);
