@@ -1029,13 +1029,6 @@ Model.Board.setPiece = function(aPos, aPiece) {
   }
 }
 
-Model.Move.Init = function(args) {
-  this.moves = [];
-  for (var i in args.moves) {
-     this.moves.push(args.moves[i])
-  }
-}
-
 Model.Move.ToString = function() {
   var r = "";
   for (var i in this.moves) {
@@ -1074,7 +1067,7 @@ Model.Move.capturePiece = function(aPos) {
 
 Model.Move.SetAttr = function(aPos, aValues) {
   for (var i in this.moves) {
-     if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
+     if ((this.moves[i][1] !== null) && (this.moves[i][2] !== null)) {
          var piece = this.moves[i][2];
          for (var name in aValues) {
               piece = piece.setValue(name, aValues[name]);
@@ -1082,6 +1075,18 @@ Model.Move.SetAttr = function(aPos, aValues) {
          this.moves[i][2] = piece;
      }
   }
+}
+
+Model.Move.Init = function(args) {
+  this.moves = [];
+  for (var i in args.moves) {
+     this.moves.push(args.moves[i])
+  }
+  this.ToString     = Model.Move.ToString;
+  this.movePiece    = Model.Move.movePiece;
+  this.createPiece  = Model.Move.createPiece;
+  this.capturePiece = Model.Move.capturePiece;
+  this.SetAttr      = Model.Move.SetAttr;
 }
 
 })();

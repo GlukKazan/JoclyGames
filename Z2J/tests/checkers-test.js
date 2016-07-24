@@ -11,6 +11,8 @@ QUnit.test( "Piece", function( assert ) {
   assert.ok( piece.getValue(0) === true, "Existent value");
   piece = piece.setValue(0, false);
   assert.ok( piece.getValue(0) === false, "Reset value");
+  piece = man.setValue(0, false);
+  assert.equal( piece, man, "Value not changed");
 });
 
 QUnit.test( "Design", function( assert ) {
@@ -45,5 +47,31 @@ QUnit.test( "Design", function( assert ) {
   assert.ok( design.inZone(0, JocGame.PLAYER_A, 0) === true, "Player A promotion zone" );
   assert.ok( design.inZone(0, JocGame.PLAYER_B, 3) === true, "Player B promotion zone" );
   assert.ok( design.inZone(0, JocGame.PLAYER_A, 2) === false, "No promotion zone" );
+  assert.equal( design.getAttribute(0, 0), false, "Non existent attribute");
+  design.addAttribute(0, 0, true);
+  assert.equal( design.getAttribute(0, 0), true, "Default value for attribute");
+  Model.Game.design = undefined;
+});
+
+QUnit.test( "Move", function( assert ) {
+  var design = Model.Game.getDesign();
+  var move = new Model.Move.Init([]);
+  assert.equal( move.ToString(), "", "Initial move");
+  var man  = Model.Game.createPiece(0, Model.Board.mWho);
+  design.addPosition("a", [ 0, 1]);
+  design.addPosition("b", [-1, 0]);
+  move.movePiece(0, 1, man);
+  assert.equal( move.ToString(), "a - b", "Move piece");
+  move = new Model.Move.Init(move);
+  move.capturePiece(1);
+  assert.equal( move.ToString(), "a - b x b", "Capture piece");
+  var king = man.promote(1);
+  move.createPiece(1, king);
+  assert.equal( move.ToString(), "a - b x b b = 1/1", "Create piece");
+  move.SetAttr(1, [true]);
+  assert.ok( move.moves[0][2] !== man , "Man changed" );
+  assert.ok( move.moves[2][2] !== king , "King changed" );
+  assert.equal( move.moves[2][2].ToString(), "1/1", "King piece");
+  assert.equal( move.moves[2][2].getValue(0), true, "... with values");
   Model.Game.design = undefined;
 });
