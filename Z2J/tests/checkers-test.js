@@ -75,3 +75,21 @@ QUnit.test( "Move", function( assert ) {
   assert.equal( move.moves[2][2].getValue(0), true, "... with values");
   Model.Game.design = undefined;
 });
+
+QUnit.test( "Board", function( assert ) {
+  var board = new Model.Board.Init(Model.Game);
+  assert.equal( board.getPiece(0), null, "No piece");
+  var man  = Model.Game.createPiece(0, Model.Board.mWho);
+  var king = man.promote(1);
+  board.setPiece(0, man);
+  board.setPiece(1, king);
+  assert.equal( board.getPiece(0).ToString(), "1/0", "Man piece");
+  assert.equal( board.getPiece(1).ToString(), "1/1", "King piece");
+  board.setPiece(1, null);
+  assert.equal( board.getPiece(1), null, "No piece ... again");
+  assert.equal( board.getValue(0, 0), false, "No value");
+  board.setValue(0, 0, true);
+  assert.equal( board.getValue(0, 0), true, "Value exists");
+  board.addFork(null);
+  assert.equal( board.forks.length, 1, "Is forked");
+});

@@ -831,12 +831,57 @@ Model.Game.InitGame = function() {
 
 Model.Game.DestroyGame = function() {}
 
+Model.Board.getValue = function(aName, aPos) {
+  if (typeof this.names[aName] === "undefined") {
+      return false;
+  }
+  if (typeof this.names[aName][aPos] === "undefined") {
+      return false;
+  }
+  return this.names[aName][aPos];
+}
+
+Model.Board.setValue = function(aName, aPos, aValue) {
+  if (typeof this.names[aName] === "undefined") {
+      this.names[aName] = [];
+  }
+  this.names[aName][aPos] = aValue;
+}
+
+Model.Board.addFork = function(aGen) {
+  if (typeof this.forks === "undefined") {
+      this.forks = [];
+  }
+  this.forks.push(aGen);
+}
+
+Model.Board.getPiece = function(aPos) {
+  if (typeof this.pieces[aPos] === "undefined") {
+      return null;
+  } else {
+      return this.pieces[aPos];
+  }
+}
+
+Model.Board.setPiece = function(aPos, aPiece) {
+  if (aPiece === null) {
+     delete this.pieces[aPos];
+  } else {
+     this.pieces[aPos] = aPiece;
+  }
+}
+
 Model.Board.Init = function(aGame) {
-  this.game   = aGame;
-  this.zSign  = 0;
-  this.pieces = [];
-  this.forks  = [];
-  this.names  = [];
+  this.game     = aGame;
+  this.zSign    = 0;
+  this.pieces   = [];
+  this.forks    = [];
+  this.names    = [];
+  this.getValue = Model.Board.getValue;
+  this.setValue = Model.Board.setValue;
+  this.addFork  = Model.Board.addFork;
+  this.getPiece = Model.Board.getPiece;
+  this.setPiece = Model.Board.setPiece;
 }
 
 Model.Board.GetSignature = function() {
@@ -874,30 +919,6 @@ Model.Board.CopyFrom = function(aBoard) {
 
 Model.Board.PostActions = function(aGame, aMoves) {
   this.mMoves = aMoves;
-}
-
-Model.Board.getValue = function(aName, aPos) {
-  if (typeof this.names[aName] === "undefined") {
-      return null;
-  }
-  if (typeof this.names[aName][aPos] === "undefined") {
-      return null;
-  }
-  return this.names[aName][aPos];
-}
-
-Model.Board.setValue = function(aName, aPos, aValue) {
-  if (typeof this.names[aName] === "undefined") {
-      this.names[aName] = [];
-  }
-  this.names[aName][aPos] = aValue;
-}
-
-Model.Board.addFork = function(aGen) {
-  if (typeof this.forks === "undefined") {
-      this.forks = [];
-  }
-  this.forks.push(aGen);
 }
 
 var CompleteMove = function(aGame, aGen, aMove) {
@@ -1011,22 +1032,6 @@ Model.Board.QuickEvaluate = function(aGame) {
 
 Model.Board.IsValidMove = function(aGame, aMove) {
   return true;
-}
-
-Model.Board.getPiece = function(aPos) {
-  if (typeof this.pieces[aPos] === "undefined") {
-      return null;
-  } else {
-      return this.pieces[aPos];
-  }
-}
-
-Model.Board.setPiece = function(aPos, aPiece) {
-  if (aPiece === null) {
-     delete this.pieces[aPos];
-  } else {
-     this.pieces[aPos] = aPiece;
-  }
 }
 
 Model.Move.ToString = function() {
