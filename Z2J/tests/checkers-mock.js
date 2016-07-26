@@ -2,6 +2,7 @@ JocGame     = {
   PLAYER_A: 1,
   PLAYER_B: -1
 };
+JocGame.Zobrist = function() {}
 var Model   = {};
 Model.Game  = {
   mOptions: {

@@ -302,6 +302,9 @@ Model.Game.functions[Model.Move.ZRF_CAPTURE] = function(aGen) {
    if (aGen.cp === null) {
        return null;
    }
+   if (aGen.getPiece(aGen.cp) === null) {
+       return 0;
+   }
    aGen.move.capturePiece(aGen.cp);
    aGen.setPiece(aGen.cp, null);
    return 0;
@@ -347,6 +350,10 @@ Model.Game.functions[Model.Move.ZRF_IS_ENEMY] = function(aGen) {
        return null;
    }
    var piece  = aGen.board.getPiece(aGen.cp);
+   if (piece === null) {
+       aGen.stack.push(false);
+       return 0;
+   }
    var player = aGen.board.mWho;
    aGen.stack.push(piece.player !== player);
    return 0;
@@ -357,6 +364,10 @@ Model.Game.functions[Model.Move.ZRF_IS_FRIEND] = function(aGen) {
        return null;
    }
    var piece  = aGen.board.getPiece(aGen.cp);
+   if (piece === null) {
+       aGen.stack.push(false);
+       return 0;
+   }
    var player = aGen.board.mWho;
    aGen.stack.push(piece.player === player);
    return 0;
@@ -680,7 +691,7 @@ ZrfMoveGenerator.prototype.init = function(aBoard, aPos, aMove) {
 }
 
 ZrfMoveGenerator.prototype.setParent = function(aParent) {
-  this.board    = aParent.getBoard();
+  this.board    = aParent.board;
   this.cp       = aParent.cp;
   this.move     = new Model.Move.Init(aParent.move);
   this.parent   = aParent;
@@ -818,7 +829,7 @@ ZrfPiece.prototype.flip = function() {
 Model.Game.BuildDesign = function(design) {}
 
 Model.Game.InitGame = function() {
-  var design = aGame.getDesign();
+  var design = Model.Game.getDesign();
   this.BuildDesign(design);
   this.zobrist = new JocGame.Zobrist({
      board: {

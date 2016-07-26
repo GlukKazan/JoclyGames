@@ -76,8 +76,54 @@ QUnit.test( "Move", function( assert ) {
   Model.Game.design = undefined;
 });
 
+QUnit.test( "Template", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Board;
+  board.Init(Model.Game);
+  var move   = new Model.Move.Init([]);
+  assert.equal( design.templates.length , 4, "Templates");
+  assert.equal( design.modec , 1, "Priorities");
+  var t0 = design.getTemplate(0);
+  var t1 = design.getTemplate(1);
+  assert.ok( t0 !== t1, "Different templates" );
+  assert.equal( t1.commands.length , 16, "Commands");
+  assert.equal( t0.commands[1], t1.commands[1], "Equal commands");
+  assert.ok( t0.commands[1] !== t0.commands[6], "Not equal commands");
+  var g0 = Model.Game.createGen(t0, [1, 2]);
+  g0.init(board, 0, move);
+  assert.equal( (t0.commands[0])(g0), null, "Piece not found");
+  var man = Model.Game.createPiece(0, Model.Board.mWho);
+  board.setPiece(0, man);
+  assert.equal( (t0.commands[0])(g0), 0, "FROM command executed");
+  assert.equal( g0.piece, man, "Current piece");
+  assert.equal( g0.from, 0, "From position");
+  var g = Model.Game.createGen(t0, [1, 2]);
+  g.setParent(g0);
+  assert.equal( g.isLastFrom(0), true, "Start position");
+  assert.equal( (t0.commands[1])(g0), 0, "PARAM command executed");
+  assert.equal( g0.stack.pop(), 1, "PARAM value");
+  assert.equal( (t0.commands[2])(g0), null, "Stack is empty");
+  g0.stack.push(1);
+  assert.equal( (t0.commands[2])(g0), 0, "NAVIGATE command executed");
+  assert.equal( g0.cp, 1, "Current position changed");
+  assert.equal( (t0.commands[3])(g0), 0, "IS_ENEMY? command executed");
+  assert.equal( g0.stack.pop(), false, "Position is empty");
+  g0.stack.push(false);
+  assert.equal( (t0.commands[4])(g0), null, "VERIFY failed");
+  g0.stack.push(true);
+  assert.equal( (t0.commands[4])(g0), 0, "VERIFY command executed");
+  g0.cp = 0;
+  assert.equal( (t0.commands[5])(g0), 0, "CAPTURE command executed");
+  assert.equal( move.ToString(), "x a8", "Piece is captured");
+  assert.equal( (t0.commands[10])(g0), 0, "IN_ZONE? command executed");
+  assert.equal( g0.stack.pop(), true, "Promotion zone for A Player");
+  Model.Game.design = undefined;
+});
+
 QUnit.test( "Board", function( assert ) {
-  var board = new Model.Board.Init(Model.Game);
+  var board  = Model.Board;
+  board.Init(Model.Game);
   assert.equal( board.getPiece(0), null, "No piece");
   var man  = Model.Game.createPiece(0, Model.Board.mWho);
   var king = man.promote(1);
