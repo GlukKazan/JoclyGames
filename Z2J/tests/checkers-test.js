@@ -118,6 +118,25 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( move.ToString(), "x a8", "Piece is captured");
   assert.equal( (t0.commands[10])(g0), 0, "IN_ZONE? command executed");
   assert.equal( g0.stack.pop(), true, "Promotion zone for A Player");
+  assert.equal( (t0.commands[11])(g0), null, "Stack is empty");
+  g0.stack.push(true);
+  assert.equal( (t0.commands[11])(g0), 5, "IF then");
+  g0.stack.push(false);
+  assert.equal( (t0.commands[11])(g0), 0, "... and else");
+  assert.equal( (t0.commands[12])(g0), 0, "FORK command executed");
+  var fork = board.forks.pop();
+  assert.equal( fork.cc, 3, "... fork jump");
+  assert.equal( (t0.commands[19])(g0), 0, "MODE command executed");
+  assert.equal( g0.mode, 2, "... notype mode");
+  assert.equal( (t0.commands[16])(g0), 5, "JUMP command executed");
+  assert.equal( (t0.commands[18])(g0), 0, "PROMOTE command executed");
+  assert.equal( g0.piece.ToString(), "1/1", "... piece promoted");
+  g0.cp = 1;
+  assert.equal( (t0.commands[14])(g0), 0, "TO command executed");
+  assert.ok( g0.from === undefined, "... no from position");
+  assert.ok( g0.piece === undefined, "... and no piece");
+  assert.equal( g0.stops.pop(), 1, "... no from position");
+  assert.equal( (t0.commands[15])(g0), -2, "END command executed");
   Model.Game.design = undefined;
 });
 

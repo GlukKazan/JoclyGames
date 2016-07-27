@@ -631,6 +631,7 @@ function ZrfMoveGenerator(aTemplate, aParams) {
   this.stops    = [];
   this.stack    = [];
   this.backs	= [];
+  this.cc       = 0;
 }
 
 Model.Game.createGen = function(aTemplate, aParams) {
@@ -1047,14 +1048,18 @@ Model.Board.IsValidMove = function(aGame, aMove) {
 
 Model.Move.ToString = function() {
   var r = "";
+  var l = "";
   for (var i in this.moves) {
       if (r !== "") {
           r = r + " ";
       }
       if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
-          r = r + Model.Game.posToString(this.moves[i][0]);
+          if (l !== this.moves[i][0]) {
+              r = r + Model.Game.posToString(this.moves[i][0]);
+          }
           r = r + " - ";
           r = r + Model.Game.posToString(this.moves[i][1]);
+          l = this.moves[i][1];
       } else {
           if (this.moves[i][1] === null) {
               r = r + "x ";
