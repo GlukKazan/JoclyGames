@@ -794,8 +794,12 @@ Model.Game.createPiece = function(aType, aPlayer) {
   return new ZrfPiece(aType, aPlayer);
 }
 
+Model.Game.pieceToString = function(piece) {
+  return piece.player + "/" + piece.type;
+}
+
 ZrfPiece.prototype.ToString = function() {
-  return this.player + "/" + this.type;
+  return Model.Game.pieceToString(this);
 }
 
 ZrfPiece.prototype.getValue = function(aName) {
@@ -1046,32 +1050,36 @@ Model.Board.IsValidMove = function(aGame, aMove) {
   return true;
 }
 
-Model.Move.ToString = function() {
+Model.Move.moveToString = function(move) {
   var r = "";
   var l = "";
-  for (var i in this.moves) {
+  for (var i in move.moves) {
       if (r !== "") {
           r = r + " ";
       }
-      if ((this.moves[i][0] !== null) && (this.moves[i][1] !== null) && (this.moves[i][0] !== this.moves[i][1])) {
-          if (l !== this.moves[i][0]) {
-              r = r + Model.Game.posToString(this.moves[i][0]);
+      if ((move.moves[i][0] !== null) && (move.moves[i][1] !== null) && (move.moves[i][0] !== move.moves[i][1])) {
+          if (l !== move.moves[i][0]) {
+              r = r + Model.Game.posToString(move.moves[i][0]);
           }
           r = r + " - ";
-          r = r + Model.Game.posToString(this.moves[i][1]);
-          l = this.moves[i][1];
+          r = r + Model.Game.posToString(move.moves[i][1]);
+          l = move.moves[i][1];
       } else {
-          if (this.moves[i][1] === null) {
+          if (move.moves[i][1] === null) {
               r = r + "x ";
-              r = r + Model.Game.posToString(this.moves[i][0]);
+              r = r + Model.Game.posToString(move.moves[i][0]);
           } else {
-              r = r + Model.Game.posToString(this.moves[i][1]);
+              r = r + Model.Game.posToString(move.moves[i][1]);
               r = r + " = ";
-              r = r + this.moves[i][2].ToString();
+              r = r + move.moves[i][2].ToString();
           }
       }
   }
   return r;
+}
+
+Model.Move.ToString = function() {
+  return Model.Move.moveToString(this);
 }
 
 Model.Move.movePiece = function(aFrom, aTo, aPiece) {
