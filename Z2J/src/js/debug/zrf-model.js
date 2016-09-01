@@ -499,9 +499,7 @@ ZrfDesign.prototype.addAttribute = function(aType, aName, aVal) {
   if (typeof this.attrs[aName] === "undefined") {
       this.attrs[aName] = [];
   }
-  if (typeof this.attrs[aName][aType] === "undefined") {
-      this.attrs[aName][aType] = aVal;
-  }
+  this.attrs[aName][aType] = aVal;
 }
 
 ZrfDesign.prototype.getAttribute = function(aType, aName) {
@@ -698,21 +696,21 @@ ZrfMoveGenerator.prototype.setParent = function(aParent) {
   this.parent   = aParent;
 }
 
-Model.Game.getPieceInternal = function(aThis, aPos) {
-  if (typeof aThis.pieces[aPos] !== "undefined") {
-      return aThis.pieces[aPos];
+Model.Game.getPieceInternal = function(aGen, aPos) {
+  if (typeof aGen.pieces[aPos] !== "undefined") {
+      return aGen.pieces[aPos];
   }
   if (this.parent !== null) {
-      return aThis.getPieceInternal(aPos);
+      return aGen.getPieceInternal(aPos);
   }
-  return aThis.board.getPiece(aPos);
+  return aGen.board.getPiece(aPos);
 }
 
-Model.Game.getPiece = function(aThis, aPos) {
-  if (aThis.parent !== null) {
-      return Model.Game.getPieceInternal(aThis.parent, aPos);
+Model.Game.getPiece = function(aGen, aPos) {
+  if (aGen.parent !== null) {
+      return Model.Game.getPieceInternal(aGen.parent, aPos);
   }
-  return aThis.board.getPiece(aPos);
+  return aGen.board.getPiece(aPos);
 }
 
 ZrfMoveGenerator.prototype.isLastFrom = function(aPos) {
@@ -734,7 +732,7 @@ ZrfMoveGenerator.prototype.isLastTo = function(aPos) {
 }
 
 ZrfMoveGenerator.prototype.getPiece = function(aPos) {
-  return Model.Game.getPiece(this, aPos)
+  return Model.Game.getPiece(this, aPos);
 }
 
 ZrfMoveGenerator.prototype.setPiece = function(aPos, aPiece) {
@@ -771,7 +769,7 @@ ZrfMoveGenerator.prototype.generate = function() {
   }
   for (var pos in this.attrs) {
      if (Model.find(this.stops, pos) < 0) {
-        var piece = this.getPiece(pos);
+        var piece = Model.Game.getPieceInternal(this, pos);
         if (piece !== null) {
            for (var name in this.attrs[pos]) {
                piece = piece.setValue(name, this.attrs[pos][name]);
@@ -834,7 +832,7 @@ ZrfPiece.prototype.flip = function() {
 Model.Game.BuildDesign = function(design) {}
 
 Model.Game.InitGame = function() {
-  var design = Model.Game.getDesign();
+  var  design = Model.Game.getDesign();
   this.BuildDesign(design);
   this.zobrist = new JocGame.Zobrist({
      board: {

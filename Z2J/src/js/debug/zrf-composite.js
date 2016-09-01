@@ -1,10 +1,10 @@
-Model.Game.getValueInternal = function (aThis, aName, aPos) {
-  if (aThis.parent !== null) {
-      return aThis.parent.getValue(aName, aPos);
+Model.Game.getValueInternal = function (aGen, aName, aPos) {
+  if (aGen.parent !== null) {
+      return aGen.parent.getValue(aName, aPos);
   }
-  return aThis.board.getValue(aName, aPos);
+  return aGen.board.getValue(aName, aPos);
 }
 
-Model.Game.GetPiece = function(aThis, aPos) {
-  return Model.Game.getPieceInternal(aThis, aPos);
+Model.Game.getPiece = function(aGen, aPos) {
+  return Model.Game.getPieceInternal(aGen, aPos);
 }
