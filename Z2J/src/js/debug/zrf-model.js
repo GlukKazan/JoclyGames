@@ -925,6 +925,7 @@ Model.Board.InitialPosition = function(aGame) {
 }
 
 Model.Board.CopyFrom = function(aBoard) {
+  this.mWho  = aBoard.mWho;
   this.zSign = aBoard.zSign;
   for (var pos in aBoard.pieces) {
       this.pieces[pos] = aBoard.pieces[pos];
@@ -936,22 +937,20 @@ Model.Board.PostActions = function(aGame, aMoves) {
 }
 
 var CompleteMove = function(aGame, aGen, aMove) {
-  if (aGen.mode !== null) {
-      var pos = aGen.stops.pop();
-      var piece = aGen.pieces[pos];
-      for (var move in aGame.design.pieces[piece.type]) {
-           if ((move.type === 0) && (move.mode === aGen.mode)) {
-                var m = new Model.Move.Init(aMove);
-                var g = new ZrfMoveGenerator(move.template, move.params);
-                g.setParent(aGen);
-                g.piece = piece;
-                g.from  = pos;
-                if (g.generate()) {
-                    moves.push(m);
-                    CompleteMove(aGame, g, m);
-                }
-           }
-      }
+  var pos = aGen.stops.pop();
+  var piece = aGen.pieces[pos];
+  for (var move in aGame.design.pieces[piece.type]) {
+       if ((move.type === 0) && ((move.mode === null) || (move.mode === aGen.mode))) {
+            var m = new Model.Move.Init(aMove);
+            var g = new ZrfMoveGenerator(move.template, move.params);
+            g.setParent(aGen);
+            g.piece = piece;
+            g.from  = pos;
+            if (g.generate()) {
+                moves.push(m);
+                CompleteMove(aGame, g, m);
+            }
+       }
   }
 }
 
@@ -1037,11 +1036,18 @@ Model.Board.ApplyMove = function(aGame, move) {
 }
 
 Model.Board.Evaluate = function(aGame) {
-  // TODO:
-}
-
-Model.Board.QuickEvaluate = function(aGame) {
-  // TODO:
+  var score = 0;
+  var board = this;
+  for (var pos in board.pieces) {
+       var piece  = board.pieces[pos];
+       var weight = 10 + (piece.type * 100);
+       if (piece.player === JocGame.PLAYER_A) {
+           score += weight;
+       } else {
+           score -= weight;
+       }
+  }
+  this.mEvaluation = score;
 }
 
 Model.Board.IsValidMove = function(aGame, aMove) {
