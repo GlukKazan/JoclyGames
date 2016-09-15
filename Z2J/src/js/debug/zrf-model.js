@@ -1072,10 +1072,14 @@ Model.Move.moveToString = function(move) {
           if (move.moves[i][1] === null) {
               r = r + "x ";
               r = r + Model.Game.posToString(move.moves[i][0]);
+              l = move.moves[i][0];
           } else {
-              r = r + Model.Game.posToString(move.moves[i][1]);
-              r = r + " = ";
+              if (l !== move.moves[i][1]) {
+                  r = r + Model.Game.posToString(move.moves[i][1]) + " ";
+              }
+              r = r + "= ";
               r = r + move.moves[i][2].ToString();
+              l = move.moves[i][1];
           }
       }
   }

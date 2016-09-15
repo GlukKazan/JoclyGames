@@ -67,7 +67,7 @@ QUnit.test( "Move", function( assert ) {
   assert.equal( move.ToString(), "a - b x b", "Capture piece");
   var king = man.promote(1);
   move.createPiece(1, king);
-  assert.equal( move.ToString(), "a - b x b b = 1/1", "Create piece");
+  assert.equal( move.ToString(), "a - b x b = 1/1", "Create piece");
   move.SetAttr(1, [true]);
   assert.ok( move.moves[0][2] !== man , "Man changed" );
   assert.ok( move.moves[2][2] !== king , "King changed" );
