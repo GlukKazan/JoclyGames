@@ -5,14 +5,14 @@ QUnit.test( "Piece", function( assert ) {
   assert.equal( man.ToString(), "1/0", "Man Piece");
   assert.equal( king.ToString(), "1/1", "King Piece");
   assert.equal( flip.ToString(), "-1/1", "Flip");
-  assert.ok( man.getValue(0) === false, "Non existent value");
+  assert.equal( man.getValue(0), null, "Non existent value");
   var piece = man.setValue(0, true);
   assert.ok( piece !== man, "Non mutable pieces");
   assert.ok( piece.getValue(0) === true, "Existent value");
   piece = piece.setValue(0, false);
   assert.ok( piece.getValue(0) === false, "Reset value");
-  piece = man.setValue(0, false);
-  assert.equal( piece, man, "Value not changed");
+  var p = piece.setValue(0, false);
+  assert.equal( piece, p, "Value not changed");
 });
 
 QUnit.test( "Design", function( assert ) {
@@ -47,9 +47,9 @@ QUnit.test( "Design", function( assert ) {
   assert.ok( design.inZone(0, JocGame.PLAYER_A, 0) === true, "Player A promotion zone" );
   assert.ok( design.inZone(0, JocGame.PLAYER_B, 3) === true, "Player B promotion zone" );
   assert.ok( design.inZone(0, JocGame.PLAYER_A, 2) === false, "No promotion zone" );
-  assert.equal( design.getAttribute(0, 0), false, "Non existent attribute");
-  design.addAttribute(0, 0, true);
-  assert.equal( design.getAttribute(0, 0), true, "Default value for attribute");
+  assert.equal( design.getAttribute(0, 0), null, "Non existent attribute");
+  design.addAttribute(0, 0, false);
+  assert.equal( design.getAttribute(0, 0), false, "Default value for attribute");
   Model.Game.design = undefined;
 });
 
@@ -68,11 +68,6 @@ QUnit.test( "Move", function( assert ) {
   var king = man.promote(1);
   move.createPiece(1, king);
   assert.equal( move.ToString(), "a - b x b = 1/1", "Create piece");
-  move.SetAttr(1, [true]);
-  assert.ok( move.moves[0][2] !== man , "Man changed" );
-  assert.ok( move.moves[2][2] !== king , "King changed" );
-  assert.equal( move.moves[2][2].ToString(), "1/1", "King piece");
-  assert.equal( move.moves[2][2].getValue(0), true, "... with values");
   Model.Game.design = undefined;
 });
 
@@ -159,6 +154,48 @@ QUnit.test( "Template", function( assert ) {
   assert.ok( g.mark !== g.cp, "Current position is changed");
   assert.equal( (t2.commands[28])(g), 0, "BACK command executed");
   assert.equal( g.mark, g.cp, "... mark equal current position again");
+  Model.Game.design = undefined;
+});
+
+QUnit.test( "Move Generator", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Board;
+  board.Init(Model.Game);
+  var t = design.getTemplate(1);
+  var from = Model.Game.stringToPos("b2");
+  assert.ok( from !== null, "Correct position");
+  assert.equal( Model.Game.posToString(from), "b2", "From position");
+  var m = new Model.Move.Init([]);
+  var g = Model.Game.createGen(t, [3]);
+  g.init(board, from, m);
+  var man = Model.Game.createPiece(0, Model.Board.mWho);
+  board.setPiece(from, man);
+  var to = design.navigate(JocGame.PLAYER_A, from, 3);
+  assert.equal( Model.Game.posToString(to), "b3", "To position");
+  g.setPiece(from, null);
+  g.setPiece(to, man);
+  assert.equal( g.getPiece(from), man, "Man in [from] position (snapshot)");
+  assert.equal( g.getPiece(to), null, "And [to] position is empty");
+  var c = Model.Game.createGen(t, [3]);
+  c.setParent(g);
+  assert.equal( c.getPiece(from), null, "[from] position is empty");
+  assert.equal( c.getPiece(to), man, "[to] position contains Man");
+  assert.equal( g.getValue(0, from), null, "No value");
+  g.setValue(0, from, true);
+  assert.equal( g.getValue(0, from), true, "Position flag");
+  assert.equal( c.getValue(0, from), null, "No value again");
+  assert.equal( g.getAttr(0, from), null, "No attribute value");
+  design.addAttribute(man.type, 0, false);
+  assert.equal( g.getAttr(0, from), false, "Attribute's initial value");
+  g.setAttr(0, to, true);
+  assert.equal( g.attrs[to][0], true, "Attribute's value changed");
+  g.setAttrsInternal();
+  assert.equal( m.moves.length, 1, "Move are generated...");
+  assert.equal( m.ToString(), "b3 = 1/0", "correct");
+  var piece = m.moves[0][2];
+  assert.ok( piece !== man, "Piece is changed");
+  assert.equal( piece.getValue(0), true, "Attribute's value is assigned");
   Model.Game.design = undefined;
 });
 
