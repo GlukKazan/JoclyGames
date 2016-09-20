@@ -36,9 +36,17 @@ public class SeqForm extends AbstractForm {
 		forms.add(form);
 	}
 
-	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception {
+		int sz = forms.size();
+		int ix = 1;
 		for (IForm f: forms) {
-			f.generate(template, params, game);
+			if (hint != IForm.WHILE_HINT) {
+				if (sz == ix) {
+					hint = IForm.LAST_HINT;
+				}
+			}
+			f.generate(template, params, game, hint);
+			ix++;
 		}
 	}
 }

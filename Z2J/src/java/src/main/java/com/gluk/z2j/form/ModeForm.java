@@ -40,7 +40,7 @@ public class ModeForm implements IForm {
 		throw new Exception("Not supported");
 	}
 
-	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception {
 		throw new Exception("Not supported");
 	}
 

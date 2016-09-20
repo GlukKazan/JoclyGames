@@ -208,7 +208,7 @@ public class Game extends AbstractDoc implements IGame {
 		flags = 0;
 		List<Integer> params = new ArrayList<Integer>();
 		MoveTemplate template = new MoveTemplate();
-		form.generate(template, params, this);
+		form.generate(template, params, this, IForm.NO_HINT);
 		int tx = addTemplate(template);
 		int mx = addMode(mode);
 		List<Move> ml = moves.get(piece);

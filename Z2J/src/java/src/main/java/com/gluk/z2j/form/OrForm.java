@@ -14,13 +14,13 @@ public class OrForm extends SeqForm  {
 		super(parser);
 	}
 
-	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception {
 		if (forms.isEmpty()) {
 			throw new Exception("Internal error");
 		}
 		List<Integer> fixups = new ArrayList<Integer>();
 		for (IForm f: forms) {
-			f.generate(template, params, game);
+			f.generate(template, params, game, hint);
 			fixups.add(template.getOffset());
 			template.addCommand(ZRF_IF, "IF");
 		}

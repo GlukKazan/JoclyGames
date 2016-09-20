@@ -47,8 +47,12 @@ public interface IForm extends IDoc {
 	final static int ZRF_PUSH      = 8;
 	final static int ZRF_POP       = 9;
 	
+	final static int NO_HINT       = 0;
+	final static int WHILE_HINT    = 1;
+	final static int LAST_HINT     = 2;
+	
 	String getName() throws Exception;
 	void addMove(IPiece piece, String mode, boolean isDrop) throws Exception;
 	void addForm(IForm form) throws Exception;
-	void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception;
+	void generate(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception;
 }

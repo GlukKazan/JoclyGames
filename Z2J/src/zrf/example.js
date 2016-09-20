@@ -107,17 +107,13 @@ Model.Game.BuildDesign = function(design) {
     design.addCommand(0, ZRF.FUNCTION,	1);	// empty?
     design.addCommand(0, ZRF.FUNCTION,	20);	// verify
     design.addCommand(0, ZRF.IN_ZONE,	0);	// promotion
-    design.addCommand(0, ZRF.IF,	6);
-    design.addCommand(0, ZRF.FORK,	4);
+    design.addCommand(0, ZRF.IF,	4);
     design.addCommand(0, ZRF.MODE,	0);	// jumptype
     design.addCommand(0, ZRF.FUNCTION,	25);	// to
-    design.addCommand(0, ZRF.FUNCTION,	28);	// end
-    design.addCommand(0, ZRF.JUMP,	6);
-    design.addCommand(0, ZRF.FORK,	5);
+    design.addCommand(0, ZRF.JUMP,	4);
     design.addCommand(0, ZRF.PROMOTE,	1);	// King
     design.addCommand(0, ZRF.MODE,	2);	// notype
     design.addCommand(0, ZRF.FUNCTION,	25);	// to
-    design.addCommand(0, ZRF.FUNCTION,	28);	// end
 
     design.addCommand(1, ZRF.FUNCTION,	24);	// from
     design.addCommand(1, ZRF.PARAM,	0);	// $1
@@ -126,15 +122,11 @@ Model.Game.BuildDesign = function(design) {
     design.addCommand(1, ZRF.FUNCTION,	20);	// verify
     design.addCommand(1, ZRF.IN_ZONE,	0);	// promotion
     design.addCommand(1, ZRF.FUNCTION,	0);	// not
-    design.addCommand(1, ZRF.IF,	6);
-    design.addCommand(1, ZRF.FORK,	4);
+    design.addCommand(1, ZRF.IF,	4);
     design.addCommand(1, ZRF.PROMOTE,	1);	// King
     design.addCommand(1, ZRF.FUNCTION,	25);	// to
-    design.addCommand(1, ZRF.FUNCTION,	28);	// end
-    design.addCommand(1, ZRF.JUMP,	4);
-    design.addCommand(1, ZRF.FORK,	3);
+    design.addCommand(1, ZRF.JUMP,	2);
     design.addCommand(1, ZRF.FUNCTION,	25);	// to
-    design.addCommand(1, ZRF.FUNCTION,	28);	// end
 
     design.addCommand(2, ZRF.FUNCTION,	24);	// from
     design.addCommand(2, ZRF.PARAM,	0);	// $1

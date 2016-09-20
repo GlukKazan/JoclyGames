@@ -105,7 +105,7 @@ public class ApplyForm extends SeqForm {
 			}
 			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
-			forms.get(1).generate(template, params, game);
+			forms.get(1).generate(template, params, game, IForm.NO_HINT);
 			if (func.equals(SET_FLAG)) {
 				template.addCommand(ZRF_SET_FLAG, ix, name, "SET_FLAG");
 			}
@@ -135,7 +135,7 @@ public class ApplyForm extends SeqForm {
 			}
 			if (forms.size() == 2) {
 				template.addCommand(ZRF_PUSH, "PUSH");
-				forms.get(1).generate(template, params, game);
+				forms.get(1).generate(template, params, game, IForm.NO_HINT);
 			}
 			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
@@ -161,18 +161,22 @@ public class ApplyForm extends SeqForm {
 		return false;
 	}
 
-	private boolean end(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
+	private boolean end(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception {
 		if (func.equals(ADD)) {
 			int offset = template.getOffset();
-			template.addCommand(ZRF_FORK, "FORK");
+			if (hint != IForm.LAST_HINT) {
+				template.addCommand(ZRF_FORK, "FORK");
+			}
 			int o = template.getOffset();
 			for (int i = 0; i < forms.size(); i++) {
-				if (i > 0) {
-					template.fixup(o, template.getOffset() - o);
-				}
-				if (i < forms.size() - 1) {
-					o = template.getOffset();
-					template.addCommand(ZRF_FORK, "FORK");
+				if (hint != IForm.LAST_HINT) {
+					if (i > 0) {
+						template.fixup(o, template.getOffset() - o);
+					}
+					if (i < forms.size() - 1) {
+						o = template.getOffset();
+						template.addCommand(ZRF_FORK, "FORK");
+					}
 				}
 				String name = forms.get(i).getName();
 				int ix = game.getNameIndex(name);
@@ -180,15 +184,19 @@ public class ApplyForm extends SeqForm {
 					throw new Exception("Piece [" + name + "] unknown");
 				}
 				template.addCommand(ZRF_PROMOTE, ix, name, "PROMOTE");
-				if (i < forms.size() - 1) {
-					template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
+				if (hint != IForm.LAST_HINT) {
+					if (i < forms.size() - 1) {
+						template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
+					}
 				}
 			}
 			if (game.checkFlag(FROM_FLAG)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to", "FUNCTION");
 			}
-			template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
-			template.fixup(offset, template.getOffset() - offset);
+			if (hint != IForm.LAST_HINT) {
+				template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
+				template.fixup(offset, template.getOffset() - offset);
+			}
 			return true;
 		}
 		if (func.equals(ADD_PART)) {
@@ -196,7 +204,9 @@ public class ApplyForm extends SeqForm {
 				throw new Exception("Not supported");
 			}
 			int offset = template.getOffset();
-			template.addCommand(ZRF_FORK, "FORK");
+			if (hint != IForm.LAST_HINT) {
+				template.addCommand(ZRF_FORK, "FORK");
+			}
 			if (forms.size() > 1) {
 				String name = forms.get(0).getName();
 				int ix = game.getNameIndex(name);
@@ -221,8 +231,10 @@ public class ApplyForm extends SeqForm {
 			if (game.checkFlag(FROM_FLAG)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_TO, "to", "FUNCTION");
 			}
-			template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
-			template.fixup(offset, template.getOffset() - offset);
+			if (hint != IForm.LAST_HINT) {
+				template.addCommand(ZRF_FUNCTION, ZRF_END, "end", "FUNCTION");
+				template.fixup(offset, template.getOffset() - offset);
+			}
 			return true;
 		}
 		if (func.equals(FROM)) {
@@ -311,7 +323,7 @@ public class ApplyForm extends SeqForm {
 			}
 			if (!forms.isEmpty()) {
 				template.addCommand(ZRF_PUSH, "PUSH");
-				forms.get(0).generate(template, params, game);
+				forms.get(0).generate(template, params, game, IForm.NO_HINT);
 			}
 			if (func.equals(EMPTY) || func.equals(NOT_EMPTY)) {
 				template.addCommand(ZRF_FUNCTION, ZRF_IS_EMPTY, "empty?", "FUNCTION");
@@ -348,7 +360,7 @@ public class ApplyForm extends SeqForm {
 	private boolean other(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
 		if (func.equals(VERIFY)) {
 			for (IForm f: forms) {
-				f.generate(template, params, game);
+				f.generate(template, params, game, IForm.NO_HINT);
 			}
 			template.addCommand(ZRF_FUNCTION, ZRF_VERIFY, "verify", "FUNCTION");
 			return true;
@@ -371,7 +383,7 @@ public class ApplyForm extends SeqForm {
 			}
 			if (forms.size() == 2) {
 				template.addCommand(ZRF_PUSH, "PUSH");
-				forms.get(1).generate(template, params, game);
+				forms.get(1).generate(template, params, game, IForm.NO_HINT);
 			}
 			String name = forms.get(0).getName();
 			int ix = game.getNameIndex(name);
@@ -390,13 +402,13 @@ public class ApplyForm extends SeqForm {
 		return false;
 	}
 	
-	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
-		if (state(template, params, game))    return;
-		if (other(template, params, game))    return;
-		if (zone(template, params, game))     return;
-		if (flags(template, params, game))    return;
-		if (end(template, params, game))      return;
-		if (navigate(template, params, game)) return;
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception {
+		if (state(template, params, game))     return;
+		if (other(template, params, game))     return;
+		if (zone(template, params, game))      return;
+		if (flags(template, params, game))     return;
+		if (end(template, params, game, hint)) return;
+		if (navigate(template, params, game))  return;
 		throw new Exception("Function [" + func + "] unknown");
 	}
 }

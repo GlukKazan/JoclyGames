@@ -39,16 +39,16 @@ public class WhileForm extends SeqForm {
 		}
 	}
 
-	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception {
 		if ((cond == null) || forms.isEmpty()) {
 			throw new Exception("Internal error");
 		}
 		int start = template.getOffset();
-		cond.generate(template, params, game);
+		cond.generate(template, params, game, hint);
 		template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 		int from = template.getOffset();
 		template.addCommand(ZRF_IF, "IF");
-		super.generate(template, params, game);
+		super.generate(template, params, game, IForm.WHILE_HINT);
 		template.addCommand(ZRF_JUMP, start - template.getOffset(), "", "JUMP");
 		template.fixup(from, template.getOffset() - from);
 	}

@@ -58,22 +58,22 @@ public class IfForm extends SeqForm {
 		}
 	}
 	
-	public void generate(IMoveTemplate template, List<Integer> params, IGame game) throws Exception {
+	public void generate(IMoveTemplate template, List<Integer> params, IGame game, int hint) throws Exception {
 		if ((cond == null) || body.isEmpty() || body.size() > 2) {
 			throw new Exception("Internal error");
 		}
-		cond.generate(template, params, game);
+		cond.generate(template, params, game, hint);
 		template.addCommand(ZRF_FUNCTION, ZRF_NOT, "not", "FUNCTION");
 		int from = template.getOffset();
 		template.addCommand(ZRF_IF, "IF");
-		body.get(0).generate(template, params, game);
+		body.get(0).generate(template, params, game, hint);
 		if (body.size() == 1) {
 			template.fixup(from, template.getOffset() - from);
 		} else {
 			int offset = template.getOffset();
 			template.addCommand(ZRF_JUMP, "JUMP");
 			template.fixup(from, template.getOffset() - from);
-			body.get(1).generate(template, params, game);
+			body.get(1).generate(template, params, game, hint);
 			template.fixup(offset, template.getOffset() - offset);
 		}
 	}
