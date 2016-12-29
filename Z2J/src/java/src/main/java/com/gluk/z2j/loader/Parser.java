@@ -18,7 +18,14 @@ import com.gluk.z2j.api.loader.IScaner;
 
 public class Parser implements IParser {
 	
+	private final static String  Z2J_VERSION = "1";
+
+	private final static String GAME_CMD    = "game";
 	private final static String INCLUDE_CMD = "include";
+	private final static String VERSION_CMD = "version";
+	
+	private final static String Z2J_VER     = "z2j";
+	private final static String ZRF_VER     = "zrf";
 	
 	private final static String L_TAG = "z2j-l";
 	private final static String A_TAG = "z2j-a";
@@ -28,6 +35,8 @@ public class Parser implements IParser {
 	private int deep = 0;
     private TransformerHandler handler = null;
     private Document doc = null;
+    private boolean isVersionScope = false;
+    private String zrfVersion = "";
     
     private boolean isOpened = false;
     private Stack<Integer> includeDeeps = new Stack<Integer>();
@@ -50,6 +59,7 @@ public class Parser implements IParser {
 	}
 	
 	public void add(String s) throws Exception {
+		boolean f = true;
 		if (isOpened) {
 			isOpened = false;
 			if (s.equals(INCLUDE_CMD)) {
@@ -58,7 +68,16 @@ public class Parser implements IParser {
 			} else {
 				handler.startElement("", L_TAG, L_TAG, new AttributesImpl());
 				deep++;
+				if (s.equals(VERSION_CMD)) {
+					isVersionScope = true;
+					f = false;
+				}
 			}
+		}
+		if (f && isVersionScope) {
+			zrfVersion = s;
+			isVersionScope = false;
+			return;
 		}
 		if (isIncludeScope()) {
 			include(s);
@@ -67,6 +86,12 @@ public class Parser implements IParser {
 		handler.startElement("", A_TAG, A_TAG, new AttributesImpl());
 		handler.characters(s.toCharArray(), 0, s.length());
 		handler.endElement("", A_TAG, A_TAG);
+		if (s.equals(GAME_CMD)) {
+			saveOption(Z2J_VER, Z2J_VERSION);
+			if (!zrfVersion.isEmpty()) {
+				saveOption(ZRF_VER, zrfVersion);
+			}
+		}
 	}
 
 	public void open() throws Exception {
@@ -120,6 +145,21 @@ public class Parser implements IParser {
 			}
 		}
 		close();
+	}
+	
+	private void saveOption(String name, String value) throws Exception {
+		String option = "option";
+		handler.startElement("", L_TAG, L_TAG, new AttributesImpl());
+		handler.startElement("", A_TAG, A_TAG, new AttributesImpl());
+		handler.characters(option.toCharArray(), 0, option.length());
+		handler.endElement("", A_TAG, A_TAG);
+		handler.startElement("", A_TAG, A_TAG, new AttributesImpl());
+		handler.characters(name.toCharArray(), 0, name.length());
+		handler.endElement("", A_TAG, A_TAG);
+		handler.startElement("", A_TAG, A_TAG, new AttributesImpl());
+		handler.characters(value.toCharArray(), 0, value.length());
+		handler.endElement("", A_TAG, A_TAG);
+		handler.endElement("", L_TAG, L_TAG);
 	}
 	
 	private void include(String s) throws Exception {

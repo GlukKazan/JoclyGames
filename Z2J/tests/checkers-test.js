@@ -74,6 +74,10 @@ QUnit.test( "Move", function( assert ) {
 QUnit.test( "Template", function( assert ) {
   Model.Game.InitGame();
   var design = Model.Game.getDesign();
+  assert.equal( design.options["z2j"], 1, "Z2J Version");
+  assert.equal( design.options["zrf"], "2.0", "ZRF Version");
+  assert.equal( design.options["maximal-captures"], "true", "Max Captures option");
+  assert.equal( design.failed, false, "All options is valid");
   var board  = Model.Board;
   board.Init(Model.Game);
   var move   = new Model.Move.Init([]);

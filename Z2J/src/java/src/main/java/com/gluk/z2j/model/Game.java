@@ -20,9 +20,11 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String    BOARD_TAG = "board";
 	private final static String      POS_TAG = "pos";
 	private final static String  PLAYERS_TAG = "players";
+	private final static String   OPTION_TAG = "option";
 	private final static String    PIECE_TAG = "piece";
 	private final static String     MODE_TAG = "mode";
 	private final static String     NAME_TAG = "name";
+	private final static String    VALUE_TAG = "value";
 	private final static String    PRIOR_TAG = "is_mandatory";
 	private final static String    SETUP_TAG = "board-setup";
 	private final static String      OFF_TAG = "off";
@@ -43,6 +45,9 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String   ATTRS_XP   = "/game/piece/attribute/*[1]";
 	private final static String  PIECES_XP   = "/game/piece";
 	private final static String   SETUP_XP   = "/game/board-setup/*";
+	private final static String  OPTION_XP   = "/game/option";
+	private final static String   FIRST_XP   = "*[1]";
+	private final static String  SECOND_XP   = "*[2]";
 	
 	private final static String       A_XP   = "z2j-a";
 	private final static String     ALL_XP   = "*";
@@ -240,6 +245,21 @@ public class Game extends AbstractDoc implements IGame {
 		dest.close();
 	}
 	
+	private void extractOptions(IDoc dest) throws Exception {
+		NodeIterator nl = XPathAPI.selectNodeIterator(doc, OPTION_XP);
+		Node n;
+		while ((n = nl.nextNode())!= null) {
+			String name  = getValue(n, FIRST_XP).trim().replace(' ', '-');
+			String value = getValue(n, SECOND_XP);
+			if ((name != null) && (value != null)) {
+				dest.open(OPTION_TAG);
+				dest.open(NAME_TAG);dest.add(name); dest.close();
+				dest.open(VALUE_TAG);dest.add(value); dest.close();
+				dest.close();
+			}
+		}
+	}
+	
 	private void extractModes(IDoc dest) throws Exception {
 		NodeIterator nl = XPathAPI.selectNodeIterator(doc, PRIORS_XP);
 		Node n;
@@ -367,6 +387,7 @@ public class Game extends AbstractDoc implements IGame {
 			throw new Exception("Board undefined");
 		}
 		extractTiltle(dest);
+		extractOptions(dest);
 		extractPlayers(dest);
 		board.extract(dest);
 		extractModes(dest);

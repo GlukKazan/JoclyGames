@@ -20,6 +20,10 @@ ZRF = {
 };
 
 Model.Game.BuildDesign = function(design) {
+    design.checkVersion("z2j", "1");
+    design.checkVersion("zrf", "2.0");
+    design.checkVersion("maximal-captures", "true");
+
     design.addDirection("w");
     design.addDirection("e");
     design.addDirection("s");

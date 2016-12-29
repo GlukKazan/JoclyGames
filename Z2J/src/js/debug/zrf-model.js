@@ -1,5 +1,7 @@
 (function() {
 
+var Z2J_VERSION = 1;
+
 Model.Move.ZRF_JUMP      = 0;
 Model.Move.ZRF_IF        = 1;
 Model.Move.ZRF_FORK      = 2;
@@ -465,6 +467,8 @@ function ZrfDesign() {
   this.pnames    = [];
   this.pall      = [];
   this.templates = [];
+  this.options   = [];
+  this.failed    = false;
   this.modec     = 0;
 }
 
@@ -473,6 +477,27 @@ Model.Game.getDesign = function() {
       Model.Game.design = new ZrfDesign();
   }
   return Model.Game.design;
+}
+
+Model.Game.checkVersion = function(aDesign, aName, aValue) {  
+  if (aName == "z2j") {
+     if (aValue > Z2J_VERSION) {
+         aDesign.failed = true;
+     }
+  } else {
+     if ((aName != "zrf")                && 
+         (aName != "animate-captures")   &&
+         (aName != "animate-drops")      &&
+         (aName != "highlight-goals")    &&
+         (aName != "prevent-flipping")   &&
+         (aName != "progressive-levels") &&
+         (aName != "selection-screen")   &&
+         (aName != "show-moves-list")    &&
+         (aName != "silent-?-moves")     &&
+         (aName != "smart-moves")) {
+         aDesign.failed = true;
+     }
+  }
 }
 
 ZrfDesign.prototype.getTemplate = function(aIx) {
@@ -539,6 +564,11 @@ ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams, aMode) {
      params: aParams,
      mode: aMode
   });
+}
+
+ZrfDesign.prototype.checkVersion = function(aName, aValue) {
+  this.options[aName] = aValue;
+  Model.Game.checkVersion(this, aName, aValue);
 }
 
 ZrfDesign.prototype.addDirection = function(aName) {
@@ -668,7 +698,7 @@ ZrfMoveGenerator.prototype.copyFrom = function(aGen) {
   }
   this.starts = [];
   for (var i in aGen.starts) {
-      this.stops[i] = aGen.starts[i];
+      this.starts[i] = aGen.starts[i];
   }
   this.stack = [];
   for (var i in aGen.stack) {
@@ -676,7 +706,7 @@ ZrfMoveGenerator.prototype.copyFrom = function(aGen) {
   }
   this.backs = [];
   for (var i in aGen.backs) {
-      this.stack[i] = aGen.stack[i];
+      this.backs[i] = aGen.backs[i];
   }
   this.move = new Model.Move.Init(aGen.move);
 }

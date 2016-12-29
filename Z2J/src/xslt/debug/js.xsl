@@ -26,7 +26,8 @@
     VERIFY:        20
 };
 
-Model.Game.BuildDesign = function(design) {<xsl:call-template name="apply-directions"/><xsl:text>
+Model.Game.BuildDesign = function(design) {<xsl:call-template name="apply-options"/><xsl:text>
+</xsl:text><xsl:call-template name="apply-directions"/><xsl:text>
 </xsl:text><xsl:call-template name="apply-players"/><xsl:text>
 </xsl:text><xsl:call-template name="apply-positions"/><xsl:text>
 </xsl:text><xsl:call-template name="apply-zones"/>
@@ -50,6 +51,11 @@ Model.Game.BuildDesign = function(design) {<xsl:call-template name="apply-direct
     design.addMove(<xsl:value-of select="$ix"/>, <xsl:value-of select="template"/>, [<xsl:call-template name="apply-params"/>], <xsl:value-of select="mode"/>);</xsl:for-each>
 </xsl:for-each>
 }
+</xsl:template>
+
+<xsl:template name="apply-options">
+  <xsl:for-each select="option">
+    design.checkVersion("<xsl:value-of select="name"/>", "<xsl:value-of select="value"/>");</xsl:for-each>
 </xsl:template>
 
 <xsl:template name="apply-directions">
