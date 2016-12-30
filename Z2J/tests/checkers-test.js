@@ -74,9 +74,9 @@ QUnit.test( "Move", function( assert ) {
 QUnit.test( "Template", function( assert ) {
   Model.Game.InitGame();
   var design = Model.Game.getDesign();
-  assert.equal( design.options["z2j"], 1, "Z2J Version");
-  assert.equal( design.options["zrf"], "2.0", "ZRF Version");
-  assert.equal( design.options["maximal-captures"], "true", "Max Captures option");
+  assert.equal( design.checkOption("z2j", 1), true, "Z2J Version");
+  assert.equal( design.checkOption("zrf", "2.0"), true, "ZRF Version");
+  assert.equal( design.checkOption("maximal-captures", "true"), true, "Max Captures option");
   assert.equal( design.failed, false, "All options is valid");
   var board  = Model.Board;
   board.Init(Model.Game);
@@ -101,8 +101,6 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( g0.from, 0, "... from position a8");
   var g = Model.Game.createGen(t2, [0, 0, 0, 0, 0]);
   g.setParent(g0);
-  assert.equal( (t2.commands[8])(g), 0, "IS_LASTF command executed");
-  assert.equal( g.stack.pop(), true, "... is start position");
   assert.equal( (t0.commands[1])(g0), 0, "PARAM command executed");
   assert.equal( g0.stack.pop(), 1, "... PARAM value");
   assert.equal( (t0.commands[2])(g0), null, "Stack is empty");
@@ -139,7 +137,6 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( (t0.commands[17])(g0), 0, "TO command executed");
   assert.ok( g0.from === undefined, "... no from position");
   assert.ok( g0.piece === undefined, "... and no piece");
-  assert.equal( g.isLastTo(1), true, "... stop position");
   assert.equal( g.getPiece(0), null, "... from position is empty");
   assert.equal( g.getPiece(1).ToString(), "1/1", "... and King piece on TO position");
   assert.equal( (t3.commands[11])(g0), -9, "END command executed");
