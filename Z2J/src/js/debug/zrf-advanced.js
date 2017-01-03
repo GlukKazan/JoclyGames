@@ -51,13 +51,6 @@ Model.Game.checkOption = function(aDesign, aName, aValue) {
   }
 }
 
-Model.Game.getNoAttrInternal = function () {
-  if (attrMode) {
-      return false;
-  }
-  return null;
-}
-
 Model.Game.getAttrInternal = function (aName, aPos) {
   if (attrMode) {
       if (typeof this.attrs[aPos] === "undefined") {

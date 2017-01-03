@@ -868,17 +868,13 @@ ZrfPiece.prototype.ToString = function() {
   return Model.Game.pieceToString(this);
 }
 
-Model.Game.getNoAttrInternal = function () {
-  return null;
-}
-
 ZrfPiece.prototype.getValue = function(aName) {
   if (typeof this.values !== "undefined") {
      if (typeof this.values[aName] !== "undefined") {
          return this.values[aName];
      }
   }
-  return Model.Game.getNoAttrInternal();
+  return null;
 }
 
 ZrfPiece.prototype.setValue = function(aName, aValue) {
