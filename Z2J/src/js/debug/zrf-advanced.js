@@ -2,12 +2,14 @@
 
 var checkVersion  = Model.Game.checkVersion;
 var checkOption   = Model.Game.checkOption;
+var cloneMove     = Model.Game.cloneMove;
 
 var modes = [];
 var simpleMode    = false;
 var compositeMode = false;
 var attrMode      = false;
 var markMode      = false;
+var forkMode      = false;
 
 Model.Game.checkVersion = function(aDesign, aName, aValue) {
   if (aName == "zrf-advanced") {
@@ -30,7 +32,7 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
      }
      if ((aValue === "fork")      || (aValue === "true")) {
          mode = aValue;
-         Model.Game.forkMode = true;
+         forkMode = true;
      }
      if (mode !== null) {
          modes.push(mode);
@@ -48,6 +50,18 @@ Model.Game.checkOption = function(aDesign, aName, aValue) {
             (Model.find(modes, "true") >= 0);
   } else {
      (checkOption)(aDesign, aName, aValue);
+  }
+}
+
+Model.Game.cloneMove = function(aGen, aMove) {
+  if (forkMode) {
+      for (var i in aMove.actions) {
+          if (aMove.actions[3] !== -aGen.level) {
+              aGen.move.movePiece(aMove.actions[0], aMove.actions[1], aMove.actions[2], aMove.actions[3]);
+          }
+      }
+  } else {
+     (cloneMove)(aGen, aMove);
   }
 }
 
@@ -88,7 +102,7 @@ Model.Game.getMark = function(aGen) {
       if (aGen.backs.length === 0) {
           return null;
       }
-      aGen.cp = aGen.backs.pop();
+      aGen.pos = aGen.backs.pop();
   } else {
       return aGen.mark;
   }
@@ -96,9 +110,9 @@ Model.Game.getMark = function(aGen) {
 
 Model.Game.setMark = function(aGen) {
   if (markMode) {
-      aGen.backs.push(aGen.cp);
+      aGen.backs.push(aGen.pos);
   } else {
-      aGen.mark = aGen.cp;
+      aGen.mark = aGen.pos;
   }
 }
 

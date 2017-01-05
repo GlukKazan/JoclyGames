@@ -66,7 +66,7 @@ QUnit.test( "Move", function( assert ) {
   move.capturePiece(1);
   assert.equal( move.ToString(), "a - b x b", "Capture piece");
   var king = man.promote(1);
-  move.createPiece(1, king);
+  move.dropPiece(1, king);
   assert.equal( move.ToString(), "a - b x b = 1/1", "Create piece");
   Model.Game.design = undefined;
 });
@@ -99,14 +99,13 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( (t0.commands[0])(g0), 0, "FROM command executed");
   assert.equal( g0.piece, man, "... current piece is Man");
   assert.equal( g0.from, 0, "... from position a8");
-  var g = Model.Game.createGen(t2, [0, 0, 0, 0, 0]);
-  g.setParent(g0);
+  var g = g0.copy();
   assert.equal( (t0.commands[1])(g0), 0, "PARAM command executed");
   assert.equal( g0.stack.pop(), 1, "... PARAM value");
   assert.equal( (t0.commands[2])(g0), null, "Stack is empty");
   g0.stack.push(1);
   assert.equal( (t0.commands[2])(g0), 0, "NAVIGATE command executed");
-  assert.equal( g0.cp, 1, "... current position changed");
+  assert.equal( g0.getPos(), 1, "... current position changed");
   assert.equal( (t0.commands[3])(g0), 0, "IS_ENEMY? command executed");
   assert.equal( g0.stack.pop(), false, "... position is empty");
   assert.equal( (t0.commands[8])(g0), 0, "IS_EMPTY? command executed");
@@ -115,7 +114,7 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( (t0.commands[4])(g0), null, "VERIFY failed");
   g0.stack.push(true);
   assert.equal( (t0.commands[4])(g0), 0, "VERIFY command executed");
-  g0.cp = 0;
+  g0.pos = 0;
   assert.equal( (t0.commands[5])(g0), 0, "CAPTURE command executed");
   assert.equal( move.ToString(), "x a8", "... piece is captured");
   assert.equal( (t0.commands[10])(g0), 0, "IN_ZONE? command executed");
@@ -127,13 +126,13 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( (t0.commands[11])(g0), 0, "... and else");
   assert.equal( (t3.commands[6])(g0), 0, "FORK command executed");
   var fork = board.forks.pop();
-  assert.equal( fork.cc, 2, "... fork jump");
+  assert.equal( fork.cmd, 2, "... fork jump");
   assert.equal( (t0.commands[16])(g0), 0, "MODE command executed");
   assert.equal( g0.mode, 2, "... notype mode");
   assert.equal( (t0.commands[14])(g0), 3, "JUMP command executed");
   assert.equal( (t0.commands[15])(g0), 0, "PROMOTE command executed");
   assert.equal( g0.piece.ToString(), "1/1", "... piece promoted");
-  g0.cp = 1;
+  g0.pos = 1;
   assert.equal( (t0.commands[17])(g0), 0, "TO command executed");
   assert.ok( g0.from === undefined, "... no from position");
   assert.ok( g0.piece === undefined, "... and no piece");
@@ -151,11 +150,11 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( (t2.commands[24])(g), 0, "OPPOSITE command executed");
   assert.equal( g.stack.pop(), 3, "... opposite direction on stack");
   assert.equal( (t2.commands[19])(g), 0, "MARK command executed");
-  assert.equal( g.mark, g.cp, "... mark position assigned");
-  g.cp = 1;
-  assert.ok( g.mark !== g.cp, "Current position is changed");
+  assert.equal( g.mark, g.getPos(), "... mark position assigned");
+  g.pos = 1;
+  assert.ok( g.mark !== g.getPos(), "Current position is changed");
   assert.equal( (t2.commands[28])(g), 0, "BACK command executed");
-  assert.equal( g.mark, g.cp, "... mark equal current position again");
+  assert.equal( g.mark, g.getPos(), "... mark equal current position again");
   Model.Game.design = undefined;
 });
 
@@ -179,8 +178,7 @@ QUnit.test( "Move Generator", function( assert ) {
   g.setPiece(to, man);
   assert.equal( g.getPiece(from), man, "Man in [from] position (snapshot)");
   assert.equal( g.getPiece(to), null, "And [to] position is empty");
-  var c = Model.Game.createGen(t, [3]);
-  c.setParent(g);
+  var c = g.copy();
   assert.equal( c.getPiece(from), null, "[from] position is empty");
   assert.equal( c.getPiece(to), man, "[to] position contains Man");
   assert.equal( g.getValue(0, from), null, "No value");
@@ -193,9 +191,9 @@ QUnit.test( "Move Generator", function( assert ) {
   g.setAttr(0, to, true);
   assert.equal( g.attrs[to][0], true, "Attribute's value changed");
   g.setAttrsInternal();
-  assert.equal( m.moves.length, 1, "Move are generated...");
+  assert.equal( m.actions.length, 1, "Move are generated...");
   assert.equal( m.ToString(), "b3 = 1/0", "correct");
-  var piece = m.moves[0][2];
+  var piece = m.actions[0][2];
   assert.ok( piece !== man, "Piece is changed");
   assert.equal( piece.getValue(0), true, "Attribute's value is assigned");
   Model.Game.design = undefined;
