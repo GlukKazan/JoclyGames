@@ -2,9 +2,9 @@ QUnit.test( "Piece", function( assert ) {
   var man  = Model.Game.createPiece(0, Model.Board.mWho);
   var king = man.promote(1);
   var flip = king.flip();
-  assert.equal( man.ToString(), "1/0", "Man Piece");
-  assert.equal( king.ToString(), "1/1", "King Piece");
-  assert.equal( flip.ToString(), "-1/1", "Flip");
+  assert.equal( man.toString(), "1/0", "Man Piece");
+  assert.equal( king.toString(), "1/1", "King Piece");
+  assert.equal( flip.toString(), "-1/1", "Flip");
   assert.equal( man.getValue(0), null, "Non existent value");
   var piece = man.setValue(0, true);
   assert.ok( piece !== man, "Non mutable pieces");
@@ -56,18 +56,18 @@ QUnit.test( "Design", function( assert ) {
 QUnit.test( "Move", function( assert ) {
   var design = Model.Game.getDesign();
   var move = new Model.Move.Init([]);
-  assert.equal( move.ToString(), "", "Initial move");
+  assert.equal( move.toString(), "", "Initial move");
   var man  = Model.Game.createPiece(0, Model.Board.mWho);
   design.addPosition("a", [ 0, 1]);
   design.addPosition("b", [-1, 0]);
   move.movePiece(0, 1, man);
-  assert.equal( move.ToString(), "a - b", "Move piece");
+  assert.equal( move.toString(), "a - b", "Move piece");
   move = new Model.Move.Init(move);
   move.capturePiece(1);
-  assert.equal( move.ToString(), "a - b x b", "Capture piece");
+  assert.equal( move.toString(), "a - b x b", "Capture piece");
   var king = man.promote(1);
   move.dropPiece(1, king);
-  assert.equal( move.ToString(), "a - b x b = 1/1", "Create piece");
+  assert.equal( move.toString(), "a - b x b = 1/1", "Create piece");
   Model.Game.design = undefined;
 });
 
@@ -116,7 +116,7 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( (t0.commands[4])(g0), 0, "VERIFY command executed");
   g0.pos = 0;
   assert.equal( (t0.commands[5])(g0), 0, "CAPTURE command executed");
-  assert.equal( move.ToString(), "x a8", "... piece is captured");
+  assert.equal( move.toString(0), "x a8", "... piece is captured");
   assert.equal( (t0.commands[10])(g0), 0, "IN_ZONE? command executed");
   assert.equal( g0.stack.pop(), true, "... promotion zone for A Player");
   assert.equal( (t0.commands[11])(g0), null, "Stack is empty");
@@ -131,13 +131,13 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( g0.mode, 2, "... notype mode");
   assert.equal( (t0.commands[14])(g0), 3, "JUMP command executed");
   assert.equal( (t0.commands[15])(g0), 0, "PROMOTE command executed");
-  assert.equal( g0.piece.ToString(), "1/1", "... piece promoted");
+  assert.equal( g0.piece.toString(), "1/1", "... piece promoted");
   g0.pos = 1;
   assert.equal( (t0.commands[17])(g0), 0, "TO command executed");
   assert.ok( g0.from === undefined, "... no from position");
   assert.ok( g0.piece === undefined, "... and no piece");
   assert.equal( g.getPiece(0), null, "... from position is empty");
-  assert.equal( g.getPiece(1).ToString(), "1/1", "... and King piece on TO position");
+  assert.equal( g.getPiece(1).toString(), "1/1", "... and King piece on TO position");
   assert.equal( (t3.commands[11])(g0), -9, "END command executed");
   var g1 = Model.Game.createGen(t1, [3]);
   g1.init(board, 0, move);
@@ -192,7 +192,7 @@ QUnit.test( "Move Generator", function( assert ) {
   assert.equal( g.attrs[to][0], true, "Attribute's value changed");
   g.setAttrsInternal();
   assert.equal( m.actions.length, 1, "Move are generated...");
-  assert.equal( m.ToString(), "b3 = 1/0", "correct");
+  assert.equal( m.toString(0), "b3 = 1/0", "correct");
   var piece = m.actions[0][2];
   assert.ok( piece !== man, "Piece is changed");
   assert.equal( piece.getValue(0), true, "Attribute's value is assigned");
@@ -207,8 +207,8 @@ QUnit.test( "Board", function( assert ) {
   var king = man.promote(1);
   board.setPiece(0, man);
   board.setPiece(1, king);
-  assert.equal( board.getPiece(0).ToString(), "1/0", "Man piece");
-  assert.equal( board.getPiece(1).ToString(), "1/1", "King piece");
+  assert.equal( board.getPiece(0).toString(), "1/0", "Man piece");
+  assert.equal( board.getPiece(1).toString(), "1/1", "King piece");
   board.setPiece(1, null);
   assert.equal( board.getPiece(1), null, "No piece ... again");
   assert.equal( board.getValue(0, 0), false, "No value");

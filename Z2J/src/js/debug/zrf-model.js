@@ -919,7 +919,7 @@ Model.Game.pieceToString = function(piece) {
   return piece.player + "/" + piece.type;
 }
 
-ZrfPiece.prototype.ToString = function() {
+ZrfPiece.prototype.toString = function() {
   return Model.Game.pieceToString(this);
 }
 
@@ -1040,7 +1040,7 @@ Model.Board.InitialPosition = function(aGame) {
                   var pos = Model.Game.stringToPos(inits[p][t][i]);
                   if (pos >= 0) {
                       this.pieces[pos] = piece;
-                      this.zSign = aGame.zobrist.update(this.zSign, "board", piece.ToString(), pos);
+                      this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
                   }
               }
           }
@@ -1149,7 +1149,7 @@ Model.Board.ApplyMove = function(aGame, move) {
           this.lastt = tp;
           var piece = this.pieces[fp];
           if (typeof piece !== "undefined") {
-              this.zSign = aGame.zobrist.update(this.zSign, "board", piece.ToString(), fp);
+              this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), fp);
               delete this.pieces[fp];
           }
           if (np === null) {
@@ -1157,9 +1157,9 @@ Model.Board.ApplyMove = function(aGame, move) {
           }
           var op = this.pieces[tp];
           if (typeof op !== "undefined") {
-              this.zSign = aGame.zobrist.update(this.zSign, "board", op.ToString(), tp);
+              this.zSign = aGame.zobrist.update(this.zSign, "board", op.toString(), tp);
           }
-          this.zSign = aGame.zobrist.update(this.zSign, "board", np.ToString(), tp);
+          this.zSign = aGame.zobrist.update(this.zSign, "board", np.toString(), tp);
           this.pieces[fp] = np;
       }
   }
@@ -1170,9 +1170,9 @@ Model.Board.ApplyMove = function(aGame, move) {
       if ((fp === null) && (tp !== null) && (np !== null)) {
           var op = this.pieces[tp];
           if (typeof op !== "undefined") {
-              this.zSign = aGame.zobrist.update(this.zSign, "board", op.ToString(), tp);
+              this.zSign = aGame.zobrist.update(this.zSign, "board", op.toString(), tp);
           }
-          this.zSign = aGame.zobrist.update(this.zSign, "board", np.ToString(), tp);
+          this.zSign = aGame.zobrist.update(this.zSign, "board", np.toString(), tp);
           this.pieces[fp] = np;
       }
   }
@@ -1182,7 +1182,7 @@ Model.Board.ApplyMove = function(aGame, move) {
       if ((fp !== null) && (tp === null)) {
           var piece = this.pieces[fp];
           if (typeof piece !== "undefined") {
-              this.zSign = aGame.zobrist.update(this.zSign, "board", piece.ToString(), fp);
+              this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), fp);
               delete this.pieces[fp];
           }
       }
@@ -1210,46 +1210,55 @@ Model.Board.IsValidMove = function(aGame, aMove) {
 
 function ZrfMove() {
   this.actions      = [];
-  this.ToString     = Model.Move.ToString;
+  this.toString     = Model.Move.toString;
   this.movePiece    = Model.Move.movePiece;
   this.dropPiece    = Model.Move.dropPiece;
   this.capturePiece = Model.Move.capturePiece;
 }
 
-Model.Move.moveToString = function(move) {
+Model.Move.moveToString = function(aMove, aPart) {
   var r = "";
   var l = "";
-  for (var i in move.actions) {
-      if (r !== "") {
-          r = r + " ";
+  for (var i in aMove.actions) {
+      var part = aMove.actions[i][3];
+      if (part < 0) {
+          part = -part;
       }
-      if ((move.actions[i][0] !== null) && (move.actions[i][1] !== null) && (move.actions[i][0] !== move.actions[i][1])) {
-          if (l !== move.actions[i][0]) {
-              r = r + Model.Game.posToString(move.actions[i][0]);
+      if (aPart === 0) {
+          part = 0;
+      }
+      if (part === aPart) {
+          if (r !== "") {
+              r = r + " ";
           }
-          r = r + " - ";
-          r = r + Model.Game.posToString(move.actions[i][1]);
-          l = move.actions[i][1];
-      } else {
-          if (move.actions[i][1] === null) {
-              r = r + "x ";
-              r = r + Model.Game.posToString(move.actions[i][0]);
-              l = move.actions[i][0];
-          } else {
-              if (l !== move.actions[i][1]) {
-                  r = r + Model.Game.posToString(move.actions[i][1]) + " ";
+          if ((aMove.actions[i][0] !== null) && (aMove.actions[i][1] !== null) && (aMove.actions[i][0] !== aMove.actions[i][1])) {
+              if (l !== aMove.actions[i][0]) {
+                  r = r + Model.Game.posToString(aMove.actions[i][0]);
               }
-              r = r + "= ";
-              r = r + move.actions[i][2].ToString();
-              l = move.actions[i][1];
+              r = r + " - ";
+              r = r + Model.Game.posToString(aMove.actions[i][1]);
+              l = aMove.actions[i][1];
+          } else {
+              if (aMove.actions[i][1] === null) {
+                  r = r + "x ";
+                  r = r + Model.Game.posToString(aMove.actions[i][0]);
+                  l = aMove.actions[i][0];
+              } else {
+                  if (l !== aMove.actions[i][1]) {
+                      r = r + Model.Game.posToString(aMove.actions[i][1]) + " ";
+                  }
+                  r = r + "= ";
+                  r = r + aMove.actions[i][2].toString();
+                  l = aMove.actions[i][1];
+              }
           }
       }
   }
   return r;
 }
 
-Model.Move.ToString = function() {
-  return Model.Move.moveToString(this);
+Model.Move.toString = function(aPart) {
+  return Model.Move.moveToString(this, aPart);
 }
 
 Model.Move.movePiece = function(aFrom, aTo, aPiece, aPart) {
@@ -1269,7 +1278,7 @@ Model.Move.Init = function(args) {
   for (var i in args.actions) {
      this.actions.push(args.actions[i])
   }
-  this.ToString     = Model.Move.ToString;
+  this.toString     = Model.Move.toString;
   this.movePiece    = Model.Move.movePiece;
   this.dropPiece    = Model.Move.dropPiece;
   this.capturePiece = Model.Move.capturePiece;
