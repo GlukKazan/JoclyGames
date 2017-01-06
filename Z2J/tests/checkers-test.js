@@ -55,19 +55,19 @@ QUnit.test( "Design", function( assert ) {
 
 QUnit.test( "Move", function( assert ) {
   var design = Model.Game.getDesign();
-  var move = new Model.Move.Init([]);
-  assert.equal( move.toString(), "", "Initial move");
+  var move = Model.Game.createMove();
+  assert.equal( move.toString(0), "", "Initial move");
   var man  = Model.Game.createPiece(0, Model.Board.mWho);
   design.addPosition("a", [ 0, 1]);
   design.addPosition("b", [-1, 0]);
   move.movePiece(0, 1, man);
-  assert.equal( move.toString(), "a - b", "Move piece");
-  move = new Model.Move.Init(move);
+  assert.equal( move.toString(0), "a - b", "Move piece");
+  move = move.copy();
   move.capturePiece(1);
-  assert.equal( move.toString(), "a - b x b", "Capture piece");
+  assert.equal( move.toString(0), "a - b x b", "Capture piece");
   var king = man.promote(1);
   move.dropPiece(1, king);
-  assert.equal( move.toString(), "a - b x b = 1/1", "Create piece");
+  assert.equal( move.toString(0), "a - b x b = 1/1", "Create piece");
   Model.Game.design = undefined;
 });
 
@@ -80,7 +80,7 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( design.failed, false, "All options is valid");
   var board  = Model.Board;
   board.Init(Model.Game);
-  var move   = new Model.Move.Init([]);
+  var move   = new Model.Game.createMove();
   assert.equal( design.templates.length , 4, "Templates");
   assert.equal( design.modec , 1, "Priorities");
   var t0 = design.getTemplate(0);
@@ -167,10 +167,13 @@ QUnit.test( "Move Generator", function( assert ) {
   var from = Model.Game.stringToPos("b2");
   assert.ok( from !== null, "Correct position");
   assert.equal( Model.Game.posToString(from), "b2", "From position");
-  var m = new Model.Move.Init([]);
+  var m = new Model.Game.createMove();
   var g = Model.Game.createGen(t, [3]);
   g.init(board, from, m);
   var man = Model.Game.createPiece(0, Model.Board.mWho);
+  var king = man.promote(1);
+  assert.equal( man.getType(), "Man", "Man piece");
+  assert.equal( king.getType(), "King", "King piece");
   board.setPiece(from, man);
   var to = design.navigate(JocGame.PLAYER_A, from, 3);
   assert.equal( Model.Game.posToString(to), "b3", "To position");
