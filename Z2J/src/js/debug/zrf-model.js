@@ -760,6 +760,8 @@ ZrfMoveGenerator.prototype.copy = function() {
 
 ZrfMoveGenerator.prototype.movePiece = function(aFrom, aTo, aPiece) {
   this.move.movePiece(aFrom, aTo, aPiece, this.level);
+  this.lastf = aFrom;
+  this.tastt = aTo;
   if (aFrom !== aTo) {
       this.setPiece(aFrom, null);
   }
@@ -816,18 +818,42 @@ Model.Game.getPiece = function(aGen, aPos) {
   return aGen.board.getPiece(aPos);
 }
 
-ZrfMoveGenerator.prototype.isLastFrom = function(aPos) {
-  if (this.board.lastf === aPos) {
-      return true;
+Model.Game.isLastFrom = function(aPos, aBoard) {
+  if (typeof aBoard.lastf !== "undefined") {
+      return (aBoard.lastf === aPos)
+  } else {
+      return false;
   }
-  return false;
+}
+
+ZrfMoveGenerator.prototype.isLastFrom = function(aPos) {
+  if (this.parent !== null) {
+      if (typeof this.parent.lastf !== "undefined") {
+          return (this.parent.lastf === aPos);
+      } else {
+          return false;
+      }
+  }
+  return Model.Game.isLastFrom(aPos, this.board);
+}
+
+Model.Game.isLastTo = function(aPos, aBoard) {
+  if (typeof aBoard.lastt !== "undefined") {
+      return (aBoard.lastt === aPos)
+  } else {
+      return false;
+  }
 }
 
 ZrfMoveGenerator.prototype.isLastTo = function(aPos) {
-  if (this.board.lastt === aPos) {
-      return true;
+  if (this.parent !== null) {
+      if (typeof this.parent.lastt !== "undefined") {
+          return (this.parent.lastt === aPos);
+      } else {
+          return false;
+      }
   }
-  return false;
+  return Model.Game.isLastTo(aPos, this.board);
 }
 
 ZrfMoveGenerator.prototype.getPiece = function(aPos) {
@@ -1023,8 +1049,6 @@ Model.Board.Init = function(aGame) {
   this.pieces   = [];
   this.forks    = [];
   this.names    = [];
-  this.lastf    = null;
-  this.lastt    = null;
   this.getValue = Model.Board.getValue;
   this.setValue = Model.Board.setValue;
   this.addFork  = Model.Board.addFork;
@@ -1146,8 +1170,8 @@ Model.Board.GenerateMoves = function(aGame) {
 
 Model.Board.ApplyPart = function(aGame, aBoard, aMove, aPart) {
   var r = false;
-  aBoard.lastf = null;
-  aBoard.lastt = null;
+  delete aBoard.lastf;
+  delete aBoard.lastt;
   for (var i in aMove.actions) {
       var part = aMove.actions[i][3];
       if (part === aPart) {
@@ -1155,9 +1179,7 @@ Model.Board.ApplyPart = function(aGame, aBoard, aMove, aPart) {
           var tp = aMove.actions[i][1];
           var np = aMove.actions[i][2];
           if ((fp !== null) && (tp !== null)) {
-              if (aBoard.lastf === null) {
-                  aBoard.lastf = fp;
-              }
+              aBoard.lastf = fp;
               aBoard.lastt = tp;
               if (np === null) {
                   np = aBoard.pieces[fp];

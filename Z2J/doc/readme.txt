@@ -42,7 +42,6 @@ zrf-advanced       = true      Все опции zrf-advanced
 zrf-advanced       = simple    Упрощённая семантика перемещения фигур при генерации хода
 zrf-advanced       = fork      Взятия и сбросы переносятся через ZRF_FORK
 zrf-advanced       = composite Доступность флагов установленных предыдущими частичными ходами
-zrf-advanced       = attribute Упрощённая семантика работы с атрибутами
 zrf-advanced       = mark      Поддержка вложенных вызовов mark/back
 zrf-advanced       = delayed   Реализация правила "Турецкого удара" (во всех шашках, кроме турецких)
 zrf-advanced       = last      Очистка пометок last-from и last-to при завершении составного хода

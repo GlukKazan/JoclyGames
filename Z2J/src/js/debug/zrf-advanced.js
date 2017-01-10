@@ -3,6 +3,9 @@
 var checkVersion  = Model.Game.checkVersion;
 var checkOption   = Model.Game.checkOption;
 var cloneMove     = Model.Game.cloneMove;
+var getPiece      = Model.Game.getPiece;
+var isLastFrom    = Model.Game.isLastFrom;
+var isLastTo      = Model.Game.isLastTo;
 
 var modes = [];
 var simpleMode    = false;
@@ -10,6 +13,7 @@ var compositeMode = false;
 var attrMode      = false;
 var markMode      = false;
 var forkMode      = false;
+var lastMode      = false;
 
 Model.Game.checkVersion = function(aDesign, aName, aValue) {
   if (aName == "zrf-advanced") {
@@ -34,6 +38,10 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
          mode = aValue;
          forkMode = true;
      }
+     if ((aValue === "last")      || (aValue === "true")) {
+         mode = aValue;
+         lastMode = true;
+     }
      if (mode !== null) {
          modes.push(mode);
      } else {
@@ -49,7 +57,7 @@ Model.Game.checkOption = function(aDesign, aName, aValue) {
      return (Model.find(modes, aValue) >= 0) || 
             (Model.find(modes, "true") >= 0);
   } else {
-     (checkOption)(aDesign, aName, aValue);
+     return (checkOption)(aDesign, aName, aValue);
   }
 }
 
@@ -87,13 +95,27 @@ Model.Game.getValueInternal = function (aGen, aName, aPos) {
   return null;
 }
 
-var getPiece = Model.Game.getPiece;
-
 Model.Game.getPiece = function(aGen, aPos) {
   if (simpleMode) {
       return Model.Game.getPieceInternal(aGen, aPos);
   } else {
-     (getPiece)(aGen, aPos);
+     return (getPiece)(aGen, aPos);
+  }
+}
+
+Model.Game.isLastFrom = function(aPos, aBoard) {
+  if (lastMode) {
+      return false;
+  } else {
+      return (isLastFrom)(aPos, aBoard);
+  }
+}
+
+Model.Game.isLastTo = function(aPos, aBoard) {
+  if (lastMode) {
+      return false;
+  } else {
+      return (isLastTo)(aPos, aBoard);
   }
 }
 
