@@ -6,11 +6,12 @@ var cloneMove     = Model.Game.cloneMove;
 var getPiece      = Model.Game.getPiece;
 var isLastFrom    = Model.Game.isLastFrom;
 var isLastTo      = Model.Game.isLastTo;
+var getMark       = Model.Game.getMark;
+var setMark       = Model.Game.setMark;
 
 var modes = [];
 var simpleMode    = false;
 var compositeMode = false;
-var attrMode      = false;
 var markMode      = false;
 var forkMode      = false;
 var lastMode      = false;
@@ -26,10 +27,6 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
          mode = aValue;
          compositeMode = true;
      }
-     if ((aValue === "attribute") || (aValue === "true")) {
-         mode = aValue;
-         attrMode = true;
-     }
      if ((aValue === "mark")      || (aValue === "true")) {
          mode = aValue;
          markMode = true;
@@ -41,6 +38,10 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
      if ((aValue === "last")      || (aValue === "true")) {
          mode = aValue;
          lastMode = true;
+     }
+     if ((aValue === "delayed")   || (aValue === "true")) {
+         mode = aValue;
+         Model.Game.delayedStrike = true;
      }
      if (mode !== null) {
          modes.push(mode);
@@ -63,27 +64,40 @@ Model.Game.checkOption = function(aDesign, aName, aValue) {
 
 Model.Game.cloneMove = function(aGen, aMove) {
   if (forkMode) {
-      for (var i in aMove.actions) {
-          if (aMove.actions[3] !== -aGen.level) {
-              aGen.move.movePiece(aMove.actions[0], aMove.actions[1], aMove.actions[2], aMove.actions[3]);
-          }
-      }
+      return true;
   } else {
      (cloneMove)(aGen, aMove);
   }
 }
 
-Model.Game.getAttrInternal = function (aName, aPos) {
-  if (attrMode) {
-      if (typeof this.attrs[aPos] === "undefined") {
-          return null;
+Model.Game.getAttrInternal = function (aGen, aName, aPos) {
+  var r = null;
+  if (simpleMode) {
+      var piece = aGen.getPieceInternal(aPos);
+      if (piece === null) {
+          piece = aGen.piece;
       }
-      if (typeof this.attrs[aPos][aName] === "undefined") {
-          return null;
+      if (piece !== null) {
+          var r = piece.getValue(aName);
+          if (r === null) {
+              var design = aGen.board.game.getDesign();
+              r = design.getAttribute(piece.type, aName);
+          }
       }
-      return this.attrs[aPos][aName];
+      if (r === null) {
+          if (typeof aGen.attrs[aPos] !== "undefined") {
+              if (typeof aGen.attrs[aPos][aName] !== "undefined") {
+                  r = aGen.attrs[aPos][aName];
+              }
+          }
+      }
+      if (r === null) {
+          if (aGen.parent !== null) {
+              r = Model.Game.getAttrInternal(aGen.parent, aName, aPos);
+          }
+      }
   }
-  return null;
+  return r;
 }
 
 Model.Game.getValueInternal = function (aGen, aName, aPos) {
@@ -97,9 +111,9 @@ Model.Game.getValueInternal = function (aGen, aName, aPos) {
 
 Model.Game.getPiece = function(aGen, aPos) {
   if (simpleMode) {
-      return Model.Game.getPieceInternal(aGen, aPos);
+      return aGen.getPieceInternal(aPos);
   } else {
-     return (getPiece)(aGen, aPos);
+      return (getPiece)(aGen, aPos);
   }
 }
 
@@ -124,9 +138,9 @@ Model.Game.getMark = function(aGen) {
       if (aGen.backs.length === 0) {
           return null;
       }
-      aGen.pos = aGen.backs.pop();
+      return aGen.backs.pop();
   } else {
-      return aGen.mark;
+      return (getMark)(aGen);
   }
 }
 
@@ -134,7 +148,7 @@ Model.Game.setMark = function(aGen) {
   if (markMode) {
       aGen.backs.push(aGen.pos);
   } else {
-      aGen.mark = aGen.pos;
+      (setMark)(aGen);
   }
 }
 
