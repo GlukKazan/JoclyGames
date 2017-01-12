@@ -118,6 +118,7 @@ Model.Game.BuildDesign = function(design) {
     design.addCommand(0, ZRF.PROMOTE,	1);	// King
     design.addCommand(0, ZRF.MODE,	2);	// notype
     design.addCommand(0, ZRF.FUNCTION,	25);	// to
+    design.addCommand(0, ZRF.FUNCTION,	28);	// end
 
     design.addCommand(1, ZRF.FUNCTION,	24);	// from
     design.addCommand(1, ZRF.PARAM,	0);	// $1
@@ -131,6 +132,7 @@ Model.Game.BuildDesign = function(design) {
     design.addCommand(1, ZRF.FUNCTION,	25);	// to
     design.addCommand(1, ZRF.JUMP,	2);
     design.addCommand(1, ZRF.FUNCTION,	25);	// to
+    design.addCommand(1, ZRF.FUNCTION,	28);	// end
 
     design.addCommand(2, ZRF.FUNCTION,	24);	// from
     design.addCommand(2, ZRF.PARAM,	0);	// $1
@@ -168,6 +170,7 @@ Model.Game.BuildDesign = function(design) {
     design.addCommand(2, ZRF.PARAM,	4);	// $5
     design.addCommand(2, ZRF.FUNCTION,	22);	// navigate
     design.addCommand(2, ZRF.JUMP,	-19);
+    design.addCommand(2, ZRF.FUNCTION,	28);	// end
 
     design.addCommand(3, ZRF.FUNCTION,	24);	// from
     design.addCommand(3, ZRF.PARAM,	0);	// $1
@@ -181,6 +184,7 @@ Model.Game.BuildDesign = function(design) {
     design.addCommand(3, ZRF.PARAM,	1);	// $2
     design.addCommand(3, ZRF.FUNCTION,	22);	// navigate
     design.addCommand(3, ZRF.JUMP,	-8);
+    design.addCommand(3, ZRF.FUNCTION,	28);	// end
 
     design.addPriority(0);			// jumptype
     design.addPriority(1);			// normaltype

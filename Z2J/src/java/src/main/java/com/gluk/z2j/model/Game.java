@@ -10,6 +10,7 @@ import org.apache.xpath.XPathAPI;
 import org.w3c.dom.Node;
 import org.w3c.dom.traversal.NodeIterator;
 
+import com.gluk.z2j.api.form.IConst;
 import com.gluk.z2j.api.form.IForm;
 import com.gluk.z2j.api.loader.IDoc;
 import com.gluk.z2j.api.model.IGame;
@@ -214,6 +215,7 @@ public class Game extends AbstractDoc implements IGame {
 		List<Integer> params = new ArrayList<Integer>();
 		MoveTemplate template = new MoveTemplate();
 		form.generate(template, params, this, IForm.NO_HINT);
+		template.addCommand(IConst.ZRF_FUNCTION, IConst.ZRF_END, "end", "FUNCTION");
 		int tx = addTemplate(template);
 		int mx = addMode(mode);
 		List<Move> ml = moves.get(piece);

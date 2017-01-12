@@ -56,7 +56,7 @@ QUnit.test( "Design", function( assert ) {
 QUnit.test( "Move", function( assert ) {
   var design = Model.Game.getDesign();
   var move = Model.Game.createMove();
-  assert.equal( move.toString(0), "", "Initial move");
+  assert.equal( move.toString(0), "Pass", "Initial move");
   var man  = Model.Game.createPiece(0, Model.Board.mWho);
   design.addPosition("a", [ 0, 1]);
   design.addPosition("b", [-1, 0]);
@@ -82,17 +82,18 @@ QUnit.test( "Template", function( assert ) {
   board.Init(Model.Game);
   var move   = new Model.Game.createMove();
   assert.equal( design.templates.length , 4, "Templates");
-  assert.equal( design.modec , 1, "Priorities");
+  assert.equal( design.modes.length, 2, "Priorities");
   var t0 = design.getTemplate(0);
   var t1 = design.getTemplate(1);
   var t2 = design.getTemplate(2);
   var t3 = design.getTemplate(3);
   assert.ok( t0 !== t1, "Different templates" );
-  assert.equal( t1.commands.length , 12, "Commands");
+  assert.equal( t1.commands.length , 13, "Commands");
   assert.equal( t0.commands[1], t1.commands[1], "Equal commands");
   assert.ok( t0.commands[1] !== t0.commands[6], "Not equal commands");
   var g0 = Model.Game.createGen(t0, [1, 2]);
-  g0.init(board, 0, move);
+  g0.init(board, 0);
+  g0.move = move;
   assert.equal( (t0.commands[0])(g0), null, "Piece not found");
   var man = Model.Game.createPiece(0, Model.Board.mWho);
   board.setPiece(0, man);
@@ -140,7 +141,8 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( g.getPiece(1).toString(), "1/1", "... and King piece on TO position");
   assert.equal( (t3.commands[11])(g0), -9, "END command executed");
   var g1 = Model.Game.createGen(t1, [3]);
-  g1.init(board, 0, move);
+  g1.init(board, 0);
+  g1.move = move;
   assert.equal( (t1.commands[6])(g1), null, "Stack is empty");
   g1.stack.push(false);
   assert.equal( (t1.commands[6])(g1), 0, "NOT command executed");
@@ -168,7 +170,8 @@ QUnit.test( "Move Generator", function( assert ) {
   assert.equal( Model.Game.posToString(from), "b2", "From position");
   var m = new Model.Game.createMove();
   var g = Model.Game.createGen(t, [3]);
-  g.init(board, from, m);
+  g.init(board, from);
+  g.move = m;
   var man = Model.Game.createPiece(0, Model.Board.mWho);
   var king = man.promote(1);
   assert.equal( man.getType(), "Man", "Man piece");

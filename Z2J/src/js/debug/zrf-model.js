@@ -308,7 +308,15 @@ Model.Game.functions[Model.Move.ZRF_FLIP] = function(aGen) {
 }
 
 Model.Game.functions[Model.Move.ZRF_END] = function(aGen) {
-   return -(aGen.cmd + 2);
+   var board = aGen.board;
+   if (aGen.moveType === 2) {
+       board.replMove(aGen.move);
+   }
+   if (aGen.moveType === 1) {
+       board.addMove(aGen.move);
+   }
+   aGen.moveType = 0;
+   return null;
 }
 
 Model.Game.functions[Model.Move.ZRF_NOT] = function(aGen) {
@@ -462,8 +470,8 @@ function ZrfDesign() {
   this.pall      = [];
   this.templates = [];
   this.options   = [];
+  this.modes     = [];
   this.failed    = false;
-  this.modec     = 0;
 }
 
 Model.Game.getDesign = function() {
@@ -475,6 +483,9 @@ Model.Game.getDesign = function() {
 
 Model.Game.delayedStrike   = false;
 Model.Game.discardCascades = false;
+Model.Game.passPartial     = false;
+Model.Game.passTurn        = 0;
+Model.Game.sharedPieces    = false;
 
 Model.Game.checkVersion = function(aDesign, aName, aValue) {  
   if (aName == "z2j") {
@@ -483,6 +494,9 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
      }
   } else {
      if ((aName != "zrf")                && 
+         (aName != "pass-turn")          &&
+         (aName != "pass-partial")       &&
+         (aName != "moves-limit")        &&
          (aName != "discard-cascades")   &&
          (aName != "animate-captures")   &&
          (aName != "animate-drops")      &&
@@ -495,8 +509,20 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
          (aName != "smart-moves")) {
          aDesign.failed = true;
      }
-     if (aName == "discard-cascades") {
+     if ((aName == "discard-cascades") && (aValue === "true")) {
          Model.Game.discardCascades = true;
+     }
+     if ((aName == "pass-partial") && (aValue === "true")) {
+         Model.Game.passPartial = true;
+     }
+     if ((aName == "pass-turn") && (aValue === "true")) {
+         Model.Game.passTurn = 1;
+     }
+     if ((aName == "pass-turn") && (aValue === "forced")) {
+         Model.Game.passTurn = 2;
+     }
+     if (aName == "moves-limit") {
+         Model.Game.movesLimit = aValue;
      }
   }
 }
@@ -521,9 +547,7 @@ ZrfDesign.prototype.addCommand = function(aIx, aName, aParam) {
 }
 
 ZrfDesign.prototype.addPriority = function(aMode) {
-  if (aMode > this.modec) {
-      this.modec = aMode;
-  }
+  this.modes.push(aMode);
 }
 
 ZrfDesign.prototype.addAttribute = function(aType, aName, aVal) {
@@ -656,6 +680,7 @@ ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
 
 function ZrfMoveGenerator() {
   this.move     = new ZrfMove();
+  this.moveType = 1;
   this.template = null;
   this.params   = null;
   this.mode     = null;
@@ -719,11 +744,9 @@ ZrfMoveGenerator.prototype.copyMove = function(aMove) {
   }
 }
 
-ZrfMoveGenerator.prototype.init = function(aBoard, aPos, aMove) {
+ZrfMoveGenerator.prototype.init = function(aBoard, aPos) {
   this.board    = aBoard;
   this.pos      = aPos;
-  this.move     = aMove;
-  this.parent   = null;
 }
 
 ZrfMoveGenerator.prototype.clone = function() {
@@ -947,11 +970,10 @@ ZrfMoveGenerator.prototype.generate = function() {
   this.cmd = 0;
   while (this.cmd < this.template.commands.length) {
      var r = (this.template.commands[this.cmd++])(this);
-     if (r === null) return false;
+     if (r === null) break;
      this.cmd += r;
      if (this.cmd < 0) break;
   }
-  return true;
 }
 
 function ZrfPiece(aType, aPlayer) {
@@ -1043,8 +1065,11 @@ Model.Board.setValue = function(aName, aPos, aValue) {
 }
 
 Model.Board.addFork = function(aGen) {
-  if (typeof this.forks === "undefined") {
-      this.forks = [];
+  if (typeof Model.Game.movesLimit !== "undefined") {
+      if (this.forks.length >= Model.Game.movesLimit) {
+          this.failed = true;
+          return;
+      }
   }
   this.forks.push(aGen);
 }
@@ -1071,11 +1096,25 @@ Model.Board.Init = function(aGame) {
   this.pieces   = [];
   this.forks    = [];
   this.names    = [];
+  this.moves    = [];
   this.getValue = Model.Board.getValue;
   this.setValue = Model.Board.setValue;
   this.addFork  = Model.Board.addFork;
   this.getPiece = Model.Board.getPiece;
   this.setPiece = Model.Board.setPiece;
+  this.addMove  = Model.Board.addMove;
+  this.replMove = Model.Board.replMove;
+}
+
+Model.Board.addMove = function(aMove) {
+  this.moves.push(aMove);
+}
+
+Model.Board.replMove = function(aMove) {
+  if (this.moves.length > 0) {
+      this.moves.pop();
+  }
+  this.moves.push(aMove);
 }
 
 Model.Board.GetSignature = function() {
@@ -1116,77 +1155,104 @@ Model.Board.PostActions = function(aGame, aMoves) {
   this.mMoves = aMoves;
 }
 
-var CompleteMove = function(aGame, aGen, aMove) {
-  var pos = aGen.board.lastt;
-  if (pos !== null) {
-      var piece = aGen.pieces[pos];
-      for (var move in aGame.design.pieces[piece.type]) {
-           if ((move.type === 0) && ((move.mode === null) || (move.mode === aGen.mode))) {
-                var g = aGen.copy();
-                g.piece = piece;
-                g.from  = pos;
-                if (g.generate()) {
-                    moves.push(m);
-                    CompleteMove(aGame, g, m);
+var CompleteMove = function(aBoard, aGen) {
+  var t = 1;
+  if (Model.Game.passPartial === true) {
+      t = 2;
+  }
+  for (var pos in aBoard.pieces) {
+       var piece = aBoard.pieces[pos];
+       if ((piece.player === aBoard.mWho) || (Model.Game.sharedPieces === true)) {
+           for (var move in aGame.design.pieces[piece.type]) {
+                if ((move.type === 0) && (move.mode === aGen.mode)) {
+                    var g = f.copy(move.template, move.params);
+                    if (t > 0) {
+                        g.moveType = t;
+                        g.generate();
+                        if (g.moveType === 0) {
+                            CompleteMove(aBoard, g);
+                        }
+                    } else {
+                        aBoard.addFork(g);
+                    }
+                    t = 0;
                 }
            }
-      }
+       }
   }
 }
 
-Model.Board.GenerateMoves = function(aGame) {
-  var moves = [];
-  if (typeof this.forks === "undefined") {
-      this.forks = [];
+Model.Board.GenerateMoves = function(aBoard) {
+  aBoard.moves = [];
+  if (typeof aBoard.forks === "undefined") {
+      aBoard.forks = [];
   }
-  for (var pos in this.pieces) {
-       var piece = this.pieces[pos];
-       if (piece.player === this.mWho) {
+  var mx = null;
+  for (var pos in aBoard.pieces) {
+       var piece = aBoard.pieces[pos];
+       if ((piece.player === aBoard.mWho) || (Model.Game.sharedPieces === true)) {
            for (var move in aGame.design.pieces[piece.type]) {
                if (move.type === 0) {
-                   var m = { 
-                       moves: {}, 
-                   };
                    var g = Model.Game.createGen(move.template, move.params);
-                   g.init(this, pos, m);
-                   g.piece = piece;
-                   g.from  = pos;
-                   this.forks.push(g);
-                   while (this.forks.length > 0) {
-                       var f = this.forks.shift();
-                       if (f.generate()) {
-                           moves.push(f.move);
-                           CompleteMove(aGame, f, f.move);
+                   g.init(aBoard, pos);
+                   aBoard.addFork(g);
+                   if (aGame.design.modes.length > 0) {
+                       var ix = Model.find(aGame.design.modes, move.mode);
+                       if (ix >= 0) {
+                           if ((mx === null) || (ix < mx)) {
+                               mx = ix;
+                           }
                        }
                    }
                }
            }
        }
   }
-  for (var pos in aGame.design.positions) {
-       if (typeof this.pieces[pos] === "undefined") {
-           for (var tp in aGame.design.pieces) {
-                for (var move in aGame.design.pieces[tp]) {
-                     if (move.type === 1) {
-                         var m = { 
-                             moves: {}, 
-                         };
-                         var g = Model.Game.createGen(move.template, move.params);
-                         g.init(this, pos, m);
-                         g.piece = new ZrfPiece(tp, this.mWho);
-                         g.from  = null;
-                         if (g.generate()) {
-                             moves.push(m);
-                         }
-                     }
+  for (var tp in aBoard.game.design.pieces) {
+       for (var pos in aBoard.game.design.positions) {
+           for (var move in aBoard.game.design.pieces[tp]) {
+                if (move.type === 1) {
+                    var g = Model.Game.createGen(move.template, move.params);
+                    g.init(this, pos);
+                    g.piece = new ZrfPiece(tp, this.mWho);
+                    g.from  = null;
+                    g.mode  = move.mode;
+                    aBoard.addFork(g);
+                    if (aGame.design.modes.length > 0) {
+                        var ix = Model.find(aGame.design.modes, move.mode);
+                        if (ix >= 0) {
+                            if ((mx === null) || (ix < mx)) {
+                                mx = ix;
+                            }
+                        }
+                    }
                 }
            }
        }
   }
-  Model.Board.PostActions(aGame, moves);
-  if (this.mMoves.length == 0) {
-      this.mFinished = true;
-      this.mWinner = -this.mWho;
+  while (aBoard.forks.length > 0) {
+       var f = aBoard.forks.shift();
+       if ((mx === null) || (aGame.design.modes[mx] === f.mode)) {
+           f.generate();
+           if (f.moveType === 0) {
+               CompleteMove(aBoard, f);
+           }
+       }
+  }
+  Model.Board.PostActions(aBoard);
+  if (Model.Game.passTurn === 1) {
+      aBoard.moves.push(new ZrfMove());
+  }
+  if (Model.Game.passTurn === 2) {
+      if (aBoard.moves.length === 0) {
+          aBoard.moves.push(new ZrfMove());
+      }
+  }
+  // LEGACY:
+  Model.Board.mMoves = aBoard.moves;
+  if (Model.Board.mMoves.length == 0) {
+      Model.Board.mFinished = true;
+      Model.Board.mWinner = -this.mWho;
   }
 }
 
@@ -1334,6 +1400,9 @@ Model.Move.moveToString = function(aMove, aPart) {
               }
           }
       }
+  }
+  if (r === "") {
+      r = "Pass";
   }
   return r;
 }

@@ -43,6 +43,10 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
          mode = aValue;
          Model.Game.delayedStrike = true;
      }
+     if ((aValue === "shared")    || (aValue === "true")) {
+         mode = aValue;
+         Model.Game.sharedPieces = true;
+     }
      if (mode !== null) {
          modes.push(mode);
      } else {
