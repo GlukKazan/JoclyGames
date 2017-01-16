@@ -49,8 +49,17 @@ Model.Game.BuildDesign = function(design) {<xsl:call-template name="apply-option
     design.addDrop(<xsl:value-of select="$ix"/>, <xsl:value-of select="template"/>, [<xsl:call-template name="apply-params"/>], <xsl:value-of select="mode"/>);</xsl:for-each>
     <xsl:for-each select="move">
     design.addMove(<xsl:value-of select="$ix"/>, <xsl:value-of select="template"/>, [<xsl:call-template name="apply-params"/>], <xsl:value-of select="mode"/>);</xsl:for-each>
+</xsl:for-each><xsl:text>
+
+</xsl:text>
+<xsl:for-each select="/game/board-setup/*">
+   <xsl:variable name="player" select="name(.)"/>
+   <xsl:for-each select="*">
+       <xsl:variable name="piece" select="name(.)"/>
+       <xsl:for-each select="pos">    design.setup("<xsl:value-of select="$player"/>", "<xsl:value-of select="$piece"/>", <xsl:value-of select="text()"/>);
 </xsl:for-each>
-}
+   </xsl:for-each>
+</xsl:for-each>}
 </xsl:template>
 
 <xsl:template name="apply-options">
@@ -64,12 +73,11 @@ Model.Game.BuildDesign = function(design) {<xsl:call-template name="apply-option
 </xsl:template>
 
 <xsl:template name="apply-players">
-  <xsl:variable name="player" select="/game/players/name[2]/text()"/>
   <xsl:for-each select="board/player">
-    design.addPlayer(<xsl:choose>
-    <xsl:when test="name = $player">JocGame.PLAYER_B</xsl:when>
-    <xsl:otherwise>0</xsl:otherwise>
-    </xsl:choose>, [<xsl:call-template name="apply-dirs"/>]);</xsl:for-each>
+    design.addPlayer("<xsl:choose>
+                         <xsl:when test="name"><xsl:value-of select="name"/></xsl:when>
+                         <xsl:otherwise><xsl:value-of select="/game/players[1]/name"/></xsl:otherwise>
+                      </xsl:choose>", [<xsl:call-template name="apply-dirs"/>]);</xsl:for-each>
 </xsl:template>
 
 <xsl:template name="apply-positions">
@@ -108,12 +116,14 @@ Model.Game.BuildDesign = function(design) {<xsl:call-template name="apply-option
 
 <xsl:template name="apply-zone-players">
   <xsl:param name="zone-name"/>
-  <xsl:variable name="player" select="/game/players/name[1]/text()"/>
   <xsl:for-each select="player">
-    design.addZone("<xsl:value-of select="$zone-name"/>", <xsl:choose>
-  <xsl:when test="name = $player">JocGame.PLAYER_A</xsl:when>
-  <xsl:otherwise>JocGame.PLAYER_B</xsl:otherwise>
-</xsl:choose>, [<xsl:call-template name="apply-pos"/>]);</xsl:for-each>
+    <xsl:variable name="name" select="name/text()"/>
+    <xsl:variable name="pos" select="position() - 1"/>
+    design.addZone("<xsl:value-of select="$zone-name"/>", <xsl:for-each select="/game/players/name">
+       <xsl:choose>
+          <xsl:when test="$name = text()"><xsl:value-of select="position()"/></xsl:when>
+       </xsl:choose>
+</xsl:for-each>, [<xsl:call-template name="apply-pos"/>]);</xsl:for-each>
 </xsl:template>
 
 <xsl:template name="apply-pos">

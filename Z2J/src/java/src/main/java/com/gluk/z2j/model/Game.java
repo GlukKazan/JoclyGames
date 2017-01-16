@@ -312,7 +312,8 @@ public class Game extends AbstractDoc implements IGame {
 				while ((p = pl.nextNode())!= null) {
 					String pos = p.getLocalName();
 					if (pos.equals(OFF_TAG)) break;
-					dest.open(POS_TAG); dest.add(pos); dest.close();
+					Integer ix = getNameIndex(pos);
+					dest.open(POS_TAG); dest.add(ix.toString()); dest.close();
 				}
 				dest.close();
 			}

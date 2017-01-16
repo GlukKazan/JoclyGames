@@ -29,8 +29,8 @@ Model.Game.BuildDesign = function(design) {
     design.addDirection("s");
     design.addDirection("n");
 
-    design.addPlayer(0, [1, 0, 3, 2]);
-    design.addPlayer(JocGame.PLAYER_B, [0, 1, 3, 2]);
+    design.addPlayer("White", [1, 0, 3, 2]);
+    design.addPlayer("Black", [0, 1, 3, 2]);
 
     design.addPosition("a8", [0, 1, 8, 0]);
     design.addPosition("b8", [-1, 1, 8, 0]);
@@ -97,8 +97,8 @@ Model.Game.BuildDesign = function(design) {
     design.addPosition("g1", [-1, 1, 0, -8]);
     design.addPosition("h1", [-1, 0, 0, -8]);
 
-    design.addZone("promotion", JocGame.PLAYER_A, [0, 1, 2, 3, 4, 5, 6, 7]);
-    design.addZone("promotion", JocGame.PLAYER_B, [56, 57, 58, 59, 60, 61, 62, 63]);
+    design.addZone("promotion", 1, [0, 1, 2, 3, 4, 5, 6, 7]);
+    design.addZone("promotion", 2, [56, 57, 58, 59, 60, 61, 62, 63]);
 
     design.addCommand(0, ZRF.FUNCTION,	24);	// from
     design.addCommand(0, ZRF.PARAM,	0);	// $1
@@ -206,4 +206,37 @@ Model.Game.BuildDesign = function(design) {
     design.addMove(1, 3, [0, 0], 1);
     design.addMove(1, 3, [1, 1], 1);
     design.addMove(1, 3, [2, 2], 1);
+
+    design.setup("White", "Man", 48);
+    design.setup("White", "Man", 49);
+    design.setup("White", "Man", 50);
+    design.setup("White", "Man", 51);
+    design.setup("White", "Man", 52);
+    design.setup("White", "Man", 53);
+    design.setup("White", "Man", 54);
+    design.setup("White", "Man", 55);
+    design.setup("White", "Man", 40);
+    design.setup("White", "Man", 41);
+    design.setup("White", "Man", 42);
+    design.setup("White", "Man", 43);
+    design.setup("White", "Man", 44);
+    design.setup("White", "Man", 45);
+    design.setup("White", "Man", 46);
+    design.setup("White", "Man", 47);
+    design.setup("Black", "Man", 8);
+    design.setup("Black", "Man", 9);
+    design.setup("Black", "Man", 10);
+    design.setup("Black", "Man", 11);
+    design.setup("Black", "Man", 12);
+    design.setup("Black", "Man", 13);
+    design.setup("Black", "Man", 14);
+    design.setup("Black", "Man", 15);
+    design.setup("Black", "Man", 16);
+    design.setup("Black", "Man", 17);
+    design.setup("Black", "Man", 18);
+    design.setup("Black", "Man", 19);
+    design.setup("Black", "Man", 20);
+    design.setup("Black", "Man", 21);
+    design.setup("Black", "Man", 22);
+    design.setup("Black", "Man", 23);
 }

@@ -457,6 +457,7 @@ Model.Game.stringToPos = function(name) {
 }
 
 function ZrfDesign() {
+  this.tnames    = [];
   this.players   = [];
   this.positions = [];
   this.zones     = [];
@@ -531,6 +532,11 @@ Model.Game.checkOption = function(aDesign, aName, aValue) {
   if (aDesign.options[aName] == aValue) {
       return true;
   }
+}
+
+ZrfDesign.prototype.setup = function(aPlayer, aPiece, aPos) {
+  // TODO:
+
 }
 
 ZrfDesign.prototype.getTemplate = function(aIx) {
@@ -611,7 +617,20 @@ ZrfDesign.prototype.addDirection = function(aName) {
 }
 
 ZrfDesign.prototype.addPlayer = function(aPlayer, aSymmetries) {
-  this.players[aPlayer] = Model.int32Array(aSymmetries);
+  var ix = this.tnames.length + 1;
+  if (this.tnames.length === 0) {
+      ix = 0;
+  }
+  this.players[ix] = Model.int32Array(aSymmetries);
+  this.tnames.push(aPlayer);
+}
+
+ZrfDesign.prototype.nextPlayer = function(aPlayer) {
+  if (aPlayer + 1 > this.tnames.length) {
+      return 1;
+  } else {
+      return aPlayer + 1;
+  }
 }
 
 ZrfDesign.prototype.addPosition = function(aName, aLinks) {
@@ -990,6 +1009,8 @@ Model.Game.pieceToString = function(piece) {
 }
 
 ZrfPiece.prototype.toString = function() {
+  // TODO:
+
   return Model.Game.pieceToString(this);
 }
 
@@ -999,6 +1020,8 @@ ZrfPiece.prototype.getType = function() {
 }
 
 ZrfPiece.prototype.getOwner = function() {
+  // TODO:
+
   return null;
 }
 
@@ -1027,8 +1050,17 @@ ZrfPiece.prototype.promote = function(aType) {
   return new ZrfPiece(aType, this.player);
 }
 
+ZrfPiece.prototype.changeOwner = function(aPlayer) {
+  if (this.player === aPlayer) {
+      return this;
+  } else {
+      return new ZrfPiece(this.type, aPlayer);
+  }
+}
+
 ZrfPiece.prototype.flip = function() {
-  return new ZrfPiece(this.type, -this.player);
+  var design = Model.Game.getDesign();
+  return new ZrfPiece(this.type, design.nextPlayer(this.player));
 }
 
 Model.Game.BuildDesign = function(design) {}
@@ -1036,13 +1068,6 @@ Model.Game.BuildDesign = function(design) {}
 Model.Game.InitGame = function() {
   var  design = Model.Game.getDesign();
   this.BuildDesign(design);
-  this.zobrist = new JocGame.Zobrist({
-     board: {
-        type:  "array",
-        size:   design.positions.length,
-        values: design.pall
-     }
-  });
 }
 
 Model.Game.DestroyGame = function() {}
@@ -1119,28 +1144,6 @@ Model.Board.replMove = function(aMove) {
 
 Model.Board.GetSignature = function() {
   return this.zSign;
-}
-
-Model.Board.InitialPosition = function(aGame) {
-  this.Init(aGame);
-  var design = aGame.getDesign();
-  var inits  = aGame.mOptions.initial;
-  var player = JocGame.PLAYER_A;
-  for(var p in inits) {
-      for(var t in inits[p]) {
-          if (typeof design.types[t] !== "undefined") {
-              var piece = Model.Game.createPiece(design.types[t], player);
-              for(var i in inits[p][t]) {
-                  var pos = Model.Game.stringToPos(inits[p][t][i]);
-                  if (pos >= 0) {
-                      this.pieces[pos] = piece;
-                      this.zSign = aGame.zobrist.update(this.zSign, "board", piece.toString(), pos);
-                  }
-              }
-          }
-      }
-      player = JocGame.PLAYER_B;
-  }
 }
 
 Model.Board.CopyFrom = function(aBoard) {
@@ -1256,7 +1259,7 @@ Model.Board.GenerateMoves = function(aBoard) {
   }
 }
 
-Model.Board.ApplyPart = function(aGame, aBoard, aMove, aPart) {
+Model.Board.ApplyPart = function(aGame, aBoard, aMove, aPart) {  
   var r = false;
   delete aBoard.lastf;
   delete aBoard.lastt;
@@ -1274,14 +1277,14 @@ Model.Board.ApplyPart = function(aGame, aBoard, aMove, aPart) {
               }
               var piece = aBoard.pieces[fp];
               if (typeof piece !== "undefined") {
-                  aBoard.zSign = aGame.zobrist.update(aBoard.zSign, "board", piece.toString(), fp);
+                  aBoard.zSign = Model.Game.zupdate(aBoard.zSign, piece.player, piece.type, fp);
                   delete aBoard.pieces[fp];
               }
               var op = aBoard.pieces[tp];
               if (typeof op !== "undefined") {
-                  aBoard.zSign = aGame.zobrist.update(aBoard.zSign, "board", op.toString(), tp);
+                  aBoard.zSign = Model.Game.zupdate(aBoard.zSign, op.player, op.type, tp);
               }
-              aBoard.zSign = aGame.zobrist.update(aBoard.zSign, "board", np.toString(), tp);
+              aBoard.zSign = Model.Game.zupdate(aBoard.zSign, np.player, np.type, tp);
               aBoard.pieces[tp] = np;
          }
       }
@@ -1295,9 +1298,9 @@ Model.Board.ApplyPart = function(aGame, aBoard, aMove, aPart) {
           if ((fp === null) && (tp !== null) && (np !== null)) {
               var op = aBoard.pieces[tp];
               if (typeof op !== "undefined") {
-                  aBoard.zSign = aGame.zobrist.update(aBoard.zSign, "board", op.toString(), tp);
+                  aBoard.zSign = Model.Game.zupdate(aBoard.zSign, op.player, op.type, tp);
               }
-              aBoard.zSign = aGame.zobrist.update(aBoard.zSign, "board", np.toString(), tp);
+              aBoard.zSign = Model.Game.zupdate(aBoard.zSign, np.player, np.type, tp);
               aBoard.pieces[tp] = np;
           }
       }
@@ -1310,7 +1313,7 @@ Model.Board.ApplyPart = function(aGame, aBoard, aMove, aPart) {
           if ((fp !== null) && (tp === null)) {
               var piece = aBoard.pieces[fp];
               if (typeof piece !== "undefined") {
-                  aBoard.zSign = aGame.zobrist.update(aBoard.zSign, "board", piece.toString(), fp);
+                  aBoard.zSign = Model.Game.zupdate(aBoard.zSign, piece.player, piece.type, fp);
                   delete aBoard.pieces[fp];
               }
           }
@@ -1324,25 +1327,6 @@ Model.Board.ApplyMove = function(aGame, aMove) {
   while (Model.Board.ApplyPart(aGame, Model.Board, aMove, part)) {
       part++;
   }
-}
-
-Model.Board.Evaluate = function(aGame) {
-  var score = 0;
-  var board = this;
-  for (var pos in board.pieces) {
-       var piece  = board.pieces[pos];
-       var weight = 10 + (piece.type * 100);
-       if (piece.player === JocGame.PLAYER_A) {
-           score += weight;
-       } else {
-           score -= weight;
-       }
-  }
-  this.mEvaluation = score;
-}
-
-Model.Board.IsValidMove = function(aGame, aMove) {
-  return true;
 }
 
 function ZrfMove() {
@@ -1462,6 +1446,12 @@ ZrfMove.prototype.getStopPos = function(aPart) {
       }
   }
   return "";
+}
+
+ZrfMove.prototype.getCapturedPos = function(aPart) {
+  // TODO:
+
+  return [];
 }
 
 ZrfMove.prototype.changeView = function(aPart, aView) {
