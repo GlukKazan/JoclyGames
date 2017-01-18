@@ -2,7 +2,6 @@
 
 var checkVersion  = Model.Game.checkVersion;
 var checkOption   = Model.Game.checkOption;
-var cloneMove     = Model.Game.cloneMove;
 var getPiece      = Model.Game.getPiece;
 var isLastFrom    = Model.Game.isLastFrom;
 var isLastTo      = Model.Game.isLastTo;
@@ -33,7 +32,7 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
      }
      if ((aValue === "fork")      || (aValue === "true")) {
          mode = aValue;
-         forkMode = true;
+         Model.Game.forkMode = true;
      }
      if ((aValue === "last")      || (aValue === "true")) {
          mode = aValue;
@@ -63,14 +62,6 @@ Model.Game.checkOption = function(aDesign, aName, aValue) {
             (Model.find(modes, "true") >= 0);
   } else {
      return (checkOption)(aDesign, aName, aValue);
-  }
-}
-
-Model.Game.cloneMove = function(aGen, aMove) {
-  if (forkMode) {
-      return true;
-  } else {
-     (cloneMove)(aGen, aMove);
   }
 }
 

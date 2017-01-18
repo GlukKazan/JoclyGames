@@ -19,14 +19,14 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
   }
 }
 
-Model.Board.PostActions = function(aGame, aMoves) {
+Model.Game.PostActions = function(board) {
   if (mode !== 0) {
       var moves = [];
       var mx = 0;
-      for (var i in aMoves) {
+      for (var i in board.moves) {
            var vl = 0;
-           for (var j in aMoves[i].moves) {
-                if (aMoves[i].moves[j][1] === null) {
+           for (var j in board.moves[i].moves) {
+                if (board.moves[i].moves[j][1] === null) {
                     vl++;
                 }
            }
@@ -34,20 +34,18 @@ Model.Board.PostActions = function(aGame, aMoves) {
                mx = vl;
            }
       }
-      for (var i in aMoves) {
+      for (var i in board.moves) {
            var vl = 0;
-           for (var j in aMoves[i].moves) {
-                if (aMoves[i].moves[j][1] === null) {
+           for (var j in board.moves[i].moves) {
+                if (board.moves[i].moves[j][1] === null) {
                     vl++;
                 }
            }
            if (vl == mx) {
-                moves.push(aMoves[i]);
+                moves.push(board.moves[i]);
            }
       }
-      this.mMoves = moves;
-  } else {
-      this.mMoves = aMoves;
+      board.moves = moves;
   }
 }
 

@@ -39,7 +39,7 @@ Model.Game.getZobristHash = function() {
 
 Model.Game.zupdate = function(value, player, piece, pos) {
   var z = Model.Game.getZobristHash();
-  return z.ipdate(value, player, piece, pos);
+  return z.update(value, player, piece, pos);
 }
 
 })();
