@@ -74,7 +74,7 @@ Model.Game.commands[Model.Move.ZRF_FUNCTION] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_IN_ZONE] = function(aGen, aParam) {
-   var design = aGen.board.game.getDesign();
+   var design = Model.Game.getDesign();
    var player = aGen.board.player;
    if (aGen.pos === null) {
        return null;
@@ -155,7 +155,7 @@ Model.Game.commands[Model.Move.ZRF_MODE] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(aGen, aParam) {
-   var design = aGen.board.game.getDesign();
+   var design = Model.game.getDesign();
    var player = aGen.board.player;
    var pos = aGen.pos;
    if (pos === null) {
@@ -171,7 +171,7 @@ Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(aGen, aParam) {
 }
 
 Model.Game.commands[Model.Move.ZRF_ON_BOARDP] = function(aGen, aParam) {
-   var design = aGen.board.game.getDesign();
+   var design = Model.Game.getDesign();
    if ((aParam >= 0) && (aParam < design.positions.length)) {
        aGen.stack.push(true);
    } else {
@@ -210,7 +210,7 @@ Model.Game.functions[Model.Move.ZRF_SET_POS] = function(aGen) {
        return null;
    }
    var pos = aGen.stack.pop();
-   var design = aGen.board.game.getDesign();
+   var design = Model.Game.getDesign();
    if (pos < design.positions.length) {
       aGen.pos = pos;
       return 0;
@@ -224,7 +224,7 @@ Model.Game.functions[Model.Move.ZRF_NAVIGATE] = function(aGen) {
        return null;
    }
    var dir = aGen.stack.pop();
-   var design = aGen.board.game.getDesign();
+   var design = Model.Game.getDesign();
    var player = aGen.board.player;
    var pos = aGen.pos;
    if (pos === null) {
@@ -247,7 +247,7 @@ Model.Game.functions[Model.Move.ZRF_OPPOSITE] = function(aGen) {
        return null;
    }
    var dir = aGen.stack.pop();
-   var design = aGen.board.game.getDesign();
+   var design = Model.Game.getDesign();
    if (typeof design.players[0] === "undefined") {
        return null;
    }
@@ -541,7 +541,7 @@ ZrfDesign.prototype.setup = function(player, piece, pos) {
       this.failed = true;
   } else {
       var board = Model.Game.getInitBoard();
-      board.setPiece(pos, Model.Game.createPiece(t, o + 1));
+      board.setPiece(pos, Model.Game.createPiece(t, o));
   }
 }
 
@@ -553,9 +553,8 @@ ZrfDesign.prototype.getTemplate = function(aIx) {
 }
 
 ZrfDesign.prototype.addCommand = function(aIx, aName, aParam) {
-  var aGame = Model.Game;
   var aTemplate = this.getTemplate(aIx);
-  aTemplate.addCommand(aGame, aName, aParam);
+  aTemplate.addCommand(aName, aParam);
 }
 
 ZrfDesign.prototype.addPriority = function(aMode) {
@@ -631,7 +630,7 @@ ZrfDesign.prototype.addPlayer = function(aPlayer, aSymmetries) {
 }
 
 ZrfDesign.prototype.nextPlayer = function(aPlayer) {
-  if (aPlayer + 1 > this.tnames.length) {
+  if (aPlayer + 1 >= this.tnames.length) {
       return 1;
   } else {
       return aPlayer + 1;
@@ -684,21 +683,21 @@ Model.Game.createTemplate = function() {
   return new ZrfMoveTemplate();
 }
 
-ZrfMoveTemplate.prototype.addCommand = function(aGame, aName, aParam) {
-  if (typeof aGame.commands[aName] !== "undefined") {
-      if (typeof aGame.cache === "undefined") {
-          aGame.cache = [];
+ZrfMoveTemplate.prototype.addCommand = function(aName, aParam) {
+  if (typeof Model.Game.commands[aName] !== "undefined") {
+      if (typeof Model.Game.cache === "undefined") {
+          Model.Game.cache = [];
       }
-      if (typeof aGame.cache[aName] === "undefined") {
-          aGame.cache[aName] = [];
+      if (typeof Model.Game.cache[aName] === "undefined") {
+          Model.Game.cache[aName] = [];
       }
       var offset = aParam;
-      if (typeof aGame.cache[aName][offset] === "undefined") {
-          aGame.cache[aName][offset] = function(x) {
-              return (aGame.commands[aName])(x, offset);
+      if (typeof Model.Game.cache[aName][offset] === "undefined") {
+          Model.Game.cache[aName][offset] = function(x) {
+              return (Model.Game.commands[aName])(x, offset);
           }
       }
-      this.commands.push(aGame.cache[aName][offset]);
+      this.commands.push(Model.Game.cache[aName][offset]);
   }
 }
 
@@ -928,7 +927,7 @@ ZrfMoveGenerator.prototype.getAttr = function(aName, aPos) {
   if (piece !== null) {
       var value = piece.getValue(aName);
       if (value === null) {
-          var design = this.board.game.getDesign();
+          var design = Model.Game.getDesign();
           value = design.getAttribute(piece.type, aName);
       }
       return value;
@@ -1162,9 +1161,9 @@ ZrfBoard.prototype.generate = function() {
                }
            }
       }
-      for (var tp in this.game.design.pieces) {
-           for (var pos in this.game.design.positions) {
-               for (var move in this.game.design.pieces[tp]) {
+      for (var tp in Model.Game.design.pieces) {
+           for (var pos in Model.Game.design.positions) {
+               for (var move in Model.Game.design.pieces[tp]) {
                     if (move.type === 1) {
                         var g = Model.Game.createGen(move.template, move.params);
                         g.init(this, pos);
@@ -1202,9 +1201,6 @@ ZrfBoard.prototype.generate = function() {
               this.moves.push(new ZrfMove());
           }
       }
-      if (this.moves.length > 0) {
-          this.player = Model.Game.design.nextPlayer(this.player);
-      }
   }
   if (this.moves.length === 0) {
       this.player = 0;
@@ -1216,7 +1212,7 @@ ZrfBoard.prototype.applyPart = function(move, part) {
   var r = false;
   for (var i in move.actions) {
       var p = move.actions[i][3];
-      if (p < 0) {
+      if ((p < 0) && (part < 0)) {
           p = part;
       }
       if (p === part) {
@@ -1237,7 +1233,7 @@ ZrfBoard.prototype.applyPart = function(move, part) {
   }
   for (var i in move.actions) {
       var p = move.actions[i][3];
-      if (p < 0) {
+      if ((p < 0) && (part < 0)) {
           p = part;
       }
       if (p === part) {
@@ -1252,7 +1248,7 @@ ZrfBoard.prototype.applyPart = function(move, part) {
   }
   for (var i in move.actions) {
       var p = move.actions[i][3];
-      if (p < 0) {
+      if ((p < 0) && (part < 0)) {
           p = part;
       }
       if (p === part) {
@@ -1268,13 +1264,16 @@ ZrfBoard.prototype.applyPart = function(move, part) {
 }
 
 ZrfBoard.prototype.apply = function(move) {
-  delete aBoard.lastf;
-  delete aBoard.lastt;
+  var r = this.copy();
+  delete r.lastf;
+  delete r.lastt;
   var part = 1;
-  while (this.applyPart(move, part)) {
+  while (r.applyPart(move, part)) {
       part++;
   }
-  this.applyPart(move, -1);
+  r.applyPart(move, -1);
+  r.player = Model.Game.design.nextPlayer(this.player);
+  return r;
 }
 
 function ZrfMove() {
@@ -1317,19 +1316,19 @@ Model.Move.moveToString = function(move, part) {
   var r = "";
   var l = "";
   for (var i in move.actions) {
-      var part = move.actions[i][3];
-      if (part < 0) {
-          part = -part;
+      var p = move.actions[i][3];
+      if (p < 0) {
+          p = -p;
       }
       if (part === 0) {
-          part = 0;
+          p = 0;
       }
-      if (part === part) {
-          if (r !== "") {
-              r = r + " ";
-          }
+      if (p === part) {
           if ((move.actions[i][0] !== null) && (move.actions[i][1] !== null) && (move.actions[i][0] !== move.actions[i][1])) {
               if (move.actions[i][0] != move.actions[i][1]) {
+                  if (r !== "") {
+                      r = r + " ";
+                  }
                   if (l !== move.actions[i][0]) {
                       r = r + Model.Game.posToString(move.actions[i][0]);
                   }
@@ -1337,20 +1336,26 @@ Model.Move.moveToString = function(move, part) {
                   r = r + Model.Game.posToString(move.actions[i][1]);
                   l = move.actions[i][1];
               }
-          } else {
-              if (move.actions[i][1] === null) {
-                  r = r + "x ";
-                  r = r + Model.Game.posToString(move.actions[i][0]);
-                  l = move.actions[i][0];
-              } else {
-                  if (l !== move.actions[i][1]) {
-                      r = r + Model.Game.posToString(move.actions[i][1]) + " ";
-                  }
-                  r = r + "= ";
-                  r = r + move.actions[i][2].toString();
-                  l = move.actions[i][1];
-              }
           }
+      }
+  }
+  for (var i in move.actions) {
+      var p = move.actions[i][3];
+      if (p < 0) {
+          p = -p;
+      }
+      if (part === 0) {
+          p = 0;
+      }
+      if (p === part) {
+          if (move.actions[i][1] === null) {
+              if (r !== "") {
+                  r = r + " ";
+              }
+              r = r + "x ";
+              r = r + Model.Game.posToString(move.actions[i][0]);
+              l = move.actions[i][0];
+          } 
       }
   }
   if (r === "") {
@@ -1421,6 +1426,9 @@ ZrfMove.prototype.getCapturedPos = function(part) {
   for (var i in this.actions) {
       var p = this.actions[i][3];
       if (p < 0) {
+          p = -p;
+      }
+      if (part === 0) {
           p = part;
       }
       if (p === part) {
