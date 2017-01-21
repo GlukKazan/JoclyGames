@@ -637,6 +637,14 @@ ZrfDesign.prototype.nextPlayer = function(aPlayer) {
   }
 }
 
+ZrfDesign.prototype.prevPlayer = function(aPlayer) {
+  if (aPlayer === 1) {
+      return this.tnames.length;
+  } else {
+      return aPlayer - 1;
+  }
+}
+
 ZrfDesign.prototype.addPosition = function(aName, aLinks) {
   this.names.push(aName);
   this.positions.push(Model.int32Array(aLinks));
@@ -698,6 +706,63 @@ ZrfMoveTemplate.prototype.addCommand = function(aName, aParam) {
           }
       }
       this.commands.push(Model.Game.cache[aName][offset]);
+  }
+}
+
+CHECK_TYPE = {
+  DEFENDED:      1,
+  NOT_DEFENDED:  2,
+  ATTACKED:      3,
+  NOT_ATTACKED:  4
+};
+
+function ZrfCheck(type, piece, pos) {
+  this.type      = type;
+  this.piece     = piece;
+  this.pos       = [ pos ];
+  this.to        = null;
+  this.isCont    = true;
+}
+
+ZrfCheck.prototype.addPos = function(pos) {
+  this.pos.push(pos);
+}
+
+ZrfCheck.prototype.addMove = function(move) {
+  for (var i in this.pos) {
+       if (move.isAttacked(this.pos[i]) === true) {
+           this.isCont = false;
+       }
+  }
+}
+
+ZrfCheck.prototype.prepare = function(board) {
+  var b = board.copy();
+  if (this.type <= NOT_DEFENDED) {
+      b.player = Model.Game.design.prevPlayer(b.player);
+  }
+  if (this.to !== null) {
+      b.setPiece(this.to, null);
+  }
+  for (var i in this.pos) {
+      b.setPiece(this.pos[i], this.piece);
+  }
+  var callback = this;
+  b.addMove = function(x) {
+      callback.addMove(x);
+  }
+  return b;
+}
+
+ZrfCheck.prototype.checkContinue = function() {
+  return this.isCont;
+}
+
+ZrfCheck.prototype.isFailed = function() {
+  if ((this.type === DEFENDED) || (this.type === ATTACKED)) {
+      return !this.isCont;
+  } else {
+      return this.isCont;
   }
 }
 
@@ -1107,7 +1172,31 @@ ZrfBoard.prototype.copy = function() {
   return r;
 }
 
-Model.Game.PostActions = function(board) {}
+Model.Game.PostActions = function(board) {
+  var moves = [];
+  for (var i in board.moves) {
+       if (typeof board.moves[i].failed === "undefined") {
+           moves.push(board.moves[i]);
+       }
+  }
+  board.moves = moves;
+}
+
+Model.Game.CheckInvariants = function(board) {
+  for (var i in board.moves) {
+       var m = board.moves[i];
+       var b = board.apply(m);
+       for (var i in m.checks) {
+            var c = m.checks[i];
+            var p = c.prepare(b);
+            p.generateInternal(c, false);
+            if (c.isFailed() === true) {
+                m.failed = true;
+                break;
+            }
+       }
+  }
+}
 
 var CompleteMove = function(board, gen) {
   var t = 1;
@@ -1136,8 +1225,7 @@ var CompleteMove = function(board, gen) {
   }
 }
 
-ZrfBoard.prototype.generate = function() {
-  this.moves = [];
+ZrfBoard.prototype.generateInternal = function(callback, cont) {
   this.forks = [];
   if ((this.moves.length === 0) && (Model.Game.design.failed !== true)) {
       var mx = null;
@@ -1183,22 +1271,25 @@ ZrfBoard.prototype.generate = function() {
                }
            }
       }
-      while (this.forks.length > 0) {
+      while ((this.forks.length > 0) && (callback.checkContinue() === true)) {
            var f = this.forks.shift();
            if ((mx === null) || (Model.Game.design.modes[mx] === f.mode)) {
                f.generate();
-               if (f.moveType === 0) {
+               if ((cont === true) && (f.moveType === 0)) {
                    CompleteMove(this, f);
                }
            }
       }
-      Model.Game.PostActions(this);
-      if (Model.Game.passTurn === 1) {
-          this.moves.push(new ZrfMove());
-      }
-      if (Model.Game.passTurn === 2) {
-          if (this.moves.length === 0) {
+      if (cont === true) {
+          Model.Game.CheckInvariants(this);
+          Model.Game.PostActions(this);
+          if (Model.Game.passTurn === 1) {
               this.moves.push(new ZrfMove());
+          }
+          if (Model.Game.passTurn === 2) {
+              if (this.moves.length === 0) {
+                  this.moves.push(new ZrfMove());
+              }
           }
       }
   }
@@ -1206,6 +1297,14 @@ ZrfBoard.prototype.generate = function() {
       this.player = 0;
   }
   return this.moves;
+}
+
+ZrfBoard.prototype.generate = function() {
+  this.generateInternal(this, true);
+}
+
+ZrfBoard.prototype.checkContinue = function() {
+  return true;
 }
 
 ZrfBoard.prototype.applyPart = function(move, part) {  
@@ -1278,6 +1377,7 @@ ZrfBoard.prototype.apply = function(move) {
 
 function ZrfMove() {
   this.actions = [];
+  this.checks  = [];
 }
 
 Model.Game.createMove = function() {
@@ -1366,6 +1466,23 @@ Model.Move.moveToString = function(move, part) {
 
 ZrfMove.prototype.toString = function(part) {
   return Model.Move.moveToString(this, part);
+}
+
+ZrfMove.prototype.isAttacked = function(pos) {
+  var r = false;
+  for (var i in this.actions) {
+      var fp = this.actions[i][0];
+      var tp = this.actions[i][1];
+      if ((fp == pos) && (tp === null)) {
+          r = true;
+          break
+      }
+      if ((tp === pos) && (fp !== null) && (fp !== tp)) {
+          r = true;
+          break
+      }
+  }
+  return r;
 }
 
 ZrfMove.prototype.getStartPos = function(part) {

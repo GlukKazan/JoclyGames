@@ -350,6 +350,12 @@ QUnit.test( "Board", function( assert ) {
   assert.equal( ob.getPiece(Model.Game.stringToPos("c6")), null, "c6 - Empty");
   assert.equal( ob.getPiece(Model.Game.stringToPos("a6")).toString(), "White King", "a6 - White King");
 
+  assert.equal( o.isAttacked(Model.Game.stringToPos("f3")), false, "f3 - Not attacked");
+  assert.equal( o.isAttacked(Model.Game.stringToPos("f6")), true, "f6 - Is attacked");
+  assert.equal( o.isAttacked(Model.Game.stringToPos("a6")), true, "a6 - Is attacked");
+  assert.equal( o.isAttacked(Model.Game.stringToPos("f5")), true, "f5 - Is attacked");
+  assert.equal( o.isAttacked(Model.Game.stringToPos("c6")), true, "c6 - Is attacked");
+
   Model.Game.design = undefined;
   Model.Game.board = undefined;
 });

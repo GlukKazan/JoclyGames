@@ -19,7 +19,10 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
   }
 }
 
+var PostActions = Model.Game.PostActions;
+
 Model.Game.PostActions = function(board) {
+  (PostActions)(board);
   if (mode !== 0) {
       var moves = [];
       var mx = 0;
