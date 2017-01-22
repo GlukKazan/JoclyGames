@@ -1028,8 +1028,25 @@ function ZrfPiece(aType, aPlayer) {
   this.player = aPlayer;
 }
 
-Model.Game.createPiece = function(aType, aPlayer) {
-  return new ZrfPiece(aType, aPlayer);
+Model.Game.createPiece = function(type, player) {
+  if (typeof Model.Game.cachePiece === "undefined") {
+      Model.Game.cachePiece = [];
+  }
+  if (typeof Model.Game.cachePiece[player] === "undefined") {
+      Model.Game.cachePiece[player] = [];
+  }
+  if (typeof Model.Game.cachePiece[player][type] === "undefined") {
+      Model.Game.cachePiece[player][type] = new ZrfPiece(type, player);
+  }
+  return Model.Game.cachePiece[player][type];
+}
+
+ZrfPiece.prototype.equals = function(piece) {
+  if ((piece.type === this.type) && (piece.player === this.player)) {
+      return true;
+  } else {
+      return false;
+  }
 }
 
 Model.Game.pieceToString = function(piece) {
@@ -1104,6 +1121,34 @@ function ZrfBoard(game) {
   this.player   = 1;
 }
 
+ZrfBoard.prototype.copy = function() {
+  var r = new ZrfBoard(this.game);
+  r.parent = this;
+  r.player = this.player;
+  r.zSign  = this.zSign;
+  for (var pos in this.pieces) {
+      r.pieces[pos] = this.pieces[pos];
+  }
+  return r;
+}
+
+ZrfBoard.prototype.equals = function(board) {
+  var r = false;
+  if (board.zSign === r.zSign) {
+      if (board.pieces.length === this.pieces.length) {
+          r = true;
+          for (var pos in this.pieces) {
+               var p = board.getPiece(pos);
+               if ((p === null) || (p.equals(this.pieces[pos]) === false)) {
+                   r = false;
+                   break;
+               }
+          }
+      }
+  }
+  return r;
+}
+
 Model.Game.getInitBoard = function() {
   if (typeof Model.Game.board === "undefined") {
       Model.Game.board = new ZrfBoard(Model.Game);
@@ -1160,16 +1205,6 @@ ZrfBoard.prototype.changeMove = function(move) {
 
 ZrfBoard.prototype.getSignature = function() {
   return this.zSign;
-}
-
-ZrfBoard.prototype.copy = function() {
-  var r = new ZrfBoard(this.game);
-  r.player = this.player;
-  r.zSign  = this.zSign;
-  for (var pos in this.pieces) {
-      r.pieces[pos] = this.pieces[pos];
-  }
-  return r;
 }
 
 Model.Game.PostActions = function(board) {
