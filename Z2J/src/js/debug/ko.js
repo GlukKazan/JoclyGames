@@ -12,7 +12,7 @@ Model.Game.checkVersion = function(design, name, value) {
      if (value == "position") {
          superKo = 1;
      }
-     if (value == "sitiation") {
+     if (value == "situation") {
          superKo = 2;
      }
      if (value == "3") {

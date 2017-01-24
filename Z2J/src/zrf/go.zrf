@@ -35,7 +35,7 @@
 (variant
   (title "Three-color Go")
   
-  (option "ko" sitiation)
+  (option "ko" situation)
 
   (players Black White Red)
   (turn-order Black White Red)
