@@ -615,6 +615,22 @@ ZrfDesign.prototype.checkOption = function(aName, aValue) {
   return Model.Game.checkOption(this, aName, aValue);
 }
 
+ZrfDesign.prototype.getPieceType = function(name) {
+  var r = Model.find(this.pnames, name);
+  if (r < 0) {
+      return null;
+  }
+  return r;
+}
+
+ZrfDesign.prototype.getDirection = function(name) {
+  var r = Model.find(this.dirs, name);
+  if (r < 0) {
+      return null;
+  }
+  return r;
+}
+
 ZrfDesign.prototype.addDirection = function(aName) {
   this.dirs.push(aName);
 }
@@ -1407,6 +1423,7 @@ ZrfBoard.prototype.apply = function(move) {
   }
   r.applyPart(move, -1);
   r.player = Model.Game.design.nextPlayer(this.player);
+  r.move = move;
   return r;
 }
 
@@ -1417,6 +1434,13 @@ function ZrfMove() {
 
 Model.Game.createMove = function() {
   return new ZrfMove();
+}
+
+ZrfMove.prototype.determinate = function() {
+  var r = [];
+  // TODO:
+
+  return r;
 }
 
 ZrfMove.prototype.copy = function() {

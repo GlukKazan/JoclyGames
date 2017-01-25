@@ -11,6 +11,7 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
      if (aValue == "true") {
          mode = 1;
      }
+     // TODO: aValue == "2"
      if (mode === null) {
          aDesign.failed = true;
      }

@@ -47,8 +47,8 @@ Model.Game.CheckInvariants = function(board) {
        var group = [];
        var m = board.moves[i];
        if ((m.actions.length === 1) && (m.actions[0][0] === null)) {
-           var pos    = m.actions[0][1];
-           var player = m.actions[0][2].player;
+           var pos    = m.actions[0][1][0];
+           var player = m.actions[0][2][0].player;
            var design = Model.Game.design;
            var neigbors = [];
            for (var i = 0; i < design.dirs.length; i++) {
@@ -99,8 +99,8 @@ Model.Move.moveToString = function(move, part) {
        var fp = move.actions[i][0];
        var tp = move.actions[i][1];
        var p  = move.actions[i][2];
-       if ((fp === null) && (tp !== null)) {
-           return p.getOwner() + " " + Model.Game.posToString(tp);
+       if ((fp === null) && (tp !== null) && (p !== null)) {
+           return p[0].getOwner() + " " + Model.Game.posToString(tp[0]);
        }
   }
   return "Pass";

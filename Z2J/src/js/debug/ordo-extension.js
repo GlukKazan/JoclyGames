@@ -13,7 +13,7 @@ var getPos = function(move) {
        var fp = move.actions[i][0];
        var tp = move.actions[i][1];
        if ((fp !== null) && (tp !== null)) {
-           return tp;
+           return tp[0];
        }
   }
   return null;
