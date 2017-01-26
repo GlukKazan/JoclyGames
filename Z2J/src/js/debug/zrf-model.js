@@ -1370,13 +1370,13 @@ ZrfBoard.prototype.applyPart = function(move, part) {
           var tp = move.actions[i][1];
           var np = move.actions[i][2];
           if ((fp !== null) && (tp !== null)) {
-              this.lastf = fp;
-              this.lastt = tp;
+              this.lastf = fp[0];
+              this.lastt = tp[0];
               if (np === null) {
-                  np = this.getPiece(fp);
+                  np = [ this.getPiece(fp[0]) ];
               }
-              this.setPiece(fp, null);
-              this.setPiece(tp, np);
+              this.setPiece(fp[0], null);
+              this.setPiece(tp[0], np[0]);
               r = true;
           }
       }
@@ -1391,7 +1391,7 @@ ZrfBoard.prototype.applyPart = function(move, part) {
           var tp = move.actions[i][1];
           var np = move.actions[i][2];
           if ((fp === null) && (tp !== null) && (np !== null)) {
-              this.setPiece(tp, np);
+              this.setPiece(tp[0], np[0]);
               r = true;
           }
       }
@@ -1405,7 +1405,7 @@ ZrfBoard.prototype.applyPart = function(move, part) {
           var fp = move.actions[i][0];
           var tp = move.actions[i][1];
           if ((fp !== null) && (tp === null)) {
-              this.setPiece(fp, null);
+              this.setPiece(fp[0], null);
               r = true;
           }
       }
@@ -1427,6 +1427,15 @@ ZrfBoard.prototype.apply = function(move) {
   return r;
 }
 
+ZrfBoard.prototype.applyAll = function(move) {
+  var r = [];
+  var m = move.determinate();
+  for (var i in m) {
+      r.push(this.apply(m[i]));
+  }
+  return r;
+}
+
 function ZrfMove() {
   this.actions = [];
   this.checks  = [];
@@ -1436,10 +1445,65 @@ Model.Game.createMove = function() {
   return new ZrfMove();
 }
 
+var getIx = function(x, ix, mx) {
+  if (ix > x.length) {
+      x = [];
+      return null;
+  }
+  if (ix == x.length) {
+      c.push(0);
+      return 0;
+  }
+  var r = x[ix];
+  if (r >= mx) {
+      if (ix + 1 >= x.length) {
+          x = [];
+          return null;
+      }
+      for (var i = 0; i <= ix; i++) {
+          x[ix] = 0;
+      }
+      x[ix + 1]++;
+  }
+  return r;
+}
+
 ZrfMove.prototype.determinate = function() {
   var r = [];
-  // TODO:
-
+  for (var x = [0]; x.length > 0; x[0]++) {
+      var m = Model.Game.createMove();
+      var ix = 0;
+      for (var i in this.actions) {
+           var k = 0;
+           var fp = this.actions[i][0];
+           if (fp !== null) {
+               k = (getIx)(x, ix++, fp.length);
+               if (k === null) {
+                   break;
+               }
+               fp = [ fp[k] ];
+           }
+           var tp = this.actions[i][1];
+           if (tp !== null) {
+               k = (getIx)(x, ix++, tp.length);
+               if (k === null) {
+                   break;
+               }
+               tp = [ tp[k] ];
+           }
+           var pc = this.actions[i][2];
+           if (pc !== null) {
+               k = (getIx)(x, ix++, pc.length);
+               if (k === null) {
+                   break;
+               }
+               pc = [ pc[k] ];
+           }
+           var pn = this.actions[i][3];
+           m.actions.push([fp, tp, pc, pn]);
+      }
+      r.push(m);      
+  }
   return r;
 }
 
@@ -1484,16 +1548,16 @@ Model.Move.moveToString = function(move, part) {
       }
       if (p === part) {
           if ((move.actions[i][0] !== null) && (move.actions[i][1] !== null) && (move.actions[i][0] !== move.actions[i][1])) {
-              if (move.actions[i][0] != move.actions[i][1]) {
+              if (move.actions[i][0][0] != move.actions[i][1][0]) {
                   if (r !== "") {
                       r = r + " ";
                   }
-                  if (l !== move.actions[i][0]) {
-                      r = r + Model.Game.posToString(move.actions[i][0]);
+                  if (l !== move.actions[i][0][0]) {
+                      r = r + Model.Game.posToString(move.actions[i][0][0]);
                   }
                   r = r + " - ";
-                  r = r + Model.Game.posToString(move.actions[i][1]);
-                  l = move.actions[i][1];
+                  r = r + Model.Game.posToString(move.actions[i][1][0]);
+                  l = move.actions[i][1][0];
               }
           }
       }
@@ -1512,8 +1576,8 @@ Model.Move.moveToString = function(move, part) {
                   r = r + " ";
               }
               r = r + "x ";
-              r = r + Model.Game.posToString(move.actions[i][0]);
-              l = move.actions[i][0];
+              r = r + Model.Game.posToString(move.actions[i][0][0]);
+              l = move.actions[i][0][0];
           } 
       }
   }
@@ -1532,11 +1596,11 @@ ZrfMove.prototype.isAttacked = function(pos) {
   for (var i in this.actions) {
       var fp = this.actions[i][0];
       var tp = this.actions[i][1];
-      if ((fp == pos) && (tp === null)) {
+      if ((fp !== null) && (fp[0] === pos) && (tp === null)) {
           r = true;
           break
       }
-      if ((tp === pos) && (fp !== null) && (fp !== tp)) {
+      if ((tp !== null) && (tp[0] === pos) && (fp !== null) && (fp[0] !== tp[0])) {
           r = true;
           break
       }
@@ -1550,7 +1614,7 @@ ZrfMove.prototype.getStartPos = function(part) {
           var fp = this.actions[i][0];
           var tp = this.actions[i][1];
           if ((fp !== null) && (tp !== null)) {
-              return Model.Game.posToString(fp);
+              return Model.Game.posToString(fp[0]);
           }
       }
   }
@@ -1568,7 +1632,7 @@ ZrfMove.prototype.getStartPos = function(part) {
           var fp = this.actions[i][0];
           var tp = this.actions[i][1];
           if ((fp !== null) && (tp === null)) {
-              return Model.Game.posToString(fp);
+              return Model.Game.posToString(fp[0]);
           }
       }
   }
@@ -1581,7 +1645,7 @@ ZrfMove.prototype.getStopPos = function(part) {
           var fp = this.actions[i][0];
           var tp = this.actions[i][1];
           if ((fp !== null) && (tp !== null)) {
-              return Model.Game.posToString(tp);
+              return Model.Game.posToString(tp[0]);
           }
       }
   }
@@ -1590,7 +1654,7 @@ ZrfMove.prototype.getStopPos = function(part) {
           var fp = this.actions[i][0];
           var tp = this.actions[i][1];
           if ((fp === null) && (tp !== null)) {
-              return Model.Game.posToString(tp);
+              return Model.Game.posToString(tp[0]);
           }
       }
   }
@@ -1611,7 +1675,7 @@ ZrfMove.prototype.getCapturedPos = function(part) {
           var fp = this.actions[i][0];
           var tp = this.actions[i][1];
           if ((fp !== null) && (tp === null)) {
-              r.push(Model.Game.posToString(fp));
+              r.push(Model.Game.posToString(fp[0]));
           }
       }
   }
@@ -1626,9 +1690,9 @@ ZrfMove.prototype.changeView = function(part, view) {
           if ((fp !== null) && (tp !== null)) {
               var p = this.actions[i][2];
               if (p === null) {
-                  view.move(fp, tp, null, null);
+                  view.move(fp[0], tp[0], null, null);
               } else {
-                  view.move(fp, tp, p.getType(), p.getOwner());
+                  view.move(fp[0], tp[0], p[0].getType(), p[0].getOwner());
               }
           }
       }
@@ -1639,7 +1703,9 @@ ZrfMove.prototype.changeView = function(part, view) {
           var tp = this.actions[i][1];
           if ((fp === null) && (tp !== null)) {
               var p = this.actions[i][2];
-              view.create(tp, p.getType(), p.getOwner());
+              if (p !== null) {
+                  view.create(tp[0], p[0].getType(), p[0].getOwner());
+              }
           }
       }
   }
@@ -1648,7 +1714,7 @@ ZrfMove.prototype.changeView = function(part, view) {
           var fp = this.actions[i][0];
           var tp = this.actions[i][1];
           if ((fp !== null) && (tp === null)) {
-              view.delete(fp);
+              view.delete(fp[0]);
           }
       }
   }
@@ -1656,18 +1722,22 @@ ZrfMove.prototype.changeView = function(part, view) {
 }
 
 ZrfMove.prototype.movePiece = function(from, to, piece, part) {
-  this.actions.push([from, to, piece, part]);
+  if (piece === null) {
+      this.actions.push([ [from], [to], null, part]);
+  } else {
+      this.actions.push([ [from], [to], [piece], part]);
+  }
 }
 
-ZrfMove.prototype.dropPiece = function(aPos, piece, part) {
-  this.actions.push([null, aPos, piece, part]);
+ZrfMove.prototype.dropPiece = function(pos, piece, part) {
+  this.actions.push([null, [pos], [piece], part]);
 }
 
 ZrfMove.prototype.capturePiece = function(pos, part) {
   if (Model.Game.delayedStrike === true) {
       part = -part;
   }
-  this.actions.push([pos, null, null, part]);
+  this.actions.push([ [pos], null, null, part]);
 }
 
 })();

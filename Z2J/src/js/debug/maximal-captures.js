@@ -1,22 +1,24 @@
 (function() {
 
 var checkVersion = Model.Game.checkVersion;
-var mode = null;
+var mode = 0;
 
-Model.Game.checkVersion = function(aDesign, aName, aValue) {
-  if (aName == "maximal-captures") {
-     if (aValue == "false") {
+Model.Game.checkVersion = function(design, name, value) {
+  if (name == "maximal-captures") {
+     if (value == "false") {
          mode = 0;
      }
-     if (aValue == "true") {
+     if (value == "true") {
          mode = 1;
      }
-     // TODO: aValue == "2"
+     if (value == "2") {
+         mode = 2;
+     }
      if (mode === null) {
-         aDesign.failed = true;
+         design.failed = true;
      }
   } else {
-     (checkVersion)(aDesign, aName, aValue);
+     (checkVersion)(design, name, value);
   }
 }
 
@@ -27,26 +29,54 @@ Model.Game.PostActions = function(board) {
   if (mode !== 0) {
       var moves = [];
       var mx = 0;
+      var mk = 0;
       for (var i in board.moves) {
            var vl = 0;
+           var kv = 0;
            for (var j in board.moves[i].moves) {
-                if (board.moves[i].moves[j][1] === null) {
-                    vl++;
+                var fp = board.moves[i].moves[j][0];
+                var tp = board.moves[i].moves[j][1];
+                if (tp === null) {
+                    var piece = board.getPiece(fp[0]);
+                    if (piece !== null) {
+                        if (piece.type > 0) {
+                            kv++;
+                        }
+                        vl++;
+                    }
                 }
            }
            if (vl > mx) {
                mx = vl;
            }
+           if (kv > mk) {
+               mk = kv;
+           }
       }
       for (var i in board.moves) {
            var vl = 0;
+           var kv = 0;
            for (var j in board.moves[i].moves) {
-                if (board.moves[i].moves[j][1] === null) {
-                    vl++;
+                var fp = board.moves[i].moves[j][0];
+                var tp = board.moves[i].moves[j][1];
+                if (tp === null) {
+                    var piece = board.getPiece(fp[0]);
+                    if (piece !== null) {
+                        if (piece.type > 0) {
+                            kv++;
+                        }
+                        vl++;
+                    }
                 }
            }
-           if (vl == mx) {
-                moves.push(board.moves[i]);
+           if ((mode === 2) && (mk > 0)) {
+               if (kv == mk) {
+                   moves.push(board.moves[i]);
+               }
+           } else {
+               if (vl == mx) {
+                   moves.push(board.moves[i]);
+               }
            }
       }
       board.moves = moves;

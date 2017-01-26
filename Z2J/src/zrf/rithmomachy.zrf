@@ -1,7 +1,10 @@
 (version "3.0")
 
 (define step (
-  $1 (verify empty?) add
+  (set-flag v value) $1 
+  (verify not-friend?)
+  (verify (or empty? (equal? (flag? v) value))
+  add
 ))
 
 (define R

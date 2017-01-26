@@ -324,7 +324,7 @@ QUnit.test( "Board", function( assert ) {
   assert.equal( nb.getPiece(Model.Game.stringToPos("f6")), null, "f6 - Empty");
   assert.equal( nb.getPiece(Model.Game.stringToPos("f5")).toString(), "Black Man", "f5 - Black Man");
 
-  var p = board.getPiece(Model.Game.stringToPos("f6"));
+  var p = board.getPiece(Model.Game.stringToPos("f3"));
   var o = m.copy();
   o.capturePiece(Model.Game.stringToPos("c6"), 2);
   o.movePiece(Model.Game.stringToPos("f6"), Model.Game.stringToPos("a6"), p, 2);

@@ -73,6 +73,7 @@
 )
 
 (variant 
-  (title "Turkish Dama (variant)")
+  (title "Bahrain Dama")
   (default)
+  (option "bahrain dama extension" true)
 )

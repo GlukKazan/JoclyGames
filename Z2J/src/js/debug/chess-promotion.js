@@ -26,7 +26,7 @@ Model.Game.CheckInvariants = function(board) {
             fp = m.actions[j][0];
             tp = m.actions[j][1];
             if ((fp !== null) && (tp !== null)) {
-                var piece = board.getPiece(fp);
+                var piece = board.getPiece(fp[0]);
                 if ((piece !== null) && (piece.getType() === "Pawn")) {
                     var p = design.navigate(board.player, tp[0], design.getDirection("n"));
                     if (p === null) {
@@ -36,7 +36,7 @@ Model.Game.CheckInvariants = function(board) {
                         (promote)(promoted, "Knight", board.player);
                         (promote)(promoted, "Bishop", board.player);
                         if (promoted.length > 0) {
-                            m.actions[j][1] = promoted;
+                            m.actions[j][2] = promoted;
                         }
                     }
                 }
