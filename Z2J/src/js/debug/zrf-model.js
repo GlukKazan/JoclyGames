@@ -1477,7 +1477,7 @@ ZrfMove.prototype.determinate = function() {
            var k = 0;
            var fp = this.actions[i][0];
            if (fp !== null) {
-               k = (getIx)(x, ix++, fp.length);
+               k = getIx(x, ix++, fp.length);
                if (k === null) {
                    break;
                }
@@ -1485,7 +1485,7 @@ ZrfMove.prototype.determinate = function() {
            }
            var tp = this.actions[i][1];
            if (tp !== null) {
-               k = (getIx)(x, ix++, tp.length);
+               k = getIx(x, ix++, tp.length);
                if (k === null) {
                    break;
                }
@@ -1493,7 +1493,7 @@ ZrfMove.prototype.determinate = function() {
            }
            var pc = this.actions[i][2];
            if (pc !== null) {
-               k = (getIx)(x, ix++, pc.length);
+               k = getIx(x, ix++, pc.length);
                if (k === null) {
                    break;
                }

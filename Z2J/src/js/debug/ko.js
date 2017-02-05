@@ -20,7 +20,7 @@ Model.Game.checkVersion = function(design, name, value) {
          numKo   = 2;
      }
   } else {
-     (checkVersion)(design, name, value);
+     checkVersion(design, name, value);
   }
 }
 
@@ -58,7 +58,7 @@ Model.Game.CheckInvariants = function(board) {
            }
       }
   }
-  (CheckInvariants)(board);
+  CheckInvariants(board);
 }
 
 })();

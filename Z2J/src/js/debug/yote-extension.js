@@ -4,7 +4,7 @@ var checkVersion = Model.Game.checkVersion;
 
 Model.Game.checkVersion = function(design, name, value) {
   if (name !== "yote-extension") {
-     (checkVersion)(design, name, value);
+     checkVersion(design, name, value);
   }
 }
 
@@ -36,7 +36,7 @@ Model.Game.CheckInvariants = function(board) {
             }
        }
   }
-  (CheckInvariants)(board);
+  CheckInvariants(board);
 }
 
 })();

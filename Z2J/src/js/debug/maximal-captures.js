@@ -18,14 +18,14 @@ Model.Game.checkVersion = function(design, name, value) {
          design.failed = true;
      }
   } else {
-     (checkVersion)(design, name, value);
+     checkVersion(design, name, value);
   }
 }
 
 var PostActions = Model.Game.PostActions;
 
 Model.Game.PostActions = function(board) {
-  (PostActions)(board);
+  PostActions(board);
   if (mode !== 0) {
       var moves = [];
       var mx = 0;

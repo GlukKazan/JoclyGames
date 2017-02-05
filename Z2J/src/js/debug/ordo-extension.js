@@ -4,7 +4,7 @@ var checkVersion = Model.Game.checkVersion;
 
 Model.Game.checkVersion = function(design, name, value) {
   if (name != "ordo-extension") {
-     (checkVersion)(design, name, value);
+     checkVersion(design, name, value);
   }
 }
 
@@ -23,8 +23,8 @@ var buildGroup = function(group, player) {
   var design = Model.Game.design;
   for (var i = 0; i < group.length; i++) {
        var pos = group[i];
-       for (var i = 0; i < design.dirs.length; i++) {
-            var p = design.navigate(player, pos, design.dirs[i]);
+       for (var j = 0; j < design.dirs.length; j++) {
+            var p = design.navigate(player, pos, design.dirs[j]);
             if (p !== null) {
                 var piece = board.getPiece(p);
                 if ((piece !== null) && (piece.player === player)) {
@@ -59,16 +59,16 @@ Model.Game.CheckInvariants = function(board) {
   for (var i in board.moves) {
        var m = board.moves[i];
        var b = board.apply(m);
-       var p = (getPos)(m);
+       var p = getPos(m);
        if (p !== null) {
            var group = [ p ];
-           (buildGroup)(group, board.player);
-           if ((checkCoherence)(b, board.player, group) === false) {
+           buildGroup(group, board.player);
+           if (checkCoherence(b, board.player, group) === false) {
                m.failed = true;
            }
        }
   }
-  (CheckInvariants)(board);
+  CheckInvariants(board);
 }
 
 })();

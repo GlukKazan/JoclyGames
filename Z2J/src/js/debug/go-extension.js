@@ -9,7 +9,7 @@ Model.Game.checkVersion = function(design, name, value) {
          suicideMode = true;
      }
   } else {
-     (checkVersion)(design, name, value);
+     checkVersion(design, name, value);
   }
 }
 
@@ -17,8 +17,8 @@ var checkAlive = function(group, player, neigbors) {
   var design = Model.Game.design;
   for (var i = 0; i < group.length; i++) {
        var pos = group[i];
-       for (var i = 0; i < design.dirs.length; i++) {
-            var p = design.navigate(player, pos, design.dirs[i]);
+       for (var j = 0; j < design.dirs.length; j++) {
+            var p = design.navigate(player, pos, design.dirs[j]);
             var ix = Model.find(neigbors, p);
             if (ix >= 0) {
                 neigbors[ix] = null;
@@ -46,17 +46,16 @@ Model.Game.CheckInvariants = function(board) {
        var suicide = true;
        var group = [];
        var m = board.moves[i];
-       if ((m.actions.length === 1) && (m.actions[0][0] === null)) {
+       if ((m.actions.length === 1) && (m.actions[0][0] === null) && (m.actions[0][1] !== null)) {
            var pos    = m.actions[0][1][0];
-           var player = m.actions[0][2][0].player;
            var design = Model.Game.design;
            var neigbors = [];
-           for (var i = 0; i < design.dirs.length; i++) {
-                var p = design.navigate(player, pos, design.dirs[i]);
+           for (var j = 0; j < design.dirs.length; j++) {
+                var p = design.navigate(board.player, pos, design.dirs[j]);
                 if (p !== null) {
                     var piece = board.getPiece(p);
                     if (piece !== null) {
-                        if (piece.player === player) {
+                        if (piece.player === board.player) {
                             group.push(p);
                         } else {
                             neigbors.push(p);
@@ -71,7 +70,7 @@ Model.Game.CheckInvariants = function(board) {
                 if (p !== null) {
                     var q = board.getPiece(p);
                     var g = [ p ];
-                    if ((checkAlive)(g, q.player, neigbors) === false) {
+                    if (checkAlive(g, q.player, neigbors) === false) {
                         suicide = false;
                         while (g.length > 0) {
                             m.capturePiece(g.pop(), 1);
@@ -81,17 +80,22 @@ Model.Game.CheckInvariants = function(board) {
            }
        }
        if (suicide === true) {
-           if ((checkAlive)(group, player, neigbors) === true) {
+           if (checkAlive(group, board.player, neigbors) === true) {
                suicide = false;
            }
        }
        if (suicide === true) {
            if ((suicideMode === false) || (group.length === 0)) {
                m.failed = true;
+           } else {
+               m.capturePiece(pos, 1);
+               while (group.length > 0) {
+                  m.capturePiece(g.pop(), 1);
+               }
            }
        }
   }
-  (CheckInvariants)(board);
+  CheckInvariants(board);
 }
 
 Model.Move.moveToString = function(move, part) {

@@ -52,7 +52,7 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
          aDesign.failed = true;
      }
   } else {
-     (checkVersion)(aDesign, aName, aValue);
+     checkVersion(aDesign, aName, aValue);
   }
 }
 
@@ -61,7 +61,7 @@ Model.Game.checkOption = function(aDesign, aName, aValue) {
      return (Model.find(modes, aValue) >= 0) || 
             (Model.find(modes, "true") >= 0);
   } else {
-     return (checkOption)(aDesign, aName, aValue);
+     return checkOption(aDesign, aName, aValue);
   }
 }
 
@@ -108,7 +108,7 @@ Model.Game.getPiece = function(aGen, aPos) {
   if (simpleMode) {
       return aGen.getPieceInternal(aPos);
   } else {
-      return (getPiece)(aGen, aPos);
+      return getPiece(aGen, aPos);
   }
 }
 
@@ -116,7 +116,7 @@ Model.Game.isLastFrom = function(aPos, aBoard) {
   if (lastMode) {
       return false;
   } else {
-      return (isLastFrom)(aPos, aBoard);
+      return isLastFrom(aPos, aBoard);
   }
 }
 
@@ -124,7 +124,7 @@ Model.Game.isLastTo = function(aPos, aBoard) {
   if (lastMode) {
       return false;
   } else {
-      return (isLastTo)(aPos, aBoard);
+      return isLastTo(aPos, aBoard);
   }
 }
 
@@ -135,7 +135,7 @@ Model.Game.getMark = function(aGen) {
       }
       return aGen.backs.pop();
   } else {
-      return (getMark)(aGen);
+      return getMark(aGen);
   }
 }
 
@@ -143,7 +143,7 @@ Model.Game.setMark = function(aGen) {
   if (markMode) {
       aGen.backs.push(aGen.pos);
   } else {
-      (setMark)(aGen);
+      setMark(aGen);
   }
 }
 
