@@ -136,7 +136,7 @@ var clearAttributes = function(board, player, move, line) {
   }
 }
 
-var copyMove = function(board, player, move, captured, line) {
+var copyMove = function(old, new, move, captured, line) {
   if (captured.length > 0) {
       var m = move.copy();
       m.actions.push([captured, null, null, 1]);
@@ -151,7 +151,7 @@ var copyMove = function(board, player, move, captured, line) {
                    if (fp !== null) {
                        pos = fp[0];
                    }
-                   var piece = board.getPiece(pos);
+                   var piece = new.getPiece(pos);
                    if (piece !== null) {
                        piece = piece.setValue(0, true);
                        m.actions[j][2] = [piece];
@@ -162,16 +162,74 @@ var copyMove = function(board, player, move, captured, line) {
           }
           if (f === true) {
               var pos = line[i];
-              var piece = board.getPiece(pos);
+              var piece = new.getPiece(pos);
               if (piece !== null) {
                   piece = piece.setValue(0, true);
                   m.actions.push([ [pos], [pos], [piece], 1]);
               }
           }
       }
-      clearAttributes(board, player, m, line);
-      board.moves.push(m);
+      clearAttributes(new, old.player, m, line);
+      old.moves.push(m);
   }
+}
+
+var intersect = function(a, b) {
+    var r = [];
+    for (var i in b) {
+        if (Model.find(a, b[i]) >= 0) {
+            r.push(b[i]);
+        }
+    }
+    return r;
+}
+
+var join = function(a, b) {
+    for (var i in b) {
+        if (Model.find(a, b[i]) < 0) {
+            a.push(b[i]);
+        }
+    }
+    return a;
+}
+
+var minus = function(a, b) {
+    var r = [];
+    for (var i in a) {
+        if (Model.find(b, a[i]) < 0) {
+            r.push(a[i]);
+        }
+    }
+    return r;
+}
+
+var separate = function(moves) {
+  var m = moves;
+  while (moves.length > 0) {
+     moves = [];
+     for (var i in m) {
+         for (var j = i + 1; j < m.length; j++) {
+              var captures = intersect(m[i][0], m[j][0]);
+              if (captures.length > 0) {
+                  m[i].failed = true;
+                  m[j].failed = true;
+                  moves.push([ captures, join(m[i][1], m[j][1]) ]);
+                  var s = minus(m[i][0], captures);
+                  if (s.length > 0) {
+                      moves.push([s, m[i][1]]);
+                  }
+                  s = minus(m[j][0], captures);
+                  if (s.length > 0) {
+                      moves.push([s, m[j][1]]);
+                  }
+              }
+         }
+         if (typeof m[i].failed === "undefined") {
+             moves.push(m[i]);
+         }
+     }
+  }
+  moves = m;
 }
 
 var CheckInvariants = Model.Game.CheckInvariants;
@@ -200,8 +258,9 @@ Model.Game.CheckInvariants = function(board) {
             }
        }
   }
-  var moves = [];
-  for (var i in board.moves) {
+  var bl = board.moves.length;
+  for (var i = 0; i < bl; i++) {
+       var moves = [];
        var m = board.moves[i];
        for (var j in m.actions) {
             var fp = m.actions[j][0];
@@ -231,7 +290,7 @@ Model.Game.CheckInvariants = function(board) {
                              var line = [];
                              var captured = [];
                              if (checkLine(b, tp[0], design.dirs[d], board.player, captured, line) === true) {
-                                 moves.push([b, m, captured, line]);
+                                 moves.push([captured, line]);
                              }
                         }
                         var dirs = [];
@@ -241,7 +300,7 @@ Model.Game.CheckInvariants = function(board) {
                                  var line = [];
                                  var captured = [];
                                  if (checkMiddle(b, tp[0], design.dirs[d], o, board.player, captured, line) === true) {
-                                     moves.push([b, m, captured, line]);
+                                     moves.push([captured, line]);
                                  }
                                  dirs.push(design.dirs[d]);
                              }
@@ -260,13 +319,13 @@ Model.Game.CheckInvariants = function(board) {
                 break;
             }
        }
-  }
-  for (var i in moves) {
-       var b = moves[i][0];
-       var m = moves[i][1];
-       var c = moves[i][2];
-       var l = moves[i][3];
-       copyMove(b, board.player, m, c, l);
+       separate(moves);
+       for (var i in moves) {
+            var c = moves[i][0];
+            var l = moves[i][1];
+            copyMove(board, b, m, c, l);
+       }
+
   }
   CheckInvariants(board);
 }
