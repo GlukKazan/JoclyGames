@@ -136,7 +136,7 @@ var clearAttributes = function(board, player, move, line) {
   }
 }
 
-var copyMove = function(board, move, captured, line) {
+var copyMove = function(board, player, move, captured, line) {
   if (captured.length > 0) {
       var m = move.copy();
       m.actions.push([captured, null, null, 1]);
@@ -169,6 +169,7 @@ var copyMove = function(board, move, captured, line) {
               }
           }
       }
+      clearAttributes(board, player, m, line);
       board.moves.push(m);
   }
 }
@@ -199,7 +200,8 @@ Model.Game.CheckInvariants = function(board) {
             }
        }
   }
-  for (var i = 0; i < board.moves.length; i++) {
+  var moves = [];
+  for (var i in board.moves) {
        var m = board.moves[i];
        for (var j in m.actions) {
             var fp = m.actions[j][0];
@@ -229,7 +231,7 @@ Model.Game.CheckInvariants = function(board) {
                              var line = [];
                              var captured = [];
                              if (checkLine(b, tp[0], design.dirs[d], board.player, captured, line) === true) {
-                                 copyMove(board, m, captured, line);
+                                 moves.push([b, m, captured, line]);
                              }
                         }
                         var dirs = [];
@@ -239,7 +241,7 @@ Model.Game.CheckInvariants = function(board) {
                                  var line = [];
                                  var captured = [];
                                  if (checkMiddle(b, tp[0], design.dirs[d], o, board.player, captured, line) === true) {
-                                     copyMove(board, m, captured, line);
+                                     moves.push([b, m, captured, line]);
                                  }
                                  dirs.push(design.dirs[d]);
                              }
@@ -258,6 +260,13 @@ Model.Game.CheckInvariants = function(board) {
                 break;
             }
        }
+  }
+  for (var i in moves) {
+       var b = moves[i][0];
+       var m = moves[i][1];
+       var c = moves[i][2];
+       var l = moves[i][3];
+       copyMove(b, board.player, m, c, l);
   }
   CheckInvariants(board);
 }
