@@ -1,9 +1,14 @@
 (function() {
 
 var checkVersion = Model.Game.checkVersion;
+var multiMode = false;
 
 Model.Game.checkVersion = function(design, name, value) {
-  if (name !== "morris-extension") {
+  if (name === "morris-extension") {
+      if (value === "multi") {
+          multiMode = true;
+      }
+  } else {
       checkVersion(design, name, value);
   }
 }
@@ -21,7 +26,8 @@ var getFriendPositions = function(board) {
   return r;
 }
 
-var checkLine = function(board, pos, player) {
+var countLines = function(board, pos, player) {
+  var r = 0;
   var design = Model.Game.design;
   for (var i = 0; i < design.dirs.length; i++) {
        var p = design.navigate(player, pos, design.dirs[i]);
@@ -32,44 +38,42 @@ var checkLine = function(board, pos, player) {
                if (q !== null) {
                    piece = board.getPiece(q);
                    if ((piece !== null) && (piece.player === player) {
-                      return true;
+                      r++;
                    }
                }
                q = design.navigate(0, pos, design.dirs[i]);
                if (q !== null) {
                    piece = board.getPiece(q);
                    if ((piece !== null) && (piece.player === player) {
-                      return true;
+                      r++;
                    }
                }
            }
        }
   }
-  return false;
+  return r;
 }
 
 var generateMoves = function(board, moves, pos) {
   var design = Model.Game.design;
-  var a = Model.Game.createMove();
-  var b = Model.Game.createMove();
+  var m = Model.Game.createMove();
   var len = design.positions.length;
   for (var p = 0; p < len; p++) {
        if (board.getPiece(p) === null) {
-           var x = a.actions;
-           if (checkLine(board, p, board.player) === true) {
-               x = b.actions;
+           var b = board.copy();
+           b.setPiece(pos, null);
+           var cnt = countLines(b, p, board.player);
+           if (cnt > 0) {
+               m.actions.push([ [pos], null, null, 1]);
            }
-           if (x.length === 0) {
-               x.push([ [pos], [], null, 1]);
+           if (typeof m.actions[0][1] === "undefined") {
+               m.actions[0][1] = [];
            }
-           x[0][1].push(p);
+           m.actions[0][1].push(p);
        }
   }
-  if (a.actions.length > 0) {
-      moves.push(a);
-  }
-  if (b.actions.length > 0) {
-      moves.push(b);
+  if (m.actions.length > 0) {
+      moves.push(m);
   }
 }
 
@@ -78,7 +82,18 @@ var CheckInvariants = Model.Game.CheckInvariants;
 Model.Game.CheckInvariants = function(board) {
   var design = Model.Game.design;
   var friend = getFriendPositions(board);
-  if (friend.length === 3) {
+  var dropMode = false;
+  for (var i in board.moves) {
+       var m = board.moves[i];
+       for (var j in m.actions) {
+           if (m.actions[0][0] === null) {
+               dropMode = true;
+               break;
+           }
+       }
+       if (dropMode === true) break;
+  }
+  if ((dropMode !== true) && (friend.length === 3)) {
       var moves = [];
       for (var i in board.moves) {
            var m = board.moves[i];
@@ -98,15 +113,23 @@ Model.Game.CheckInvariants = function(board) {
             fp = m.actions[j][0];
             tp = m.actions[j][1];
             pn = m.actions[j][3];
+            if ((dropMode === true) && (fp !== null)) {
+                m.failed = true;
+                break;
+            }
             if ((fp !== null) && (tp !== null)) {
-                if (checkLine(b, tp[0], board.player) === true) {
+                var cnt = countLines(b, tp[0], board.player);
+                if (cnt > 0) {
+                    if (multiMode !== true) {
+                        cnt = 1;
+                    }
                     var all = [];
                     var captured = [];
                     var len = design.positions.length;
                     for (var p = 0; p < len; p++) {
                          var piece = b.getPiece(p);
                          if (piece.player !== board.player) {
-                             if (checkLine(b, p, b.player) === false) {
+                             if (countLines(b, p, b.player) === 0) {
                                  captured.push(p);
                              }
                              all.push(p);
@@ -117,7 +140,9 @@ Model.Game.CheckInvariants = function(board) {
                     }
                     if (captured.length > 0) {
                         captured.push(null);
-                        m.actions.push([captured, null, null, pn]);
+                        for (k = 0; k < cnt; k++) {
+                            m.actions.push([captured, null, null, pn]);
+                        }
                     }
                 }
                 break;
