@@ -870,7 +870,7 @@ ZrfMoveGenerator.prototype.movePiece = function(aFrom, aTo, aPiece) {
   }
   this.move.movePiece(aFrom, aTo, aPiece, this.level);
   this.lastf = aFrom;
-  this.tastt = aTo;
+  this.lastt = aTo;
   if (aFrom !== aTo) {
       this.setPiece(aFrom, null);
   }
@@ -1536,6 +1536,9 @@ ZrfMove.prototype.clone = function() {
 }
 
 Model.Move.moveToString = function(move, part) {
+  if (move.actions.length === 0) {
+      return "Pass";
+  }
   var r = "";
   var l = "";
   for (var i in move.actions) {
@@ -1580,9 +1583,6 @@ Model.Move.moveToString = function(move, part) {
               l = move.actions[i][0][0];
           } 
       }
-  }
-  if (r === "") {
-      r = "Pass";
   }
   return r;
 }
