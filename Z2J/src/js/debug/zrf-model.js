@@ -281,6 +281,7 @@ Model.Game.functions[Model.Move.ZRF_TO] = function(aGen) {
    aGen.movePiece(aGen.from, aGen.pos, aGen.piece);
    delete aGen.from;
    delete aGen.piece;
+   aGen.generated = true;
    return 0;
 }
 
@@ -292,6 +293,7 @@ Model.Game.functions[Model.Move.ZRF_CAPTURE] = function(aGen) {
        return 0;
    }
    aGen.capturePiece(aGen.pos);
+   aGen.generated = true;
    return 0;
 }
 
@@ -309,11 +311,13 @@ Model.Game.functions[Model.Move.ZRF_FLIP] = function(aGen) {
 
 Model.Game.functions[Model.Move.ZRF_END] = function(aGen) {
    var board = aGen.board;
-   if (aGen.moveType === 2) {
-       board.changeMove(aGen.move);
-   }
-   if (aGen.moveType === 1) {
-       board.addMove(aGen.move);
+   if (aGen.generated === true) {
+       if (aGen.moveType === 2) {
+           board.changeMove(aGen.move);
+       }
+       if (aGen.moveType === 1) {
+           board.addMove(aGen.move);
+       }
    }
    aGen.moveType = 0;
    return null;
@@ -332,7 +336,7 @@ Model.Game.functions[Model.Move.ZRF_IS_EMPTY] = function(aGen) {
    if (aGen.pos === null) {
        return null;
    }
-   var piece = aGen.board.getPiece(aGen.pos);
+   var piece = aGen.getPiece(aGen.pos);
    aGen.stack.push(piece === null);
    return 0;
 }
@@ -341,7 +345,7 @@ Model.Game.functions[Model.Move.ZRF_IS_ENEMY] = function(aGen) {
    if (aGen.pos === null) {
        return null;
    }
-   var piece  = aGen.board.getPiece(aGen.pos);
+   var piece  = aGen.getPiece(aGen.pos);
    if (piece === null) {
        aGen.stack.push(false);
        return 0;
@@ -355,7 +359,7 @@ Model.Game.functions[Model.Move.ZRF_IS_FRIEND] = function(aGen) {
    if (aGen.pos === null) {
        return null;
    }
-   var piece  = aGen.board.getPiece(aGen.pos);
+   var piece  = aGen.getPiece(aGen.pos);
    if (piece === null) {
        aGen.stack.push(false);
        return 0;
@@ -798,6 +802,7 @@ function ZrfMoveGenerator() {
   this.backs	= [];
   this.cmd      = 0;
   this.level    = 1;
+  this.cmd      = 0;
 }
 
 Model.Game.createGen = function(aTemplate, aParams) {
@@ -822,6 +827,12 @@ ZrfMoveGenerator.prototype.clone = function() {
   r.mode     = this.mode;
   r.board    = this.board;
   r.pos      = this.pos;
+  if (typeof this.from !== "undefined") {
+      r.from = this.from;
+  }
+  if (typeof this.piece !== "undefined") {
+      r.piece = this.piece;
+  }
   for (var i in this.backs) {
       r.backs[i] = this.backs[i];
   }
@@ -1030,13 +1041,13 @@ ZrfMoveGenerator.prototype.setAttr = function(aName, aPos, aValue) {
 }
 
 ZrfMoveGenerator.prototype.generate = function() {
-  this.cmd = 0;
   while (this.cmd < this.template.commands.length) {
      var r = (this.template.commands[this.cmd++])(this);
      if (r === null) break;
      this.cmd += r;
      if (this.cmd < 0) break;
   }
+  this.cmd = 0;
 }
 
 function ZrfPiece(aType, aPlayer) {
@@ -1519,7 +1530,7 @@ ZrfMove.prototype.clone = function() {
   var r = new ZrfMove();
   var o = true;
   for (var i in this.actions) {
-      if ((this.actions[0] !== null) && (this.actions[1] !== null)) {
+      if ((this.actions[i][0] !== null) && (this.actions[i][1] !== null)) {
           if (o === true) {
               r.actions.push(this.actions[i])
               if (Model.Game.discardCascades === true) {
@@ -1552,10 +1563,10 @@ Model.Move.moveToString = function(move, part) {
       if (p === part) {
           if ((move.actions[i][0] !== null) && (move.actions[i][1] !== null) && (move.actions[i][0] !== move.actions[i][1])) {
               if (move.actions[i][0][0] != move.actions[i][1][0]) {
-                  if (r !== "") {
-                      r = r + " ";
-                  }
                   if (l !== move.actions[i][0][0]) {
+                      if (r !== "") {
+                          r = r + " ";
+                      }
                       r = r + Model.Game.posToString(move.actions[i][0][0]);
                   }
                   r = r + " - ";

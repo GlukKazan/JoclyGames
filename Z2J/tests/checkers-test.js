@@ -330,7 +330,7 @@ QUnit.test( "Board", function( assert ) {
   o.movePiece(Model.Game.stringToPos("f6"), Model.Game.stringToPos("a6"), p, 2);
   assert.equal( o.toString(1), "f3 - f6 x f5", "f3 - f6 x f5");
   assert.equal( o.toString(2), "f6 - a6 x c6", "f6 - a6 x c6");
-  assert.equal( o.toString(0), "f3 - f6  - a6 x f5 x c6", "f3 - f6  - a6 x f5 x c6");
+  assert.equal( o.toString(0), "f3 - f6 - a6 x f5 x c6", "f3 - f6 - a6 x f5 x c6");
   assert.equal( o.getStartPos(1), "f3", "Start position");
   assert.equal( o.getStopPos(1), "f6", "Stop position");
   assert.equal( o.getStartPos(2), "f6", "Start position");
@@ -360,7 +360,7 @@ QUnit.test( "Board", function( assert ) {
   Model.Game.board = undefined;
 });
 
-QUnit.test( "Simple moves", function( assert ) {
+QUnit.test( "Man's moves", function( assert ) {
   Model.Game.InitGame();
   var design = Model.Game.getDesign();
   var board  = Model.Game.getInitBoard();
@@ -501,13 +501,263 @@ QUnit.test( "Man's capturing", function( assert ) {
   assert.equal( board.moves.length, 2, "Move generated");
   assert.equal( board.moves[1].toString(1), "d6 - f6 x e6", "d6 - f6 x e6");
   assert.equal( board.moves[1].toString(2), "f6 - f8 x f7", "f6 - f8 x f7");
-  assert.equal( board.moves[1].toString(0), "d6 - f6  - f8 x e6 x f7", "d6 - f6  - f8 x e6 x f7");
+  assert.equal( board.moves[1].toString(0), "d6 - f6 - f8 x e6 x f7", "d6 - f6 - f8 x e6 x f7");
   assert.equal( board.moves[1].actions.length, 4, "actions");
   assert.equal( board.moves[1].actions[3][2][0].toString(), "White King", "promoted");
   assert.equal( g2.lastf, Model.Game.stringToPos("f6"), "Last from");
   assert.equal( g2.lastt, Model.Game.stringToPos("f8"), "Last to");
   assert.equal( g2.isLastFrom(Model.Game.stringToPos("f6")), false, "Not is last");
   assert.equal( g2.isLastFrom(Model.Game.stringToPos("d6")), true, "Last from position");
+
+  Model.Game.design = undefined;
+  Model.Game.board = undefined;
+});
+
+QUnit.test( "King's moves", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Game.getInitBoard();
+  board.clear();
+  assert.equal( board.moves.length, 0, "No board moves");
+  assert.equal( board.player, 1, "White player");
+
+  design.setup("White", "King", Model.Game.stringToPos("b1"));
+  design.setup("Black", "Man", Model.Game.stringToPos("b5"));
+  var t3 = design.getTemplate(3);
+  var n  = design.getDirection("n");
+  var g1 = Model.Game.createGen(t3, [ n, n ]);
+  g1.init(board, Model.Game.stringToPos("b1"));
+  assert.equal( g1.pieces.length , 0, "No Generator's positions");
+  assert.equal( g1.template.commands.length, 13, "Template length");
+  assert.equal( g1.stack.length, 0, "Stack is empty");
+  assert.equal( g1.pos, Model.Game.stringToPos("b1"), "Initial position");
+  assert.equal( g1.getPiece(g1.pos).toString(), "White King", "Current piece");
+
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_FROM executed");
+  assert.equal( g1.cmd, 1, "cmd = 1");
+  assert.equal( g1.from, Model.Game.stringToPos("b1"), "Initial position");
+  assert.equal( g1.piece.toString(), "White King", "Current piece");
+
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_PARAM executed");
+  assert.equal( g1.cmd, 2, "cmd = 2");
+  assert.equal( g1.stack.length, 1, "Stack");
+  assert.equal( g1.stack[0], 3, "Direction");
+
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_NAVIGATE executed");
+  assert.equal( g1.cmd, 3, "cmd = 3");
+  assert.equal( g1.stack.length, 0, "Stack is empty");
+  assert.equal( g1.pos, Model.Game.stringToPos("b2"), "Target position");
+
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_IS_EMPTY executed");
+  assert.equal( g1.cmd, 4, "cmd = 4");
+  assert.equal( g1.stack.length, 1, "Stack");
+  assert.equal( g1.stack[0], true, "Position is empty");
+
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_NOT executed");
+  assert.equal( g1.cmd, 5, "cmd = 5");
+  assert.equal( g1.stack.length, 1, "Stack");
+  assert.equal( g1.stack[0], false, "Not");
+
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_IF executed");
+  assert.equal( g1.cmd, 6, "cmd = 6");
+  assert.equal( g1.stack.length, 0, "Stack is empty");
+
+  assert.equal( board.forks.length, 0, "No forks");
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_FORK executed");
+  assert.equal( board.forks.length, 1, "Fork generated");
+  assert.equal( g1.cmd, 7, "cmd = 7");
+
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), 0, "ZRF_TO executed");
+  assert.equal( g1.cmd, 8, "cmd = 8");
+  assert.equal( g1.from, null, "Empty position");
+  assert.equal( g1.piece, null, "Empty piece");
+  assert.equal( g1.move.actions.length, 1, "1 action");
+  assert.equal( g1.move.actions[0][0][0], Model.Game.stringToPos("b1"), "From position");
+  assert.equal( g1.move.actions[0][1][0], Model.Game.stringToPos("b2"), "To position");
+  assert.equal( g1.move.actions[0][2][0].toString(), "White King", "piece");
+  assert.equal( g1.move.actions[0][3], 1, "level");
+  assert.equal( g1.lastf, Model.Game.stringToPos("b1"), "Last from");
+  assert.equal( g1.lastt, Model.Game.stringToPos("b2"), "Last to");
+  assert.equal( g1.pieces[Model.Game.stringToPos("b1")], null, "b1 is empty");
+  assert.equal( g1.pieces[Model.Game.stringToPos("b2")].toString(), "White King", "White King on b2");
+  assert.equal( g1.move.toString(1), "b1 - b2", "b1 - b2");
+  assert.equal( g1.move.toString(0), "b1 - b2", "b1 - b2");
+
+  assert.equal( g1.moveType, 1, "Default MoveType");
+  assert.equal( (g1.template.commands[g1.cmd++])(g1), null, "ZRF_END executed");
+  assert.equal( g1.cmd, 9, "cmd = 9");
+  assert.equal( g1.moveType, 0, "MoveType cleaned");
+  assert.equal( board.moves.length, 1, "Move generated");
+  assert.equal( board.moves[0].toString(0), "b1 - b2", "b1 - b2");
+
+  var g2 = board.forks.pop();
+  assert.equal( g2.move.toString() , "Pass", "No move");
+  assert.equal( g2.moveType , 1, "Default MoveType");
+  assert.equal( g2.pieces.length , 0, "No Generator's positions");
+  assert.equal( g2.template.commands.length, 13, "Template length");
+  assert.equal( g2.params.length, 2, "Params length");
+  assert.equal( g2.mode, null, "No mode");
+  assert.equal( g2.parent, null, "No parent");
+  assert.equal( g2.board, board, "Board initialized");
+  assert.equal( g2.pos, Model.Game.stringToPos("b2"), "Current position");
+  assert.equal( g2.stack.length, 0, "Stack is empty");
+  assert.equal( g2.level, 1, "Level 1");
+  assert.equal( g2.from, Model.Game.stringToPos("b1"), "Initial position");
+  assert.equal( g2.piece.toString(), "White King", "Current piece");
+  assert.equal( g2.cmd, 9, "cmd = 9");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), 0, "ZRF_PARAM executed");
+  assert.equal( g2.cmd, 10, "cmd = 10");
+  assert.equal( g2.stack.length, 1, "Stack");
+  assert.equal( g2.stack[0], 3, "Direction");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), 0, "ZRF_NAVIGATE executed");
+  assert.equal( g2.cmd, 11, "cmd = 11");
+  assert.equal( g2.stack.length, 0, "Stack is empty");
+  assert.equal( g2.pos, Model.Game.stringToPos("b3"), "Current position");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), -9, "ZRF_JUMP executed");
+  g2.cmd += -9;
+  assert.equal( g2.cmd, 3, "cmd = 3");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), 0, "ZRF_IS_EMPTY executed");
+  assert.equal( g2.cmd, 4, "cmd = 4");
+  assert.equal( g2.stack.length, 1, "Stack");
+  assert.equal( g2.stack[0], true, "Position is empty");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), 0, "ZRF_NOT executed");
+  assert.equal( g2.cmd, 5, "cmd = 5");
+  assert.equal( g2.stack.length, 1, "Stack");
+  assert.equal( g2.stack[0], false, "Not");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), 0, "ZRF_IF executed");
+  assert.equal( g2.cmd, 6, "cmd = 6");
+  assert.equal( g2.stack.length, 0, "Stack is empty");
+
+  assert.equal( board.forks.length, 0, "No forks");
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), 0, "ZRF_FORK executed");
+  assert.equal( board.forks.length, 1, "Fork generated");
+  assert.equal( g2.cmd, 7, "cmd = 7");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), 0, "ZRF_TO executed");
+  assert.equal( g2.cmd, 8, "cmd = 8");
+  assert.equal( g2.from, null, "Empty position");
+  assert.equal( g2.piece, null, "Empty piece");
+  assert.equal( g2.move.toString(0), "b1 - b3", "b1 - b3");
+
+  assert.equal( (g2.template.commands[g2.cmd++])(g2), null, "ZRF_END executed");
+  assert.equal( g2.cmd, 9, "cmd = 9");
+  assert.equal( board.moves.length, 2, "Move generated");
+  assert.equal( board.moves[0].toString(0), "b1 - b2", "b1 - b2");
+  assert.equal( board.moves[1].toString(0), "b1 - b3", "b1 - b3");
+
+  var g3 = board.forks.pop();
+  assert.equal( g3.move.toString() , "Pass", "No move");
+  assert.equal( g3.moveType , 1, "Default MoveType");
+  assert.equal( g3.pieces.length , 0, "No Generator's positions");
+  assert.equal( g3.template.commands.length, 13, "Template length");
+  assert.equal( g3.params.length, 2, "Params length");
+  assert.equal( g3.mode, null, "No mode");
+  assert.equal( g3.parent, null, "No parent");
+  assert.equal( g3.board, board, "Board initialized");
+  assert.equal( g3.pos, Model.Game.stringToPos("b3"), "Current position");
+  assert.equal( g3.stack.length, 0, "Stack is empty");
+  assert.equal( g3.level, 1, "Level 1");
+  assert.equal( g3.from, Model.Game.stringToPos("b1"), "Initial position");
+  assert.equal( g3.piece.toString(), "White King", "Current piece");
+  assert.equal( g3.cmd, 9, "cmd = 9");
+  g3.generate();
+  assert.equal( board.forks.length, 1, "Fork generated");
+  assert.equal( board.moves.length, 3, "Move generated");
+  assert.equal( board.moves[0].toString(0), "b1 - b2", "b1 - b2");
+  assert.equal( board.moves[1].toString(0), "b1 - b3", "b1 - b3");
+  assert.equal( board.moves[2].toString(0), "b1 - b4", "b1 - b4");
+
+  var g4 = board.forks.pop();
+  g4.generate();
+  assert.equal( board.forks.length, 0, "No Forks");
+  assert.equal( board.moves.length, 3, "No Move generated");
+
+  Model.Game.design = undefined;
+  Model.Game.board = undefined;
+});
+
+QUnit.test( "King's capturing", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Game.getInitBoard();
+  board.clear();
+  assert.equal( board.moves.length, 0, "No board moves");
+  assert.equal( board.player, 1, "White player");
+
+  design.setup("White", "King", Model.Game.stringToPos("c4"));
+  design.setup("Black", "Man", Model.Game.stringToPos("b4"));
+  design.setup("Black", "Man", Model.Game.stringToPos("e4"));
+  design.setup("Black", "Man", Model.Game.stringToPos("g6"));
+  var t2 = design.getTemplate(2);
+  var e  = design.getDirection("e");
+  var g1 = Model.Game.createGen(t2, [e, e, e, e, e]);
+  g1.init(board, Model.Game.stringToPos("c4"));
+
+  g1.generate();
+  assert.equal( board.forks.length, 1, "Fork generated");
+  assert.equal( board.moves.length, 1, "Move generated");
+  assert.equal( board.moves[0].toString(0), "c4 - f4 x e4", "c4 - f4 x e4");
+
+  var g2 = board.forks.pop();
+  g2.generate();
+  assert.equal( board.forks.length, 1, "Fork generated");
+  assert.equal( board.moves.length, 2, "Move generated");
+  assert.equal( board.moves[1].toString(0), "c4 - g4 x e4", "c4 - g4 x e4");
+  board.forks.pop();
+
+  var n  = design.getDirection("n");
+  var g3 = g2.copy(t2, [n, n, n, n, n]);
+  assert.equal( g3.level, 2, "Level 2");
+  assert.equal( g3.parent, g2, "Parent assigned");
+  assert.equal( g3.mode, 0, "Mode assigned");
+  assert.equal( g3.pos, Model.Game.stringToPos("g4"), "Pos assigned");
+  assert.equal( g3.move.toString(0), "c4 - g4 x e4", "Move assigned");
+  g3.generate();
+  assert.equal( board.forks.length, 1, "Fork generated");
+  assert.equal( board.moves.length, 3, "Move generated");
+  assert.equal( board.moves[2].toString(0), "c4 - g4 - g7 x e4 x g6", "c4 - g4 - g7 x e4 x g6");
+  board.forks.pop();
+
+  var w  = design.getDirection("w");
+  var g4 = g1.copy(t2, [w, w, w, w, w]);
+  assert.equal( g4.level, 2, "Level 2");
+  assert.equal( g4.parent, g1, "Parent assigned");
+  assert.equal( g4.mode, 0, "Mode assigned");
+  assert.equal( g4.pos, Model.Game.stringToPos("f4"), "Pos assigned");
+  assert.equal( g4.move.toString(0), "c4 - f4 x e4", "Move assigned");
+  assert.equal( g4.cmd, 0, "cmd = 0");
+
+  assert.equal( (g4.template.commands[g4.cmd++])(g4), 0, "ZRF_FROM executed");
+  assert.equal( g4.cmd, 1, "cmd = 1");
+  assert.equal( g4.from, Model.Game.stringToPos("f4"), "Initial position");
+  assert.equal( g4.piece.toString(), "White King", "Current piece");
+
+  assert.equal( (g4.template.commands[g4.cmd++])(g4), 0, "ZRF_PARAM executed");
+  assert.equal( g4.cmd, 2, "cmd = 2");
+  assert.equal( g4.stack.length, 1, "Stack");
+  assert.equal( g4.stack[0], 0, "Direction");
+
+  assert.equal( (g4.template.commands[g4.cmd++])(g4), 0, "ZRF_NAVIGATE executed");
+  assert.equal( g4.cmd, 3, "cmd = 3");
+  assert.equal( g4.stack.length, 0, "Stack is empty");
+  assert.equal( g4.pos, Model.Game.stringToPos("e4"), "Current position");
+
+  assert.equal( (g4.template.commands[g4.cmd++])(g4), 0, "ZRF_IS_EMPTY executed");
+  assert.equal( g4.cmd, 4, "cmd = 4");
+  assert.equal( g4.stack.length, 1, "Stack");
+  assert.equal( g4.stack[0], true, "Piece is captured");
+  assert.equal( g4.isLastFrom(Model.Game.stringToPos("c4")), true, "c4 - is last from position");
+
+  var g5 = g1.copy(t2, [w, w, w, w, w]);
+  g5.generate();
+  assert.equal( board.forks.length, 0, "No Forks");
+  assert.equal( board.moves.length, 3, "No Moves generated");
 
   Model.Game.design = undefined;
   Model.Game.board = undefined;
