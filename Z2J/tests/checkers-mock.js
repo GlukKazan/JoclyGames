@@ -1,6 +1,6 @@
 var Model   = {};
 Model.Game  = {};
 Model.Move  = {};
-Model.Game.zupdate = function(value, player, piece, pos) {
+Model.Game.zupdate = function(value, piece, pos) {
   return 0;
 }

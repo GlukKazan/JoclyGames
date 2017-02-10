@@ -58,6 +58,8 @@ Model.Game.BuildDesign = function(design) {<xsl:call-template name="apply-option
        <xsl:variable name="piece" select="name(.)"/>
        <xsl:for-each select="pos">    design.setup("<xsl:value-of select="$player"/>", "<xsl:value-of select="$piece"/>", <xsl:value-of select="text()"/>);
 </xsl:for-each>
+       <xsl:for-each select="reserve">    design.reserve("<xsl:value-of select="$player"/>", "<xsl:value-of select="$piece"/>", <xsl:value-of select="text()"/>);
+</xsl:for-each>
    </xsl:for-each>
 </xsl:for-each>}
 </xsl:template>

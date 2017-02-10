@@ -1,4 +1,4 @@
-(version "2.0")
+(version "3.0")
 
 (include "code.zrf")
 
@@ -11,9 +11,9 @@
              ("a/b/c/d/e/f/g/h" (50 0)) ; files
              ("8/7/6/5/4/3/2/1" (0 50)) ; ranks
          )
-         (directions (n 0 -1) (s 0 1) (e 1 0) (w -1 0))
+         (directions (ne 1 -1) (nw -1 -1) (se 1 1) (sw -1 1))
      )
-     (symmetry Black (n s) (s n))
+     (symmetry Black (nw sw) (sw nw) (ne se) (se ne))
      (zone (name promotion) (players White)
            (positions a8 b8 c8 d8 e8 f8 g8 h8)
      )
@@ -24,10 +24,9 @@
 )
 
 (game
-  (title "Turkish Dama")
-  (description "Turkish Dama example game.")
+  (title "Russian Checkers")
 
-  (option "maximal captures" true)
+  (option "zrf advanced" delayed)
 
   (players White Black)
   (turn-order White Black)
@@ -41,12 +40,10 @@
             Black "images/Checkers/Shaag/chkrBM.bmp")
      (moves
          (move-type jumptype)
-         (checker-jump n notype) (checker-jump w notype) (checker-jump e notype)
-
+         (checker-jump nw jumptype) (checker-jump ne jumptype) 
+         (checker-jump sw jumptype) (checker-jump se jumptype)
          (move-type normaltype)
-         (checker-shift n) (checker-shift w) (checker-shift e)
-
-         (move-type notype)
+         (checker-shift nw) (checker-shift ne)
      )
   )
   (piece
@@ -55,25 +52,21 @@
             Black "images/Checkers/Shaag/chkrBK.bmp")
      (moves
          (move-type jumptype)
-         (king-jump n) (king-jump w) (king-jump e) (king-jump s)
-
+         (king-jump nw) (king-jump ne) (king-jump sw) (king-jump se)
          (move-type normaltype)
-         (king-shift n) (king-shift w) (king-shift e) (king-shift s)
-
-         (move-type notype)
+         (king-shift nw) (king-shift ne) (king-shift sw) (king-shift se)
      )
   )
 
   (board-setup
-    (White (Man a2 b2 c2 d2 e2 f2 g2 h2  a3 b3 c3 d3 e3 f3 g3 h3))
-    (Black (Man a7 b7 c7 d7 e7 f7 g7 h7  a6 b6 c6 d6 e6 f6 g6 h6))
+    (White (Man a1 c1 e1 g1  b2 d2 f2 h2  a3 c3 e3 g3) )
+    (Black (Man b8 d8 f8 h8  a7 c7 e7 g7  b6 d6 f6 h6) )
   )
-
-  (loss-condition (White Black) stalemated)
 )
 
-(variant 
-  (title "Bahrain Dama")
-  (default)
-  (option "bahrain dama extension" true)
+(game
+  (title "Column Checkers")
+  (option "zrf advanced" delayed)
+  (option "board model" stack)
+  (option "columns checkers extension" true)
 )

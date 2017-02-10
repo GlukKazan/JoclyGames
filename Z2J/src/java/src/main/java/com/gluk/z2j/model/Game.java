@@ -20,6 +20,7 @@ public class Game extends AbstractDoc implements IGame {
 	private final static String    GAME_TAG  = "game";
 	private final static String    BOARD_TAG = "board";
 	private final static String      POS_TAG = "pos";
+	private final static String  RESERVE_TAG = "reserve";
 	private final static String  PLAYERS_TAG = "players";
 	private final static String   OPTION_TAG = "option";
 	private final static String    PIECE_TAG = "piece";
@@ -311,7 +312,16 @@ public class Game extends AbstractDoc implements IGame {
 				Node p;
 				while ((p = pl.nextNode())!= null) {
 					String pos = p.getLocalName();
-					if (pos.equals(OFF_TAG)) break;
+					if (pos.equals(OFF_TAG)) {
+						p = pl.nextNode();
+						if (p != null) {
+							String t = p.getTextContent();
+							if (!t.isEmpty()) {
+								dest.open(RESERVE_TAG); dest.add(t); dest.close();
+							}
+						}
+						continue;
+					}
 					Integer ix = getNameIndex(pos);
 					dest.open(POS_TAG); dest.add(ix.toString()); dest.close();
 				}

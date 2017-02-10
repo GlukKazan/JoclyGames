@@ -9,12 +9,14 @@
 
 (define checker-jump (
    $1 (verify enemy?) 
+   (verify (not-position-flag? is-captured))
    capture 
+   (set-position-flag is-captured true)
    $1 (verify empty?)
    (if (not-in-zone? promotion)
       (add-partial jumptype)
     else
-      (add-partial King notype)
+      (add-partial King $2)
    )
 ))
 
@@ -29,11 +31,13 @@
        $1 (verify not-last-from?)
    )
    (verify enemy?)
+   (verify (not-position-flag? is-captured))
    $1 (while empty?
        mark
        (while empty? 
           (opposite $1)
        ) 
+       (set-position-flag is-captured true)
        capture
        back
        (add-partial jumptype) $1

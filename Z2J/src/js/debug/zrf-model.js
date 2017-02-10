@@ -341,6 +341,10 @@ Model.Game.functions[Model.Move.ZRF_IS_EMPTY] = function(aGen) {
    return 0;
 }
 
+Model.Game.isFriend = function(piece, player) {
+   return (piece.player === player);
+}
+
 Model.Game.functions[Model.Move.ZRF_IS_ENEMY] = function(aGen) {
    if (aGen.pos === null) {
        return null;
@@ -351,7 +355,7 @@ Model.Game.functions[Model.Move.ZRF_IS_ENEMY] = function(aGen) {
        return 0;
    }
    var player = aGen.board.player;
-   aGen.stack.push(piece.player !== player);
+   aGen.stack.push(!Model.Game.isFriend(piece, player));
    return 0;
 }
 
@@ -365,7 +369,7 @@ Model.Game.functions[Model.Move.ZRF_IS_FRIEND] = function(aGen) {
        return 0;
    }
    var player = aGen.board.player;
-   aGen.stack.push(piece.player === player);
+   aGen.stack.push(Model.Game.isFriend(piece, player));
    return 0;
 }
 
@@ -491,6 +495,7 @@ Model.Game.forkMode        = false;
 Model.Game.passPartial     = false;
 Model.Game.passTurn        = 0;
 Model.Game.sharedPieces    = false;
+Model.Game.recycleCaptures = false;
 
 Model.Game.checkVersion = function(aDesign, aName, aValue) {  
   if (aName == "z2j") {
@@ -514,6 +519,9 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
          (aName != "smart-moves")) {
          aDesign.failed = true;
      }
+     if ((aName == "recycle-captures") && (aValue === "true")) {
+         Model.Game.recycleCaptures = true;
+     }
      if ((aName == "discard-cascades") && (aValue === "true")) {
          Model.Game.discardCascades = true;
      }
@@ -535,6 +543,19 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
 Model.Game.checkOption = function(aDesign, aName, aValue) {
   if (aDesign.options[aName] == aValue) {
       return true;
+  }
+}
+
+ZrfDesign.prototype.reserve = function(player, piece, cnt) {
+  var o = Model.find(this.tnames, player);
+  var t = Model.find(this.pnames, piece);
+  if ((o < 0) || (t < 0)) {
+      this.failed = true;
+  } else {
+      if (typeof this.reserve[t] === "undefined") {
+          this.reserve[t] = [];
+      }
+      this.reserve[t][o] = cnt;
   }
 }
 
@@ -1179,6 +1200,8 @@ ZrfBoard.prototype.equals = function(board) {
 Model.Game.getInitBoard = function() {
   if (typeof Model.Game.board === "undefined") {
       Model.Game.board = new ZrfBoard(Model.Game);
+      var design = Model.Game.getDesign();
+      Model.Game.board.reserve = design.reserve;
   }
   return Model.Game.board;
 }
@@ -1209,13 +1232,13 @@ ZrfBoard.prototype.getPiece = function(pos) {
 ZrfBoard.prototype.setPiece = function(pos, piece) {
   if (typeof this.pieces[pos] !== "undefined") {
       var op = this.pieces[pos];
-      this.zSign = Model.Game.zupdate(this.zSign, op.player, op.type, pos);
+      this.zSign = Model.Game.zupdate(this.zSign, op, pos);
   }
   if (piece === null) {
      delete this.pieces[pos];
   } else {
      this.pieces[pos] = piece;
-     this.zSign = Model.Game.zupdate(this.zSign, piece.player, piece.type, pos);
+     this.zSign = Model.Game.zupdate(this.zSign, piece, pos);
   }
 }
 
@@ -1267,7 +1290,7 @@ var CompleteMove = function(board, gen) {
   }
   for (var pos in board.pieces) {
        var piece = board.pieces[pos];
-       if ((piece.player === board.player) || (Model.Game.sharedPieces === true)) {
+       if (Model.Game.isFriend(piece, board.player) || (Model.Game.sharedPieces === true)) {
            for (var move in Model.Game.design.pieces[piece.type]) {
                 if ((move.type === 0) && (move.mode === gen.mode)) {
                     var g = f.copy(move.template, move.params);
@@ -1293,7 +1316,7 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
       var mx = null;
       for (var pos in this.pieces) {
            var piece = this.pieces[pos];
-           if ((piece.player === this.player) || (Model.Game.sharedPieces === true)) {
+           if (Model.Game.isFriend(piece, this.player) || (Model.Game.sharedPieces === true)) {
                for (var move in Model.Game.design.pieces[piece.type]) {
                    if (move.type === 0) {
                        var g = Model.Game.createGen(move.template, move.params);
@@ -1313,6 +1336,7 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
       }
       for (var tp in Model.Game.design.pieces) {
            for (var pos in Model.Game.design.positions) {
+               if (Model.Game.noReserve(tp) === true) continue;
                for (var move in Model.Game.design.pieces[tp]) {
                     if (move.type === 1) {
                         var g = Model.Game.createGen(move.template, move.params);
@@ -1369,6 +1393,31 @@ ZrfBoard.prototype.checkContinue = function() {
   return true;
 }
 
+Model.Game.decReserve = function(board, piece) {
+  if (typeof board.reserve[piece.type] !== "undefined") {
+      if (typeof board.reserve[piece.type][piece.player] !== "undefined") {
+          board.reserve[piece.type][piece.player]--;
+      }
+  }
+}
+
+Model.Game.incReserve = function(board, piece) {
+  if (typeof board.reserve[piece.type] !== "undefined") {
+      if (typeof board.reserve[piece.type][piece.player] !== "undefined") {
+          board.reserve[piece.type][piece.player]++;
+      }
+  }
+}
+
+Model.Game.noReserve = function(board, piece) {
+  if (typeof board.reserve[piece] !== "undefined") {
+      if (typeof board.reserve[piece][board.player] !== "undefined") {
+          return (board.reserve[piece][board.player] <= 0);
+      }
+  }
+  return false;
+}
+
 ZrfBoard.prototype.applyPart = function(move, part) {  
   var r = false;
   for (var i in move.actions) {
@@ -1402,6 +1451,7 @@ ZrfBoard.prototype.applyPart = function(move, part) {
           var tp = move.actions[i][1];
           var np = move.actions[i][2];
           if ((fp === null) && (tp !== null) && (np !== null)) {
+              Model.Game.decReserve(board, np[0]);
               this.setPiece(tp[0], np[0]);
               r = true;
           }
@@ -1416,6 +1466,12 @@ ZrfBoard.prototype.applyPart = function(move, part) {
           var fp = move.actions[i][0];
           var tp = move.actions[i][1];
           if ((fp !== null) && (tp === null)) {
+              if (Model.Game.recycleCaptures === true) {
+                  var piece = this.getPiece(fp[0]);
+                  if (piece != null) {
+                      Model.Game.incReserve(this, piece);
+                  }
+              }
               this.setPiece(fp[0], null);
               r = true;
           }
