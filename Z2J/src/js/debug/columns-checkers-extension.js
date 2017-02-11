@@ -14,31 +14,31 @@ Model.Game.PostActions = function(board) {
   PostActions(board);
   for (var i in board.moves) {
        var m = board.moves[i];
-       var move = null;
-       var capturing = null;
+       var captured = [];
+       var piece = null;
        for (var j in m.actions) {
-            if (m.actions[j][0] !== null) {
-                if (m.actions[j][1] !== null) {
-                    move = m.actions[j];
-                } else {
-                    capturing = m.actions[j];
+            var fp = m.actions[j][0];
+            var tp = m.actions[j][1];
+            var pc = m.actions[j][2];
+            if ((fp !== null) && (tp !== null)) {
+                if (piece === null) {
+                    piece = board.getPiece(fp[0]);
                 }
+                if ((pc !== null) && (Object.prototype.toString.call(pc[0]) === "[object Object]")) {
+                    piece.pop();
+                    piece.push(pc[0]);
+                }
+                while (captured.length > 0) {
+                    piece.unshift(captured.pop());
+                }
+                m.actions[j][2] = [ piece ];
             }
-       }
-       if ((capturing !== null) && (move !== null)) {
-            var enemy = board.getPiece(capturing[0][0]);
-            if (enemy !== null) {
-                var piece = enemy.pop();
-                if (enemy.length > 0) {
-                    capturing[1] = capturing[0];
-                    capturing[2] = [ enemy ];
-                }
-                var friend = board.getPiece(move[0][0]);
-                if (friend !== null) {
-                    move[2] = [ piece ];
-                    for (var k in friend) {
-                         move[2].push(friend[k]);
-                    }
+            if ((fp !== null) && (tp === null)) {
+                var p = board.getPiece(fp[0]);
+                captured.push(p.pop());
+                if (p.length > 0) {
+                    m.actions[j][1] = fp;
+                    m.actions[j][2] = [ p ];
                 }
             }
        }

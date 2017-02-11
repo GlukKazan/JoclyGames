@@ -1,3 +1,18 @@
+QUnit.test( "Array", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Game.getInitBoard();
+  var man  = Model.Game.createPiece(0, 1);
+  assert.equal( Object.prototype.toString.call(man), "[object Object]", "Object");
+  var arr = [ man, man];
+  assert.equal( Object.prototype.toString.call(arr), "[object Array]", "Array");
+  var a = new Int32Array(arr.length);
+  a.set(arr);
+  assert.equal( Object.prototype.toString.call(a), "[object Int32Array]", "Int32Array");
+  Model.Game.design = undefined;
+  Model.Game.board = undefined;
+});
+
 QUnit.test( "Zobrist", function( assert ) {
   var zobrist = Model.Game.getZobristHash();
   var old = zobrist.update(0, 1, 1, 5);
