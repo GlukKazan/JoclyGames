@@ -777,3 +777,17 @@ QUnit.test( "King's capturing", function( assert ) {
   Model.Game.design = undefined;
   Model.Game.board = undefined;
 });
+
+QUnit.test( "All Man's moves", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Game.getInitBoard();
+  board.clear();
+  assert.equal( board.moves.length, 0, "No board moves");
+  assert.equal( board.player, 1, "White player");
+
+  design.setup("White", "Man", Model.Game.stringToPos("c3"));
+
+  Model.Game.design = undefined;
+  Model.Game.board = undefined;
+});

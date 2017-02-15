@@ -611,24 +611,28 @@ ZrfDesign.prototype.addMove = function(aType, aTemplate, aParams, aMode) {
   if (typeof this.pieces[aType] === "undefined") {
       this.pieces[aType] = [];
   }
-  this.pieces[aType].push({
-     type: 0,
-     template: aTemplate,
-     params: aParams,
-     mode: aMode
-  });
+  if (typeof this.templates[aTemplate] !== "undefined") {
+      this.pieces[aType].push({
+         type: 0,
+         template: this.templates[aTemplate],
+         params: aParams,
+         mode: aMode
+      });
+  }
 }
 
 ZrfDesign.prototype.addDrop = function(aType, aTemplate, aParams, aMode) {
   if (typeof this.pieces[aType] === "undefined") {
       this.pieces[aType] = [];
   }
-  this.pieces[aType].push({
-     type: 1,
-     template: aTemplate,
-     params: aParams,
-     mode: aMode
-  });
+  if (typeof this.templates[aTemplate] !== "undefined") {
+      this.pieces[aType].push({
+         type: 1,
+         template: this.templates[aTemplate],
+         params: aParams,
+         mode: aMode
+      });
+  }
 }
 
 ZrfDesign.prototype.checkVersion = function(aName, aValue) {
@@ -833,9 +837,9 @@ Model.Game.createGen = function(aTemplate, aParams) {
   return r;
 }
 
-ZrfMoveGenerator.prototype.init = function(aBoard, aPos) {
-  this.board    = aBoard;
-  this.pos      = aPos;
+ZrfMoveGenerator.prototype.init = function(board, pos) {
+  this.board    = board;
+  this.pos      = +pos;
 }
 
 ZrfMoveGenerator.prototype.clone = function() {
@@ -1317,10 +1321,12 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
       for (var pos in this.pieces) {
            var piece = this.pieces[pos];
            if (Model.Game.isFriend(piece, this.player) || (Model.Game.sharedPieces === true)) {
-               for (var move in Model.Game.design.pieces[piece.type]) {
+               for (var m in Model.Game.design.pieces[piece.type]) {
+                   var move = Model.Game.design.pieces[piece.type][m];
                    if (move.type === 0) {
                        var g = Model.Game.createGen(move.template, move.params);
                        g.init(this, pos);
+                       g.mode = move.mode;
                        this.addFork(g);
                        if (Model.Game.design.modes.length > 0) {
                            var ix = Model.find(Model.Game.design.modes, move.mode);
@@ -1336,8 +1342,9 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
       }
       for (var tp in Model.Game.design.pieces) {
            for (var pos in Model.Game.design.positions) {
-               if (Model.Game.noReserve(tp) === true) continue;
-               for (var move in Model.Game.design.pieces[tp]) {
+               if (Model.Game.noReserve(this, tp) === true) continue;
+               for (var m in Model.Game.design.pieces[tp]) {
+                    var move = Model.Game.design.pieces[tp][m];
                     if (move.type === 1) {
                         var g = Model.Game.createGen(move.template, move.params);
                         g.init(this, pos);
@@ -1382,7 +1389,6 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
   if (this.moves.length === 0) {
       this.player = 0;
   }
-  return this.moves;
 }
 
 ZrfBoard.prototype.generate = function() {
