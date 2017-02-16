@@ -1314,64 +1314,80 @@ var CompleteMove = function(board, gen) {
   }
 }
 
+var addPrior = function(priors, mode, gen) {
+  var ix = 0;
+  var design = Model.Game.design;
+  if (design.modes.length > 0) {
+      ix = Model.find(design.modes, mode);
+  }
+  if (ix >= 0) {
+      if (typeof priors[ix] === "undefined") {
+          priors[ix] = [];
+      }
+      priors[ix].push(gen);
+  }
+}
+
 ZrfBoard.prototype.generateInternal = function(callback, cont) {
-  this.forks = [];
-  if ((this.moves.length === 0) && (Model.Game.design.failed !== true)) {
-      var mx = null;
+  var design = Model.Game.design;
+  if ((this.moves.length === 0) && (design.failed !== true)) {
+      var priors = [];
       for (var pos in this.pieces) {
            var piece = this.pieces[pos];
            if (Model.Game.isFriend(piece, this.player) || (Model.Game.sharedPieces === true)) {
-               for (var m in Model.Game.design.pieces[piece.type]) {
-                   var move = Model.Game.design.pieces[piece.type][m];
+               for (var m in design.pieces[piece.type]) {
+                   var move = design.pieces[piece.type][m];
                    if (move.type === 0) {
                        var g = Model.Game.createGen(move.template, move.params);
                        g.init(this, pos);
                        g.mode = move.mode;
-                       this.addFork(g);
-                       if (Model.Game.design.modes.length > 0) {
-                           var ix = Model.find(Model.Game.design.modes, move.mode);
-                           if (ix >= 0) {
-                               if ((mx === null) || (ix < mx)) {
-                                   mx = ix;
-                               }
-                           }
-                       }
+                       addPrior(priors, move.mode, g);
                    }
                }
            }
       }
-      for (var tp in Model.Game.design.pieces) {
-           for (var pos in Model.Game.design.positions) {
+      for (var tp in design.pieces) {
+           for (var pos in design.positions) {
                if (Model.Game.noReserve(this, tp) === true) continue;
-               for (var m in Model.Game.design.pieces[tp]) {
-                    var move = Model.Game.design.pieces[tp][m];
+               for (var m in design.pieces[tp]) {
+                    var move = design.pieces[tp][m];
                     if (move.type === 1) {
                         var g = Model.Game.createGen(move.template, move.params);
                         g.init(this, pos);
                         g.piece = new ZrfPiece(tp, this.player);
                         g.from  = null;
                         g.mode  = move.mode;
-                        this.addFork(g);
-                        if (Model.Game.design.modes.length > 0) {
-                            var ix = Model.find(Model.Game.design.modes, move.mode);
-                            if (ix >= 0) {
-                                if ((mx === null) || (ix < mx)) {
-                                    mx = ix;
-                                }
-                            }
-                        }
+                        addPrior(priors, move.mode, g);
                     }
                }
            }
       }
-      while ((this.forks.length > 0) && (callback.checkContinue() === true)) {
-           var f = this.forks.shift();
-           if ((mx === null) || (Model.Game.design.modes[mx] === f.mode)) {
-               f.generate();
-               if ((cont === true) && (f.moveType === 0)) {
-                   CompleteMove(this, f);
+      this.forks = [];
+      if (callback.checkContinue() === true) {
+          for (var i = 0; i <= design.modes.length; i++) {
+               var f = false;
+               if (typeof priors[i] !== "undefined") {
+                   while (priors[i].length > 0) {
+                      var g = priors[i].pop();
+                      g.generate();
+                      if (g.generated === true) {
+                          if ((cont === true) && (g.moveType === 0)) {
+                              CompleteMove(this, g);
+                          }
+                          f = true;
+                      }
+                   }
                }
-           }
+               if (f === true) break;
+               if (i >= design.modes.length) break;
+          }
+          while (this.forks.length > 0) {
+               var g = this.forks.pop();
+               g.generate();
+               if ((cont === true) && (g.moveType === 0)) {
+                    CompleteMove(this, g);
+               }
+          }
       }
       if (cont === true) {
           Model.Game.CheckInvariants(this);

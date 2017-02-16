@@ -778,15 +778,40 @@ QUnit.test( "King's capturing", function( assert ) {
   Model.Game.board = undefined;
 });
 
-QUnit.test( "All Man's moves", function( assert ) {
+QUnit.test( "Simple Man's moves", function( assert ) {
   Model.Game.InitGame();
   var design = Model.Game.getDesign();
   var board  = Model.Game.getInitBoard();
   board.clear();
   assert.equal( board.moves.length, 0, "No board moves");
-  assert.equal( board.player, 1, "White player");
 
   design.setup("White", "Man", Model.Game.stringToPos("c3"));
+  board.generate();
+  assert.equal( board.moves.length, 3, "3 Moves generated");
+  assert.equal( board.moves[0].toString(0), "c3 - d3", "c3 - d3");
+  assert.equal( board.moves[1].toString(0), "c3 - b3", "c3 - b3");
+  assert.equal( board.moves[2].toString(0), "c3 - c4", "c3 - c4");
+
+  Model.Game.design = undefined;
+  Model.Game.board = undefined;
+});
+
+QUnit.test( "Man's capturing priorited", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Game.getInitBoard();
+  board.clear();
+  assert.equal( board.moves.length, 0, "No board moves");
+
+  design.setup("White", "Man", Model.Game.stringToPos("b2"));
+  design.setup("White", "Man", Model.Game.stringToPos("e2"));
+  design.setup("Black", "Man", Model.Game.stringToPos("b3"));
+  design.setup("Black", "Man", Model.Game.stringToPos("f2"));
+
+  board.generate();
+  assert.equal( board.moves.length, 2, "2 Moves generated");
+  assert.equal( board.moves[0].toString(0), "e2 - g2 x f2", "e2 - g2 x f2");
+  assert.equal( board.moves[1].toString(0), "b2 - b4 x b3", "b2 - b4 x b3");
 
   Model.Game.design = undefined;
   Model.Game.board = undefined;
