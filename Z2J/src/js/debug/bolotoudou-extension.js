@@ -236,17 +236,12 @@ var CheckInvariants = Model.Game.CheckInvariants;
 
 Model.Game.CheckInvariants = function(board) {
   var priority = false;
-  var dropMode = false;
   var design = Model.Game.design;
   for (var i in board.moves) {
        var m = board.moves[i];
        for (var j in m.actions) {
             var fp = m.actions[j][0];
             var tp = m.actions[j][1];
-            if ((fp === null) && (tp !== null)) {
-                dropMode = true;
-                break;
-            }
             if ((fp !== null) && (tp !== null)) {
                 var piece = board.getPiece(fp[0]);
                 if (piece !== null) {
@@ -274,10 +269,6 @@ Model.Game.CheckInvariants = function(board) {
             }
             if ((fp !== null) && (tp !== null)) {
                 var piece = board.getPiece(fp[0]);
-                if ((dropMode === true) || (piece === null)) {
-                    m.failed = true;
-                    break;
-                }
                 if ((priority === true) && (piece.getValue(0) !== true)) {
                     m.failed = true;
                     break;

@@ -1,0 +1,60 @@
+(version "3.0")
+
+(define drop-man (
+   (verify empty?)
+   (add-partial $1)
+))
+
+(define step (
+   $1 (verify empty?)
+   add
+))
+
+(game
+  (title "Bolotoudou")
+
+  (option "zrf-advanced" partial)
+  (option "bolotoudou-extension" true)
+
+  (move-priorities drop-type normal-type)
+
+  (players    White Black)
+  (turn-order White Black)
+
+  (board
+    (image "images/bolotoudou/board.bmp")
+    (grid
+      (start-rectangle 1 1 49 49)
+      (dimensions
+        ("1/2/3/4/5/6" (48 0)) ; files
+        ("a/b/c/d/e" (0 48)) ; ranks
+      )
+      (directions (n 0 -1) (s 0 1) (e 1 0) (w -1 0) (next 0 1) (res 1 0)) 
+    )
+  )
+
+  (piece
+     (name  Man)
+     (image White "images/bolotoudou/white.bmp"
+            Black "images/bolotoudou/black.bmp")
+     (drops
+        (move-type drop-type)
+        (drop-man  continue-type)
+        (move-type continue-type)
+        (drop-man  no-type)
+        (move-type no-type)
+     )
+     (moves
+        (move-type normal-type)
+        (step n) (step e)
+        (step s) (step w)
+     )
+  )
+
+  (board-setup
+    (White (Man off 12))
+    (Black (Man off 12))
+  )
+
+  (loss-condition (White Black) (pieces-remaining 2))
+)

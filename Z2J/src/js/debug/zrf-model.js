@@ -445,6 +445,13 @@ if (typeof Int32Array !== "undefined") {
    }
 }
 
+Model.isIncluding = function(a, b) {
+  if ((a === null) && (b === null)) return true;
+  if ((a === null) || (b === null)) return false;
+  if (b.length !== 1) return false;
+  return Model.find(a, b[0]) >= 0;
+}
+
 Model.Game.posToString = function(pos) {
    var design = Model.Game.getDesign();
    if (pos < design.names.length) {
@@ -1093,7 +1100,7 @@ Model.Game.createPiece = function(type, player) {
   return Model.Game.cachePiece[player][type];
 }
 
-ZrfPiece.prototype.equals = function(piece) {
+ZrfPiece.prototype.isEquals = function(piece) {
   if ((piece.type === this.type) && (piece.player === this.player)) {
       return true;
   } else {
@@ -1173,6 +1180,11 @@ function ZrfBoard(game) {
   this.player   = 1;
 }
 
+ZrfBoard.prototype.getMoveList = function() {
+  this.generate();
+  return new ZrfMoveList(this);
+}
+
 ZrfBoard.prototype.copy = function() {
   var r = new ZrfBoard(this.game);
   r.parent = this;
@@ -1184,14 +1196,14 @@ ZrfBoard.prototype.copy = function() {
   return r;
 }
 
-ZrfBoard.prototype.equals = function(board) {
+ZrfBoard.prototype.isEquals = function(board) {
   var r = false;
   if (board.zSign === r.zSign) {
       if (board.pieces.length === this.pieces.length) {
           r = true;
           for (var pos in this.pieces) {
                var p = board.getPiece(pos);
-               if ((p === null) || (p.equals(this.pieces[pos]) === false)) {
+               if ((p === null) || (p.isEquals(this.pieces[pos]) === false)) {
                    r = false;
                    break;
                }
@@ -1330,7 +1342,7 @@ var addPrior = function(priors, mode, gen) {
 
 ZrfBoard.prototype.generateInternal = function(callback, cont) {
   var design = Model.Game.design;
-  if ((this.moves.length === 0) && (design.failed !== true)) {
+  if ((this.moves.length === 0) && (design.failed !== true) && (this.player > 0)) {
       var priors = [];
       for (var pos in this.pieces) {
            var piece = this.pieces[pos];
@@ -1624,6 +1636,40 @@ ZrfMove.prototype.clone = function() {
   return r;
 }
 
+ZrfMove.prototype.isIncluding = function(move) {
+  var f = true;
+  for (var i in this.actions) {
+       f = false;
+       for (var j in move.actions) {
+            if (this.actions[i][3] === move.actions[j][3]) {
+                if ((Model.isIncluding(this.actions[i][0], move.actions[j][0]) === true) &&
+                    (Model.isIncluding(this.actions[i][1], move.actions[j][1]) === true)) {
+                    if ((this.actions[i][2] == null) &&
+                        (move.actions[j][2] == null)) {
+                        f = true;
+                        break;
+                    }
+                    if ((this.actions[i][2] == null) ||
+                        (move.actions[j][2] == null) ||
+                        (move.actions[j][2].length !== 1) ) {
+                        break;
+                    }
+                    for (var k in this.actions[i][2]) {
+                         var piece = this.actions[i][2][k];
+                         if (piece.isEquals(move.actions[j][2][0])) {
+                             f = true;
+                             break;
+                         }
+                    }
+                    if (f === true) break;
+                }
+            }
+       }
+       if (f === false) break;
+  }
+  return f;
+}
+
 Model.Move.moveToString = function(move, part) {
   if (move.actions.length === 0) {
       return "Pass";
@@ -1697,80 +1743,6 @@ ZrfMove.prototype.isAttacked = function(pos) {
   return r;
 }
 
-ZrfMove.prototype.getStartPos = function(part) {
-  for (var i in this.actions) {
-      if (this.actions[i][3] === part) {
-          var fp = this.actions[i][0];
-          var tp = this.actions[i][1];
-          if ((fp !== null) && (tp !== null)) {
-              return Model.Game.posToString(fp[0]);
-          }
-      }
-  }
-  for (var i in this.actions) {
-      if (this.actions[i][3] === part) {
-          var fp = this.actions[i][0];
-          var tp = this.actions[i][1];
-          if ((fp === null) && (tp !== null)) {
-              return "";
-          }
-      }
-  }
-  for (var i in this.actions) {
-      if (this.actions[i][3] === part) {
-          var fp = this.actions[i][0];
-          var tp = this.actions[i][1];
-          if ((fp !== null) && (tp === null)) {
-              return Model.Game.posToString(fp[0]);
-          }
-      }
-  }
-  return "";
-}
-
-ZrfMove.prototype.getStopPos = function(part) {
-  for (var i in this.actions) {
-      if (this.actions[i][3] === part) {
-          var fp = this.actions[i][0];
-          var tp = this.actions[i][1];
-          if ((fp !== null) && (tp !== null)) {
-              return Model.Game.posToString(tp[0]);
-          }
-      }
-  }
-  for (var i in this.actions) {
-      if (this.actions[i][3] === part) {
-          var fp = this.actions[i][0];
-          var tp = this.actions[i][1];
-          if ((fp === null) && (tp !== null)) {
-              return Model.Game.posToString(tp[0]);
-          }
-      }
-  }
-  return "";
-}
-
-ZrfMove.prototype.getCapturedPos = function(part) {
-  var r = [];
-  for (var i in this.actions) {
-      var p = this.actions[i][3];
-      if (p < 0) {
-          p = -p;
-      }
-      if (part === 0) {
-          p = part;
-      }
-      if (p === part) {
-          var fp = this.actions[i][0];
-          var tp = this.actions[i][1];
-          if ((fp !== null) && (tp === null)) {
-              r.push(Model.Game.posToString(fp[0]));
-          }
-      }
-  }
-  return r;
-}
-
 ZrfMove.prototype.changeView = function(part, view) {
   for (var i in this.actions) {
       if (this.actions[i][3] === part) {
@@ -1827,6 +1799,270 @@ ZrfMove.prototype.capturePiece = function(pos, part) {
       part = -part;
   }
   this.actions.push([ [pos], null, null, part]);
+}
+
+function ZrfMoveList(board) {
+  this.board  = board;
+  this.stack  = [];
+  this.stack.push({
+     moves: board.moves, 
+     level: 1,
+     stage: 0 
+  });
+  this.move = new ZrfMove();
+  this.from = null;
+}
+
+ZrfMoveList.prototype.getLevel = function() {
+  return this.stack.length;
+}
+
+ZrfMoveList.prototype.getMoves = function() {
+  var frame = this.stack.peekBack();
+  if (frame.moves.length > 0) {
+      return frame.moves;
+  } else {
+      return [ this.move ];
+  }
+}
+
+ZrfMoveList.prototype.back = function() {
+  if (this.stack.length > 1) {
+      var frame = this.stack.pop();
+      while (this.move.actions.length > 0) {
+          var a = this.move.actions.peekBack();
+          if (a[3] < frame.level) break;
+          this.move.actions.pop();
+      }
+  }
+  this.from = null;
+}
+
+ZrfMoveList.prototype.getCapturing = function() {
+  var r = [];
+  var frame = this.stack.peekBack();
+  for (var i in frame.moves) {
+       var m = frame.moves[i];
+       var isMove = false;
+       for (var j in m.actions) {
+            var pn = m.actions[j][3];
+            if (pn === frame.level) {
+                var fp = m.actions[j][0];
+                var tp = m.actions[j][1];
+                if ((fp !== null) && (tp !== null)) {
+                    isMove = true;
+                    if (frame.stage === 1) {
+                       for (var k in tp) {
+                            var pos = tp[k];
+                            if (this.board.getPiece(pos) !== null) {
+                                r.push(Model.Game.posToString(pos));
+                            }
+                       }
+                    }
+                }
+            }
+       }
+       for (var j in m.actions) {
+            var pn = m.actions[j][3];
+            if (pn === frame.level) {
+                var fp = m.actions[j][0];
+                var tp = m.actions[j][1];
+                if ((fp !== null) && (tp === null)) {
+                    if (((fp.length === 1) && (frame.stage === 0) && (isMove === false)) ||
+                        ((fp.length === 1) && (frame.stage === 1) && (isMove === true))  ||
+                        ((fp.length > 1) && (frame.stage === 2))) {
+                        for (var k in fp) {
+                             r.push(Model.Game.posToString(fp[k]));
+                        }
+                    }
+                }
+                if ((fp === null) && (tp !== null)) {
+                    if (((tp.length === 1) && (frame.stage === 0) && (isMove === false)) ||
+                        ((tp.length > 1) && (frame.stage === 2))) {
+                        for (var k in tp) {
+                             var pos = tp[k];
+                             if (this.board.getPiece(pos) !== null) {
+                                 r.push(Model.Game.posToString(pos));
+                             }
+                        }
+                    }
+                }
+            }
+       }
+  }
+  return r;
+}
+
+ZrfMoveList.prototype.getPositions = function() {
+  var r = [];
+  var frame = this.stack.peekBack();
+  for (var i in frame.moves) {
+       var m = frame.moves[i];
+       var isMove = false;
+       for (var j in m.actions) {
+            var pn = m.actions[j][3];
+            if (pn === frame.level) {
+                var fp = m.actions[j][0];
+                var tp = m.actions[j][1];
+                if ((fp !== null) && (tp !== null)) {
+                    isMove = true;
+                    if (frame.stage === 0) {
+                        for (var k in fp) {
+                             r.push(Model.Game.posToString(fp[k]));
+                        }
+                    }
+                    if (frame.stage === 1) {
+                        for (var k in fp) {
+                             r.push(Model.Game.posToString(tp[k]));
+                        }
+                    }
+                    break;
+                }
+            }
+       }
+       for (var j in m.actions) {
+            var pn = m.actions[j][3];
+            if (pn === frame.level) {
+                var fp = m.actions[j][0];
+                var tp = m.actions[j][1];
+                if ((fp !== null) && (tp === null)) {
+                    if (((fp.length === 1) && (frame.stage === 0) && (isMove === false)) ||
+                        ((fp.length > 1) && (frame.stage === 2))) {
+                        for (var k in fp) {
+                             r.push(Model.Game.posToString(fp[k]));
+                        }
+                    }
+                }
+                if ((fp === null) && (tp !== null)) {
+                    if (((tp.length === 1) && (frame.stage === 0) && (isMove === false)) ||
+                        ((tp.length > 1) && (frame.stage === 2))) {
+                        for (var k in tp) {
+                             r.push(Model.Game.posToString(tp[k]));
+                        }
+                    }
+                }
+            }
+       }
+  }
+  return r;
+}
+
+ZrfMoveList.prototype.canPass = function() {
+  var frame = this.stack.peekBack();
+  for (var i in frame.moves) {
+       var m = frame.moves[i];
+       if (m.isIncluding(this.move)) {
+           return true;
+       }
+  }
+  return false;
+}
+
+ZrfMoveList.prototype.pass = function() {
+  if (this.canPass() === false) {
+      return null;
+  }
+  var frame = this.stack.peekBack();
+  this.stack.push({
+     moves: [ this.move ], 
+     level: frame.level + 1,
+     stage: 0 
+  });
+  return "Pass";
+}
+
+ZrfMoveList.prototype.setPosition = function(name) {
+  var pos = Model.Game.stringToPos(name);
+  var oldFrame = this.stack.peekBack();
+  var newFrame = {
+     moves: [], 
+     level: oldFrame.level,
+     stage: oldFrame.stage
+  };
+  for (var i in oldFrame.moves) {
+       var m = oldFrame.moves[i];
+       for (var j in m.actions) {
+            var pn = m.actions[j][3];
+            if (pn === oldFrame.level) {
+                var fp = m.actions[j][0];
+                var tp = m.actions[j][1];
+                if ((fp !== null) && (tp !== null)) {
+                    if ((oldFrame.stage === 0) &&
+                        (Model.isIncluding(fp, [ pos ]) === true)) {
+                        this.from == pos;
+                        newFrame.moves.push(m);
+                        newFrame.stage = oldFrame.stage + 1;
+                    }
+                    if ((oldFrame.stage === 1) &&
+                        (Model.isIncluding(fp, [ this.from ]) === true)
+                        (Model.isIncluding(tp, [ pos ]) === true)) {
+                        this.move.actions.push([ this.from ], [ pos ], m.actions[j][2], pn);
+                        newFrame.moves.push(m);
+                        this.from == null;
+                    }
+                    break;
+                }
+            }
+       }
+  }
+  if ((newFrame.moves.length === 0) && 
+      ((oldFrame.stage === 0) || (oldFrame.stage === 2))) {
+      for (var i in oldFrame.moves) {
+           var m = oldFrame.moves[i];
+           for (var j in m.actions) {
+                var pn = m.actions[j][3];
+                if (pn === oldFrame.level) {
+                    var fp = m.actions[j][0];
+                    var tp = m.actions[j][1];
+                    if (((fp !== null) && (tp === null) && (Model.isIncluding(fp, [ pos ]) === true)) ||
+                        ((fp === null) && (tp !== null) && (Model.isIncluding(tp, [ pos ]) === true))) {
+                        if (Model.isIncluding(fp, [ pos ]) === true) {
+                            this.move.actions.push([ pos ], null, null, pn);
+                        }
+                        if (Model.isIncluding(tp, [ pos ]) === true) {
+                            this.move.actions.push(null, [ pos ], m.actions[j][2], pn);
+                        }
+                        newFrame.moves.push(m);
+                    }
+                }
+           }
+      }
+  }
+  if (newFrame.moves.length === 0) {
+      return null;
+  }
+  if (newFrame.stage === oldFrame.stage) {
+     if (newFrame.stage === 2) {
+         newFrame.stage = 0;
+         newFrame.level++;
+     } else {
+         var f = false;
+         for (var i in newFrame.moves) {
+              var m = newFrame.moves[i];
+              for (var j in m.actions) {
+                   var pn = m.actions[j][3];
+                   if (pn === newFrame.level) {
+                       var fp = m.actions[j][0];
+                       var tp = m.actions[j][1];
+                       if (((fp !== null) && (fp.length > 1)) ||
+                           ((tp !== null) && (tp.length > 1))) {
+                           f = true;
+                           break;
+                       }
+                   }
+              }
+              if (f === true) break;
+         }
+         if (f === true) {
+             newFrame.stage = 2;
+         } else {
+             newFrame.stage = 0;
+             newFrame.level++;
+         }
+     }
+  }
+  this.stack.push(newFrame);
+  return this.move.toString(oldFrame.level);
 }
 
 })();

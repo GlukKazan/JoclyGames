@@ -317,10 +317,6 @@ QUnit.test( "Board", function( assert ) {
   m.capturePiece(Model.Game.stringToPos("f5"), 1);
   m.movePiece(Model.Game.stringToPos("f3"), Model.Game.stringToPos("f6"), p, 1);
   assert.equal( m.toString(1), "f3 - f6 x f5", "f3 - f6 x f5");
-  assert.equal( m.getStartPos(1), "f3", "Start position");
-  assert.equal( m.getStopPos(1), "f6", "Stop position");
-  assert.equal( m.getCapturedPos(1).length, 1, "Captured ...");
-  assert.equal( m.getCapturedPos(1)[0], "f5", "... f5");
   var mb = board.apply(m);
   assert.equal( mb.player, 2, "Black");
   assert.equal( mb.getPiece(Model.Game.stringToPos("f3")), null, "f3 - Empty");
@@ -346,17 +342,6 @@ QUnit.test( "Board", function( assert ) {
   assert.equal( o.toString(1), "f3 - f6 x f5", "f3 - f6 x f5");
   assert.equal( o.toString(2), "f6 - a6 x c6", "f6 - a6 x c6");
   assert.equal( o.toString(0), "f3 - f6 - a6 x f5 x c6", "f3 - f6 - a6 x f5 x c6");
-  assert.equal( o.getStartPos(1), "f3", "Start position");
-  assert.equal( o.getStopPos(1), "f6", "Stop position");
-  assert.equal( o.getStartPos(2), "f6", "Start position");
-  assert.equal( o.getStopPos(2), "a6", "Stop position");
-  assert.equal( o.getCapturedPos(1).length, 1, "Captured ...");
-  assert.equal( o.getCapturedPos(1)[0], "f5", "... f5");
-  assert.equal( o.getCapturedPos(2).length, 1, "Captured ...");
-  assert.equal( o.getCapturedPos(2)[0], "c6", "... c6");
-  assert.equal( o.getCapturedPos(0).length, 2, "Captured ...");
-  assert.equal( o.getCapturedPos(0)[0], "f5", "... f5");
-  assert.equal( o.getCapturedPos(0)[1], "c6", "... and c6");
   var ob = board.apply(o);
   assert.equal( ob.player, 2, "Black");
   assert.equal( ob.getPiece(Model.Game.stringToPos("f3")), null, "f3 - Empty");
