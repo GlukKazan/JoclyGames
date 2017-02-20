@@ -2168,7 +2168,12 @@ ZrfMoveList.prototype.setPosition = function(name, view) {
                }
            }
        } else {
-           if ((oldFrame.stage === 0) || (oldFrame.stage === 2)) {
+           if ((oldFrame.stage === 0) || (oldFrame.stage > 1)) {
+               isND = false;
+               var cnt = 1;
+               if (oldFrame.stage > 1) {
+                   cnt = oldFrame.stage - 1;
+               }
                for (var i in oldFrame.moves) {
                     var m = oldFrame.moves[i];
                     for (var j in m.actions) {
@@ -2178,18 +2183,32 @@ ZrfMoveList.prototype.setPosition = function(name, view) {
                              var tp = m.actions[j][1];
                              if ((fp !== null) && (tp === null) && 
                                  (Model.isIncluding(fp, [ pos ]) === true)) {
-                                 if (isFirst === true) {
-                                     this.capturePiece(fp[0], pn);
+                                 if (cnt === 0) {
+                                     isND = true;
+                                     break;
                                  }
-                                 newFrame.moves.push(m);                        
-                                 break;
+                                 cnt--;
+                                 if (cnt === 0) {
+                                     if (isFirst === true) {
+                                         this.capturePiece(fp[0], pn);
+                                     }
+                                     newFrame.moves.push(m);                        
+                                 }
+                                 continue;
                              }
                              if ((fp === null) && (tp !== null) && 
                                  (Model.isIncluding(tp, [ pos ]) === true)) {
-                                 if (isFirst === true) {
-                                     this.dropPiece(tp[0], m.actions[j][2], pn);
+                                 if (cnt === 0) {
+                                     isND = true;
+                                     break;
                                  }
-                                 newFrame.moves.push(m);                        
+                                 cnt--;
+                                 if (cnt === 0) {
+                                     if (isFirst === true) {
+                                         this.dropPiece(tp[0], m.actions[j][2], pn);
+                                     }
+                                     newFrame.moves.push(m);                        
+                                 }
                                  break;
                              }
                          }
@@ -2222,23 +2241,19 @@ ZrfMoveList.prototype.setPosition = function(name, view) {
   }
   this.stack.push(newFrame);
   if (newFrame.stage === oldFrame.stage) {
-     if (newFrame.stage === 2) {
-         if (view !== null) {
-             this.move.changeView(newFrame.level, view);
-         }
-         newFrame.stage = 0;
-         newFrame.level++;
-     } else {
-         if (isND === true) {
-             newFrame.stage = 2;
-         } else {
-             if (view !== null) {
-                 this.move.changeView(newFrame.level, view);
-             }
-             newFrame.stage = 0;
-             newFrame.level++;
-         }
-     }
+      if (isND === true) {
+          if (newFrame.stage === 0) {
+              newFrame.stage = 2;
+          } else {
+              newFrame.stage++;
+          }
+      } else {
+          if (view !== null) {
+              this.move.changeView(newFrame.level, view);
+          }
+          newFrame.stage = 0;
+          newFrame.level++;
+      }
   }
   return this.move.toString(oldFrame.level);
 }

@@ -39,10 +39,18 @@ public class App {
 		try {
 			loader.load(dir, name);
 			ILibrary lib = new Library(parser.getDoc());
+			Serializer pout = new Serializer(dir, "parser");
+			pout.load(parser.getDoc());
+			Serializer lout = new Serializer(dir, "library");
+			lib.extract(lout);
 			Game game = new Game(name);
 			lib.extract(game);
-			Serializer out = new Serializer(dir, name);
-			game.extract(out);
+			Serializer result = new Serializer(dir, name);
+			game.extract(result);
+			game = new Game(name);
+			lib.extract(game);
+			Transformer script = new Transformer(dir, name, "js.xsl");
+			game.extract(script);
 		} catch (Exception e) {
 			LOGGER.error(e.toString(), e);
 		}

@@ -1,26 +1,26 @@
 package com.gluk.z2j.app;
 
 import java.io.File;
+import java.io.InputStream;
 
 import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
-
-import org.w3c.dom.Document;
+import javax.xml.transform.stream.StreamSource;
 
 import com.gluk.z2j.model.AbstractDoc;
 
-public class Serializer extends AbstractDoc {
-	
+public class Transformer extends AbstractDoc {
+
 	private String name;
+	private String template;
 	
-	public Serializer(String dir, String name) {
+	public Transformer(String dir, String name, String template) {
+		this.template = template;
 		StringBuffer sb = new StringBuffer();
 		sb.append(dir);
 		sb.append("/");
@@ -30,34 +30,23 @@ public class Serializer extends AbstractDoc {
 		} else {
 			sb.append(name);
 		}
-		sb.append(".xml");
+		sb.append(".js");
 		this.name = sb.toString();
 	}
-	
+
 	public TransformerHandler getHandler() throws Exception {
 		init();
 		return handler;
 	}
-	
+
     protected void init() throws Exception {
 		TransformerFactory tf = TransformerFactory.newInstance();
 		if (tf.getFeature(SAXSource.FEATURE) && tf.getFeature(SAXResult.FEATURE)) {
 	        SAXTransformerFactory stf = (SAXTransformerFactory)tf;
-	        handler = stf.newTransformerHandler();
+	        InputStream t = Serializer.class.getResourceAsStream("/xslt/" + template); 
+	        handler = stf.newTransformerHandler(new StreamSource(t));
             Result result = new StreamResult(new File(name));
             handler.setResult(result);
-		} else {
-			throw new Exception("Feature unsupported");
-		}
-    }
-    
-    public void load(Document in) throws Exception {
-		TransformerFactory tf = TransformerFactory.newInstance();
-		if (tf.getFeature(DOMSource.FEATURE) && tf.getFeature(SAXResult.FEATURE)) {
-			DOMSource source = new DOMSource(in);
-            Result result = new StreamResult(new File(name));
-            Transformer t = tf.newTransformer();
-            t.transform(source, result);
 		} else {
 			throw new Exception("Feature unsupported");
 		}
