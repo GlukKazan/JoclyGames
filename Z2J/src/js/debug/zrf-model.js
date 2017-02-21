@@ -907,7 +907,6 @@ ZrfMoveGenerator.prototype.copy = function(aTemplate, aParams) {
   var r = Model.Game.createGen(aTemplate, aParams);
   r.level    = this.level + 1;
   r.parent   = this;
-  r.mode     = this.mode;
   r.board    = this.board;
   r.pos      = this.pos;
   r.move     = this.move.copy();
@@ -1312,27 +1311,30 @@ Model.Game.CheckInvariants = function(board) {
   }
 }
 
+Model.Game.getPartList = function(board, gen) {
+  return [ gen.lastt ];
+}
+
 var CompleteMove = function(board, gen) {
   var t = 1;
-  if (Model.Game.passPartial === true) {
+  if (Model.Game.passPartial !== true) {
       t = 2;
   }
-  for (var pos in board.pieces) {
-       var piece = board.pieces[pos];
+  var positions = Model.Game.getPartList(board, gen);
+  while (positions.length > 0) {
+       pos = positions.pop();
+       var piece = gen.getPieceInternal(pos);
        if (Model.Game.isFriend(piece, board.player) || (Model.Game.sharedPieces === true)) {
-           for (var move in Model.Game.design.pieces[piece.type]) {
+           for (var m in Model.Game.design.pieces[piece.type]) {
+                var move = Model.Game.design.pieces[piece.type][m];
                 if ((move.type === 0) && (move.mode === gen.mode)) {
-                    var g = f.copy(move.template, move.params);
-                    if (t > 0) {
-                        g.moveType = t;
-                        g.generate();
-                        if (g.moveType === 0) {
-                            CompleteMove(board, g);
-                        }
-                    } else {
-                        board.addFork(g);
+                    var g = gen.copy(move.template, move.params);
+                    g.moveType = t;
+                    g.generate();
+                    if ((g.generated === true) && (g.moveType === 0)) {
+                        CompleteMove(board, g);
+                        t = 1;
                     }
-                    t = 0;
                 }
            }
        }
@@ -1365,7 +1367,6 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
                    if (move.type === 0) {
                        var g = Model.Game.createGen(move.template, move.params);
                        g.init(this, pos);
-                       g.mode = move.mode;
                        addPrior(priors, move.mode, g);
                    }
                }
@@ -1380,8 +1381,6 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
                         var g = Model.Game.createGen(move.template, move.params);
                         g.init(this, pos);
                         g.piece = new ZrfPiece(tp, this.player);
-                        g.from  = null;
-                        g.mode  = move.mode;
                         addPrior(priors, move.mode, g);
                     }
                }
@@ -1409,8 +1408,10 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
           while (this.forks.length > 0) {
                var g = this.forks.pop();
                g.generate();
-               if ((cont === true) && (g.moveType === 0)) {
-                    CompleteMove(this, g);
+               if (g.generated === true) {
+                   if ((cont === true) && (g.moveType === 0)) {
+                        CompleteMove(this, g);
+                   }
                }
           }
       }

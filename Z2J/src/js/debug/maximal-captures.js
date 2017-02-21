@@ -33,9 +33,9 @@ Model.Game.PostActions = function(board) {
       for (var i in board.moves) {
            var vl = 0;
            var kv = 0;
-           for (var j in board.moves[i].moves) {
-                var fp = board.moves[i].moves[j][0];
-                var tp = board.moves[i].moves[j][1];
+           for (var j in board.moves[i].actions) {
+                var fp = board.moves[i].actions[j][0];
+                var tp = board.moves[i].actions[j][1];
                 if (tp === null) {
                     var piece = board.getPiece(fp[0]);
                     if (piece !== null) {
@@ -56,9 +56,9 @@ Model.Game.PostActions = function(board) {
       for (var i in board.moves) {
            var vl = 0;
            var kv = 0;
-           for (var j in board.moves[i].moves) {
-                var fp = board.moves[i].moves[j][0];
-                var tp = board.moves[i].moves[j][1];
+           for (var j in board.moves[i].actions) {
+                var fp = board.moves[i].actions[j][0];
+                var tp = board.moves[i].actions[j][1];
                 if (tp === null) {
                     var piece = board.getPiece(fp[0]);
                     if (piece !== null) {

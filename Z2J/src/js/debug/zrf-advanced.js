@@ -7,6 +7,7 @@ var isLastFrom    = Model.Game.isLastFrom;
 var isLastTo      = Model.Game.isLastTo;
 var getMark       = Model.Game.getMark;
 var setMark       = Model.Game.setMark;
+var getPartList   = Model.Game.getPartList;
 
 var modes = [];
 var simpleMode    = false;
@@ -14,6 +15,7 @@ var compositeMode = false;
 var markMode      = false;
 var forkMode      = false;
 var lastMode      = false;
+var partialMode   = false;
 
 Model.Game.checkVersion = function(aDesign, aName, aValue) {
   if (aName == "zrf-advanced") {
@@ -45,6 +47,10 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
      if ((aValue === "shared")    || (aValue === "true")) {
          mode = aValue;
          Model.Game.sharedPieces = true;
+     }
+     if ((aValue === "partial")   || (aValue === "true")) {
+         mode = aValue;
+         partialMode = true;
      }
      if (mode !== null) {
          modes.push(mode);
@@ -144,6 +150,21 @@ Model.Game.setMark = function(aGen) {
       aGen.backs.push(aGen.pos);
   } else {
       setMark(aGen);
+  }
+}
+
+Model.Game.getPartList = function(board, gen) {
+  if (partialMode === true) {
+      var r = [];
+      var design = Model.Game.getDesign();
+      for (var pos = 0; pos < design.positions.length; pos++) {
+           if (gen.getPieceInternal(pos) !== null) {
+               r.push(pos);
+           }
+      }
+      return r;
+  } else {
+      return getPartList(board, gen);
   }
 }
 
