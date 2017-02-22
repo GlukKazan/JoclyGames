@@ -1357,21 +1357,20 @@ var addPrior = function(priors, mode, gen) {
 
 ZrfBoard.prototype.generateInternal = function(callback, cont) {
   var design = Model.Game.design;
-  if ((this.moves.length === 0) && (design.failed !== true) && (this.player > 0)) {
+  if ((this.moves.length === 0) && (design.failed !== true) /*&& (this.player > 0) */) {
       var priors = [];
-      for (var pos in this.pieces) {
+      _.each(_.keys(this.pieces), function(pos) {
            var piece = this.pieces[pos];
            if (Model.Game.isFriend(piece, this.player) || (Model.Game.sharedPieces === true)) {
-               for (var m in design.pieces[piece.type]) {
-                   var move = design.pieces[piece.type][m];
+               _.each(design.pieces[piece.type], function(move) {
                    if (move.type === 0) {
                        var g = Model.Game.createGen(move.template, move.params);
                        g.init(this, pos);
                        addPrior(priors, move.mode, g);
                    }
-               }
+               }, this);
            }
-      }
+      }, this);
       for (var tp in design.pieces) {
            for (var pos in design.positions) {
                if (Model.Game.noReserve(this, tp) === true) continue;
