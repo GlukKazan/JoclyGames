@@ -1357,7 +1357,7 @@ var addPrior = function(priors, mode, gen) {
 
 ZrfBoard.prototype.generateInternal = function(callback, cont) {
   var design = Model.Game.design;
-  if ((this.moves.length === 0) && (design.failed !== true) /*&& (this.player > 0) */) {
+  if ((this.moves.length === 0) && (design.failed !== true) && (this.player > 0)) {
       var priors = [];
       _.each(_.keys(this.pieces), function(pos) {
            var piece = this.pieces[pos];
