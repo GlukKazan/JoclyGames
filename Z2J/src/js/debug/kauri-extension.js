@@ -8,8 +8,6 @@ Model.Game.checkVersion = function(design, name, value) {
   }
 }
 
-var CheckInvariants = Model.Game.CheckInvariants;
-
 var isKauri = function(pieces) {
   for (var i in pieces) {
        if (pieces[i].toString() === "Kauri") {
@@ -18,6 +16,8 @@ var isKauri = function(pieces) {
   }
   return false;
 }
+
+var CheckInvariants = Model.Game.CheckInvariants;
 
 Model.Game.CheckInvariants = function(board) {
   var design = Model.Game.design;
