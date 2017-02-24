@@ -1,0 +1,39 @@
+(version "3.0")
+
+(define step (
+  next (while (sow Seed Kauri) next)
+))
+
+(game
+  (title "Kauri")
+
+  (option "board model" heap)
+  (option "kauri extension" true)
+
+  (players South North)
+  (turn-order South North)
+
+  (board
+      (positions  
+          O A B C D E F
+          a b c d e f o
+      )
+      (links next
+          (a b) (b c) (c d) (d e) (e f) (f F)
+          (F E) (E D) (D C) (C B) (B A) (A a)
+      )
+  )
+
+  (piece
+     (name Seed)
+  )
+  (piece
+     (name Kauri)
+     (moves (step))
+  )
+
+  (board-setup
+    (South (Seed x 5 + Kauri a b c d e f) )
+    (North (Seed x 5 + Kauri A B C D E F) )
+  )
+)
