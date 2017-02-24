@@ -7,6 +7,7 @@
 (game
   (title "Kauri")
 
+  (option "pass turn" forced)
   (option "board model" heap)
   (option "kauri extension" true)
 
@@ -22,6 +23,19 @@
           (a b) (b c) (c d) (d e) (e f) (f F)
           (F E) (E D) (D C) (C B) (B A) (A a)
       )
+      (links win
+          (A o) (B o) (C o) (D o) (E o) (F o)
+      )
+      (links north-win
+          (a O) (b O) (c O) (d O) (e O) (f O)
+      )
+      (links loss
+          (A O) (B O) (C O) (D O) (E O) (F O)
+      )
+      (links north-loss
+          (a o) (b o) (c o) (d o) (e o) (f o)
+      )
+      (symmetry North (win north-win) (loss north-loss))
   )
 
   (piece
