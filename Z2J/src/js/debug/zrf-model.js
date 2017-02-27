@@ -899,7 +899,7 @@ ZrfMoveGenerator.prototype.clone = function() {
            r.attrs[pos][name] = this.attrs[pos][name];
       }
   }
-  r.move = this.move.clone();
+  r.move = this.move.clone(r.level);
   return r;
 }
 
@@ -1629,7 +1629,7 @@ ZrfMove.prototype.copy = function() {
   return r;
 }
 
-ZrfMove.prototype.clone = function() {
+ZrfMove.prototype.clone = function(level) {
   var r = new ZrfMove();
   var o = true;
   for (var i in this.actions) {
@@ -1641,9 +1641,9 @@ ZrfMove.prototype.clone = function() {
               }
           }
       } else {
-          if (Model.Game.forkMode === true) {
-              r.actions.push(this.actions[i])
-          }
+              if ((Model.Game.forkMode === true) || (Math.abs(this.actions[i][3]) < level)) {
+                  r.actions.push(this.actions[i])
+              }
       }
   }
   return r;

@@ -819,3 +819,53 @@ QUnit.test( "Man's capturing chain", function( assert ) {
   Model.Game.design = undefined;
   Model.Game.board = undefined;
 });
+
+QUnit.test( "King's slide", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Game.getInitBoard();
+  board.clear();
+  assert.equal( board.moves.length, 0, "No board moves");
+
+  design.setup("White", "King", Model.Game.stringToPos("d4"));
+  board.generate();
+  assert.equal( board.moves.length, 14, "14 moves generated");
+  assert.equal( board.moves[0].toString(0), "d4 - d3", "d4 - d3");
+  assert.equal( board.moves[1].toString(0), "d4 - e4", "d4 - e4");
+  assert.equal( board.moves[2].toString(0), "d4 - c4", "d4 - c4");
+  assert.equal( board.moves[3].toString(0), "d4 - d5", "d4 - d5");
+  assert.equal( board.moves[4].toString(0), "d4 - d6", "d4 - d6");
+  assert.equal( board.moves[5].toString(0), "d4 - d7", "d4 - d7");
+  assert.equal( board.moves[6].toString(0), "d4 - d8", "d4 - d8");
+  assert.equal( board.moves[7].toString(0), "d4 - b4", "d4 - b4");
+  assert.equal( board.moves[8].toString(0), "d4 - a4", "d4 - a4");
+  assert.equal( board.moves[9].toString(0), "d4 - f4", "d4 - f4");
+  assert.equal( board.moves[10].toString(0), "d4 - g4", "d4 - g4");
+  assert.equal( board.moves[11].toString(0), "d4 - h4", "d4 - h4");
+  assert.equal( board.moves[12].toString(0), "d4 - d2", "d4 - d2");
+  assert.equal( board.moves[13].toString(0), "d4 - d1", "d4 - d1");
+
+  Model.Game.design = undefined;
+  Model.Game.board = undefined;
+});
+
+QUnit.test( "King's capturing chain", function( assert ) {
+  Model.Game.InitGame();
+  var design = Model.Game.getDesign();
+  var board  = Model.Game.getInitBoard();
+  board.clear();
+  assert.equal( board.moves.length, 0, "No board moves");
+
+  design.setup("White", "King", Model.Game.stringToPos("d4"));
+  design.setup("Black", "Man", Model.Game.stringToPos("c4"));
+  design.setup("Black", "Man", Model.Game.stringToPos("a6"));
+  design.setup("Black", "Man", Model.Game.stringToPos("f8"));
+
+  board.generate();
+  assert.equal( board.moves.length, 2, "2 moves generated");
+  assert.equal( board.moves[0].toString(0), "d4 - a4 - a8 - g8 x c4 x a6 x f8", "d4 - a4 - a8 - g8 x c4 x a6 x f8");
+  assert.equal( board.moves[1].toString(0), "d4 - a4 - a8 - h8 x c4 x a6 x f8", "d4 - a4 - a8 - h8 x c4 x a6 x f8");
+
+  Model.Game.design = undefined;
+  Model.Game.board = undefined;
+});
