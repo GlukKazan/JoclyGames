@@ -62,7 +62,7 @@ QUnit.test( "Design", function( assert ) {
   design.addPosition("a1", [ 0, 1, 0, -2]);
   design.addPosition("b1", [-1, 0, 0, -2]);
   var pos = 2;
-  assert.equal( design.names.length,4, "Positions");
+  assert.equal( design.positionNames.length,4, "Positions");
   assert.equal( Model.Game.posToString(pos), "a1", "Start position");
   pos = design.navigate(1, pos, 3);
   assert.equal( Model.Game.posToString(pos), "a2", "Player A moving");

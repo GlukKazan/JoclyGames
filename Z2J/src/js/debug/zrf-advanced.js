@@ -136,10 +136,10 @@ Model.Game.isLastTo = function(aPos, aBoard) {
 
 Model.Game.getMark = function(aGen) {
   if (markMode) {
-      if (aGen.backs.length === 0) {
+      if (aGen.marks.length === 0) {
           return null;
       }
-      return aGen.backs.pop();
+      return aGen.marks.pop();
   } else {
       return getMark(aGen);
   }
@@ -147,7 +147,7 @@ Model.Game.getMark = function(aGen) {
 
 Model.Game.setMark = function(aGen) {
   if (markMode) {
-      aGen.backs.push(aGen.pos);
+      aGen.marks.push(aGen.pos);
   } else {
       setMark(aGen);
   }
