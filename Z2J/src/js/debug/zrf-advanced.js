@@ -86,8 +86,8 @@ Model.Game.getAttrInternal = function (aGen, aName, aPos) {
           }
       }
       if (r === null) {
-          if (typeof aGen.attrs[aPos] !== "undefined") {
-              if (typeof aGen.attrs[aPos][aName] !== "undefined") {
+          if (!_.isUndefined(aGen.attrs[aPos])) {
+              if (!_.isUndefined(aGen.attrs[aPos][aName])) {
                   r = aGen.attrs[aPos][aName];
               }
           }

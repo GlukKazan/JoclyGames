@@ -33,14 +33,14 @@ Model.Game.CheckInvariants = function(board) {
            var m = board.moves[i];
            var b = board.apply(m);
            if (superKo === 0) {
-               if (typeof board.parent !== "undefined") {
+               if (!_.isUndefined(board.parent)) {
                    if (b.equals(board.parent) === true) {
                        r = 1;
                    }
                }
            } else {
                var p = board;
-               while (typeof p.parent !== "undefined") {
+               while (!_.isUndefined(p.parent)) {
                    var q = p.parent;
                    if ((superKo === 1) || (q.player === b.player)) {
                        if (q.equals(b) === true) {

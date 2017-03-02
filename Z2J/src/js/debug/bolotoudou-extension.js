@@ -224,7 +224,7 @@ var separate = function(moves) {
                   }
               }
          }
-         if (typeof m[i].failed === "undefined") {
+         if (_.isUndefined(m[i].failed)) {
              moves.push(m[i]);
          }
      }

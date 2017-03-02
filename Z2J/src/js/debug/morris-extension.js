@@ -66,7 +66,7 @@ var generateMoves = function(board, moves, pos) {
            if (cnt > 0) {
                m.actions.push([ [pos], null, null, 1]);
            }
-           if (typeof m.actions[0][1] === "undefined") {
+           if (_.isUndefined(m.actions[0][1])) {
                m.actions[0][1] = [];
            }
            m.actions[0][1].push(p);

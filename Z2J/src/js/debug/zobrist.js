@@ -1,7 +1,7 @@
 (function() {
 
 getRandomByte = function() {
-  return Math.floor(Math.random() * 256);
+  return _.random(0, 255);
 }
 
 function ZobristHash() {
@@ -18,20 +18,20 @@ ZobristHash.prototype.getRandomValue = function() {
 }
 
 ZobristHash.prototype.update = function(value, player, piece, pos) {
-  if (typeof this.hash[piece] === "undefined") {
+  if (_.isUndefined(this.hash[piece])) {
       this.hash[piece] = [];
   }
-  if (typeof this.hash[piece][player] === "undefined") {
+  if (_.isUndefined(this.hash[piece][player])) {
       this.hash[piece][player] = [];
   }
-  if (typeof this.hash[piece][player][pos] === "undefined") {
+  if (_.isUndefined(this.hash[piece][player][pos])) {
       this.hash[piece][player][pos] = this.getRandomValue();
   }
   return value ^ this.hash[piece][player][pos];
 }
  
 Model.Game.getZobristHash = function() {
-  if (typeof Model.Game.zobrist === "undefined") {
+  if (_.isUndefined(Model.Game.zobrist)) {
       Model.Game.zobrist = new ZobristHash();
   }
   return Model.Game.zobrist;
