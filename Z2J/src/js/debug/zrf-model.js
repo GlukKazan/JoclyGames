@@ -1530,7 +1530,8 @@ ZrfBoard.prototype.applyAll = function(move) {
   return _.chain(move.determinate())
   .map(function (move) {
      return this.apply(move);
-  }, this);
+   }, this)
+  .value();
 }
 
 function ZrfMove() {
@@ -1542,66 +1543,77 @@ Model.Game.createMove = function() {
   return new ZrfMove();
 }
 
-var getIx = function(x, ix, mx) {
-  if (ix > x.length) {
-      x = [];
-      return null;
+var cartesian = function(r, prefix, arr) {
+   if (arr.length > 0) {
+       _.each(_.first(arr), function (n) {
+          var x = _.clone(prefix);
+          x.push(n);
+          cartesian(r, x, _.rest(arr));
+       });
+   } else {
+       r.push(prefix);
+   }
+}
+
+_.mixin({
+  cartesian: function(x) {
+     var r = [];
+     cartesian(r, [], x);
+     return r;
   }
-  if (ix == x.length) {
-      c.push(0);
-      return 0;
-  }
-  var r = x[ix];
-  if (r >= mx) {
-      if (ix + 1 >= x.length) {
-          x = [];
-          return null;
-      }
-      for (var i = 0; i <= ix; i++) {
-          x[ix] = 0;
-      }
-      x[ix + 1]++;
-  }
-  return r;
+});
+
+ZrfMove.prototype.getControlList = function() {
+  return _.chain(this.actions)
+   .map(function (action) {
+        return _.chain(_.range(3))
+         .map(function (ix) {
+              if (action[ix] === null) {
+                  return 0;
+              } else {
+                  return action[ix].length;
+              }
+          })
+         .filter(function (n) { return n > 1; })
+         .value();
+    })
+   .flatten()
+   .map(function (n) { return _.range(n); })
+   .cartesian()
+   .value();
+}
+
+var pushItem = function(r, list, control, ix) {
+   if ((list === null) || (list.length < 1) || 
+       (list.length === 1) || (ix >= control.length)) {
+       r.push(list);
+       return ix;
+   }
+   r.push([ list[ control[ix] ] ]);
+   return ix + 1;
 }
 
 ZrfMove.prototype.determinate = function() {
-  var r = [];
-  for (var x = [0]; x.length > 0; x[0]++) {
-      var m = Model.Game.createMove();
-      var ix = 0;
-      for (var i in this.actions) {
-           var k = 0;
-           var fp = this.actions[i][0];
-           if (fp !== null) {
-               k = getIx(x, ix++, fp.length);
-               if (k === null) {
-                   break;
-               }
-               fp = [ fp[k] ];
-           }
-           var tp = this.actions[i][1];
-           if (tp !== null) {
-               k = getIx(x, ix++, tp.length);
-               if (k === null) {
-                   break;
-               }
-               tp = [ tp[k] ];
-           }
-           var pc = this.actions[i][2];
-           if (pc !== null) {
-               k = getIx(x, ix++, pc.length);
-               if (k === null) {
-                   break;
-               }
-               pc = [ pc[k] ];
-           }
-           var pn = this.actions[i][3];
-           m.actions.push([fp, tp, pc, pn]);
-      }
-      r.push(m);      
+  var c = this.getControlList();
+  if (c.length > 1) {
+      return _.chain(c)
+       .map(function (l) {
+           var r = new ZrfMove();
+           var pos = 0;
+           _.each(this.actions, function (action) {
+              var x = [];
+              _.each(_.range(3), function (ix) {
+                 pos = pushItem(this, action[ix], l, pos);
+              }, x);
+              x.push(action[3]);
+              this.actions.push(x);
+           }, r);
+           return r;
+        }, this)
+       .value();
+  } else {
+      return [ this ];
   }
-  return r;
 }
 
 ZrfMove.prototype.copy = function() {

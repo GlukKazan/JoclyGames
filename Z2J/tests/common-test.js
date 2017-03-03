@@ -83,3 +83,40 @@ QUnit.test( "Design", function( assert ) {
   assert.equal( design.getAttribute(0, 0), false, "Default value for attribute");
   Model.Game.design = undefined;
 });
+
+QUnit.test( "Move Determinate", function( assert ) {
+  var design = Model.Game.getDesign();
+  design.addDirection("w");
+  design.addDirection("e");
+  design.addPlayer("White", [1, 0]);
+  design.addPlayer("Black", [0, 1]);
+  design.addPosition("A", [ 0, 1]);
+  design.addPosition("B", [-1, 1]);
+  design.addPosition("C", [-1, 1]);
+  design.addPosition("D", [-1, 0]);
+  design.addPiece("Man", 0);
+  design.setup("White", "Man", 0);
+  design.setup("White", "Man", 1);
+  design.setup("Black", "Man", 2);
+  design.setup("Black", "Man", 3);
+
+  var m = Model.Game.createMove();
+  m.actions.push([ [0, 1], [2, 3], null, 1]);
+  m.actions.push([ [3, 2], null, null, 1]);
+  assert.equal( m.toString(0), "A - C x D", "'A - C x D' Move");
+
+  var ix = m.getControlList();
+  assert.equal( ix.length, 8, "ix.length == 8");
+  var ml = m.determinate();
+  assert.equal( ml.length, 8, "ml.length == 8");
+  assert.equal( ml[0].toString(0), "A - C x D", "A - C x D");
+  assert.equal( ml[1].toString(0), "A - C x C", "A - C x C");
+  assert.equal( ml[2].toString(0), "A - D x D", "A - D x D");
+  assert.equal( ml[3].toString(0), "A - D x C", "A - D x C");
+  assert.equal( ml[4].toString(0), "B - C x D", "B - C x D");
+  assert.equal( ml[5].toString(0), "B - C x C", "B - C x C");
+  assert.equal( ml[6].toString(0), "B - D x D", "B - D x D");
+  assert.equal( ml[7].toString(0), "B - D x C", "B - D x C");
+
+  Model.Game.design = undefined;
+});
