@@ -1589,8 +1589,30 @@ var pushItem = function(r, list, control, ix) {
        r.push(list);
        return ix;
    }
-   r.push([ list[ control[ix] ] ]);
+   if (list[control[ix]] === null) {
+       r.push(null);
+   } else {
+       r.push([list[control[ix]]]);
+   }
    return ix + 1;
+}
+
+var isValidAction = function(action) {
+   return (action[0] !== null) || (action[1] !== null);
+}
+
+var isValidMove = function(move) {
+   return 1 >= _.chain(move.actions)
+    .filter(function (action) {
+        return (action[1] === null);
+     })
+    .map(function (action) {
+        return action[0][0];
+     })
+    .countBy()
+    .values()
+    .max()
+    .value();
 }
 
 ZrfMove.prototype.determinate = function() {
@@ -1606,10 +1628,13 @@ ZrfMove.prototype.determinate = function() {
                  pos = pushItem(this, action[ix], l, pos);
               }, x);
               x.push(action[3]);
-              this.actions.push(x);
+              if (isValidAction(x)) {
+                  this.actions.push(x);
+              }
            }, r);
            return r;
         }, this)
+       .filter(isValidMove)
        .value();
   } else {
       return [ this ];
