@@ -1460,48 +1460,49 @@ ZrfBoard.prototype.applyPart = function(move, part) {
     };
   _.chain(move.actions)
    .filter(n)
+   .filter(function (action) {
+      return (action[0] !== null) && (action[1] !== null);
+    })
    .each(function (action) {
-          var fp = action[0];
-          var tp = action[1];
-          var np = action[2];
-          if ((fp !== null) && (tp !== null)) {
-              this.lastf = fp[0];
-              this.lastt = tp[0];
-              if (np === null) {
-                  np = [ this.getPiece(fp[0]) ];
-              }
-              this.setPiece(fp[0], null);
-              this.setPiece(tp[0], np[0]);
-              r = true;
-          }
+      var fp = action[0];
+      var tp = action[1];
+      var np = action[2];
+      this.lastf = fp[0];
+      this.lastt = tp[0];
+      if (np === null) {
+          np = [ this.getPiece(fp[0]) ];
+      }
+      this.setPiece(fp[0], null);
+      this.setPiece(tp[0], np[0]);
+      r = true;
     }, this);
   _.chain(move.actions)
    .filter(n)
+   .filter(function (action) {
+      return (action[0] === null) && (action[1] !== null) && (action[2] !== null);
+    })
    .each(function (action) {
-          var fp = action[0];
-          var tp = action[1];
-          var np = action[2];
-          if ((fp === null) && (tp !== null) && (np !== null)) {
-              Model.Game.decReserve(board, np[0]);
-              this.setPiece(tp[0], np[0]);
-              r = true;
-          }
+      var tp = action[1];
+      var np = action[2];
+      Model.Game.decReserve(board, np[0]);
+      this.setPiece(tp[0], np[0]);
+      r = true;
     }, this);
   _.chain(move.actions)
    .filter(n)
+   .filter(function (action) {
+      return (action[0] !== null) && (action[1] === null);
+    })
    .each(function (action) {
-          var fp = action[0];
-          var tp = action[1];
-          if ((fp !== null) && (tp === null)) {
-              if (Model.Game.recycleCaptures === true) {
-                  var piece = this.getPiece(fp[0]);
-                  if (piece != null) {
-                      Model.Game.incReserve(this, piece);
-                  }
-              }
-              this.setPiece(fp[0], null);
-              r = true;
+      var fp = action[0];
+      if (Model.Game.recycleCaptures === true) {
+          var piece = this.getPiece(fp[0]);
+          if (piece != null) {
+              Model.Game.incReserve(this, piece);
           }
+      }
+      this.setPiece(fp[0], null);
+      r = true;
     }, this);
   return r;
 }

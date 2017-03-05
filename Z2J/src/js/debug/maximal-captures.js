@@ -26,60 +26,50 @@ var PostActions = Model.Game.PostActions;
 
 Model.Game.PostActions = function(board) {
   PostActions(board);
+  var captures = function(move) {
+    return _.chain(move.actions)
+     .filter(function(action) {
+         return (action[0] !== null) && (action[1] === null);
+      })
+     .map(function(action) {
+         return board.getPiece(action[0]);
+      })
+     .filter(function(piece) {
+         return piece !== null;
+      })
+     .map(function(piece) {
+         return piece.type;
+      })
+     .countBy(function(type) {
+         return (type === 0) ? "Mans" : "Kings";
+      })
+     .defaults({ Mans: 0, Kings: 0 })
+     .value();
+  };
   if (mode !== 0) {
-      var moves = [];
-      var mx = 0;
-      var mk = 0;
-      for (var i in board.moves) {
-           var vl = 0;
-           var kv = 0;
-           for (var j in board.moves[i].actions) {
-                var fp = board.moves[i].actions[j][0];
-                var tp = board.moves[i].actions[j][1];
-                if (tp === null) {
-                    var piece = board.getPiece(fp[0]);
-                    if (piece !== null) {
-                        if (piece.type > 0) {
-                            kv++;
-                        }
-                        vl++;
-                    }
-                }
-           }
-           if (vl > mx) {
-               mx = vl;
-           }
-           if (kv > mk) {
-               mk = kv;
-           }
-      }
-      for (var i in board.moves) {
-           var vl = 0;
-           var kv = 0;
-           for (var j in board.moves[i].actions) {
-                var fp = board.moves[i].actions[j][0];
-                var tp = board.moves[i].actions[j][1];
-                if (tp === null) {
-                    var piece = board.getPiece(fp[0]);
-                    if (piece !== null) {
-                        if (piece.type > 0) {
-                            kv++;
-                        }
-                        vl++;
-                    }
-                }
-           }
-           if ((mode === 2) && (mk > 0)) {
-               if (kv == mk) {
-                   moves.push(board.moves[i]);
-               }
+      var caps = _.map(board.moves, captures, board);
+      var all = _.chain(caps)
+       .map(function(captured) {
+          return captured.Mans + captured.Kings;
+        })
+       .max()
+       .value();
+      var kings = _.chain(caps)
+       .map(function(captured) {
+          return captured.Kings;
+        })
+       .max()
+       .value();
+      board.moves = _.chain(board.moves)
+       .filter(function(move) {
+           var c = captures(move);
+           if ((mode === 2) && (kings > 0)) {
+               return c.Kings >= kings;
            } else {
-               if (vl == mx) {
-                   moves.push(board.moves[i]);
-               }
+               return c.Mans + c.Kings >= all;
            }
-      }
-      board.moves = moves;
+        })
+       .value();
   }
 }
 

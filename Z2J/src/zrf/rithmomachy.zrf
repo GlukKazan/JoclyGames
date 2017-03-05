@@ -1,7 +1,7 @@
 (version "3.0")
 
 (define step (
-  $1 (verify not-friend?)
+  $1 (verify empty?)
   add
 ))
 
@@ -51,8 +51,9 @@
 (game
    (title "Rithmomachy (setup I)")
 
-   (option "zrf-advanced" numeric)
-   (option "board-model"  heap)
+   (option "zrf-advanced"          numeric)
+   (option "board-model"           heap)
+   (option "rithmomachy-extension" true)
 
    (players White Black)
    (turn-order White Black)
