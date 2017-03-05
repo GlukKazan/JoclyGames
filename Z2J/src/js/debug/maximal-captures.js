@@ -47,7 +47,7 @@ Model.Game.PostActions = function(board) {
      .value();
   };
   if (mode !== 0) {
-      var caps = _.map(board.moves, captures, board);
+      var caps = _.map(board.moves, captures);
       var all = _.chain(caps)
        .map(function(captured) {
           return captured.Mans + captured.Kings;
