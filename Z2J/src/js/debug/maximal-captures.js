@@ -34,9 +34,7 @@ Model.Game.PostActions = function(board) {
      .map(function(action) {
          return board.getPiece(action[0]);
       })
-     .filter(function(piece) {
-         return piece !== null;
-      })
+     .compact()
      .map(function(piece) {
          return piece.type;
       })

@@ -2,153 +2,164 @@
 
 var checkVersion = Model.Game.checkVersion;
 var multiMode = false;
+var koMode    = false;
 
 Model.Game.checkVersion = function(design, name, value) {
   if (name === "morris-extension") {
       if (value === "multi") {
           multiMode = true;
       }
+      if (value === "ko") {
+          koMode = true;
+      }
   } else {
       checkVersion(design, name, value);
   }
 }
 
+var getEmptyPositions = function(board) {
+  return _.chain(_.range(Model.Game.design.positions.length))
+   .filter(function(pos) {
+       return (board.getPiece(pos) === null);
+    })
+   .value();
+}
+
+var getEnemyPositions = function(board) {
+  return _.chain(_.range(Model.Game.design.positions.length))
+   .filter(function(pos) {
+       var piece = board.getPiece(pos);
+       if (piece === null) return false;
+       return (piece.player !== board.player);
+    })
+   .push(null)
+   .value();
+}
+
 var getFriendPositions = function(board) {
-  var r = [];
-  var design = Model.Game.design;
-  var len = design.positions.length;
-  for (var p = 0; p < len; p++) {
-       var piece = board.getPiece(p);
-       if ((piece !== null) && (piece.player === board.player)) {
-           r.push(p);
-       }
-  }
-  return r;
+  return _.chain(_.range(Model.Game.design.positions.length))
+   .filter(function(pos) {
+       var piece = board.getPiece(pos);
+       if (piece === null) return false;
+       return (piece.player === board.player);
+    })
+   .value();
+}
+
+var isFriend = function(board, pos, player) {
+   if (pos === null) return false;
+   var piece = board.getPiece(pos);
+   if (piece === null) return false;
+   return (piece.player === player);
 }
 
 var countLines = function(board, pos, player) {
   var r = 0;
   var design = Model.Game.design;
-  for (var i = 0; i < design.dirs.length; i++) {
-       var p = design.navigate(player, pos, design.dirs[i]);
-       if (p !== null) {
-           var piece = board.getPiece(p);
-           if ((piece !== null) && (piece.player === player) {
-               var q = design.navigate(player, p, design.dirs[i]);
-               if (q !== null) {
-                   piece = board.getPiece(q);
-                   if ((piece !== null) && (piece.player === player) {
-                      r++;
-                   }
-               }
-               q = design.navigate(0, pos, design.dirs[i]);
-               if (q !== null) {
-                   piece = board.getPiece(q);
-                   if ((piece !== null) && (piece.player === player) {
-                      r++;
-                   }
-               }
-           }
+  _.chain(_.range(design.dirs.length))
+   .each(function(dir) {
+       var p = design.navigate(player, pos, dir);
+       if (isFriend(board, p, player)) {
+           p = design.navigate(player, p, dir);
+           if (isFriend(board, p, player)) r++;
+           p = design.navigate(0, pos, dir);
+           if (isFriend(board, p, player)) r++;
        }
-  }
+    });
   return r;
 }
 
-var generateMoves = function(board, moves, pos) {
-  var design = Model.Game.design;
-  var m = Model.Game.createMove();
-  var len = design.positions.length;
-  for (var p = 0; p < len; p++) {
-       if (board.getPiece(p) === null) {
-           var b = board.copy();
-           b.setPiece(pos, null);
-           var cnt = countLines(b, p, board.player);
-           if (cnt > 0) {
-               m.actions.push([ [pos], null, null, 1]);
-           }
-           if (_.isUndefined(m.actions[0][1])) {
-               m.actions[0][1] = [];
-           }
-           m.actions[0][1].push(p);
-       }
+var createResultMoves = function(board, src, dests) {
+  dests = _.filter(function(p) {
+      var m = Model.Game.createMove();
+      m.movePiece(src, p, null, 1);
+      var b = board.apply(m);
+      return countLines(b, p, board.player) > 0;
+  });
+  if (dests.length > 0) {
+      var move = Model.Game.createMove();
+      move.actions.push([ [src], dests, null, 1]);
+      move.actions.push([ getEnemyPositions(board), null, null, 1]);
+      board.moves.push(move);
   }
-  if (m.actions.length > 0) {
-      moves.push(m);
+}
+
+var createNoResultMoves = function(board, src, dests) {
+  dests = _.filter(function(p) {
+      var m = Model.Game.createMove();
+      m.movePiece(src, p, null, 1);
+      var b = board.apply(m);
+      return countLines(b, p, board.player) === 0;
+  });
+  if (dests.length > 0) {
+      var move = Model.Game.createMove();
+      move.actions.push([ [src], dests, null, 1]);
+      board.moves.push(move);
   }
+}
+
+var isMovePhase = function(board) {
+  if (board.moves.length === 0) return false;
+  if (board.moves[0].actions.length === 0) return false;
+  var fp = board.moves[0].actions[0][0];
+  var tp = board.moves[0].actions[0][1];
+  return (fp !== null) && (tp !== null);
 }
 
 var CheckInvariants = Model.Game.CheckInvariants;
 
 Model.Game.CheckInvariants = function(board) {
   var design = Model.Game.design;
-  var friend = getFriendPositions(board);
-  var dropMode = false;
-  for (var i in board.moves) {
-       var m = board.moves[i];
-       for (var j in m.actions) {
-           if (m.actions[0][0] === null) {
-               dropMode = true;
-               break;
-           }
-       }
-       if (dropMode === true) break;
+  var friends = getFriendPositions(board);
+  if ((isMovePhase(board) === true) && (friends.length === 3)) {
+      board.moves = [];
+      _.each(friends, function(pos) {
+          var e = getEmptyPositions(board);
+          createResultMoves(board, pos, e);
+          createNoResultMoves(board, pos, e);
+      });
+      CheckInvariants(board);
+      return;
   }
-  if ((dropMode !== true) && (friend.length === 3)) {
-      var moves = [];
-      for (var i in board.moves) {
-           var m = board.moves[i];
-           if (m.actions[0][0] !== null) {
-               for (var j = 0; j < 3; j++) {
-                   generateMoves(board, moves, friend[j]);
+  _.each(board.moves, function(m) {
+      var b = board.apply(m);
+      _.chain(m.actions)
+       .filter(function(action) {
+           return (action[0] !== null) && (action[1] !== null);
+        })
+       .first();
+       .each(function(action) {
+           fp = action[0];
+           tp = action[1];
+           pn = action[3];
+           var cnt = countLines(b, tp[0], board.player);
+           if (cnt > 0) {
+               if (koMode === true) {
+                   if (countLines(board, fp[0], board.player) > 0) {
+                       m.failed = true;
+                   }
                }
-               board.moves = moves;
-               break;
+               if (multiMode !== true) {
+                   cnt = 1;
+               }
+               var all = getEnemyPositions(board);
+               var captured = _.filter(all, function(pos) {
+                   if (pos === null) return true;
+                   var piece = board.getPiece(pos);
+                   if (piece === null) return false;
+                   return countLines(board, pos, piece.player) === 0;
+               });
+               if (captured.length === 0) {
+                   captured = all;
+               }
+               if (captured.length > 0) {
+                   for (k = 0; k < cnt; k++) {
+                        m.actions.push([captured, null, null, pn]);
+                   }
+               }
            }
-      }
-  }
-  for (var i in board.moves) {
-       var m = board.moves[i];
-       var b = board.apply(m);
-       for (var j in m.actions) {
-            fp = m.actions[j][0];
-            tp = m.actions[j][1];
-            pn = m.actions[j][3];
-            if ((dropMode === true) && (fp !== null)) {
-                m.failed = true;
-                break;
-            }
-            if ((fp !== null) && (tp !== null)) {
-                var cnt = countLines(b, tp[0], board.player);
-                if (cnt > 0) {
-                    if (multiMode !== true) {
-                        cnt = 1;
-                    }
-                    var all = [];
-                    var captured = [];
-                    var len = design.positions.length;
-                    for (var p = 0; p < len; p++) {
-                         var piece = b.getPiece(p);
-                         if (piece.player !== board.player) {
-                             if (countLines(b, p, b.player) === 0) {
-                                 captured.push(p);
-                             }
-                             all.push(p);
-                         }
-                    }
-                    if (captured.length === 0) {
-                        captured = all;
-                    }
-                    if (captured.length > 0) {
-                        captured.push(null);
-                        for (k = 0; k < cnt; k++) {
-                            m.actions.push([captured, null, null, pn]);
-                        }
-                    }
-                }
-                break;
-           }
-       }
-  }
+        });
+  });
   CheckInvariants(board);
 }
 
