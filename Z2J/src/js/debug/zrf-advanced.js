@@ -40,9 +40,9 @@ Model.Game.checkVersion = function(aDesign, aName, aValue) {
          mode = aValue;
          lastMode = true;
      }
-     if ((aValue === "delayed")   || (aValue === "true")) {
+     if ((aValue === "deferred")   || (aValue === "true")) {
          mode = aValue;
-         Model.Game.delayedStrike = true;
+         Model.Game.deferredStrike = true;
      }
      if ((aValue === "shared")    || (aValue === "true")) {
          mode = aValue;

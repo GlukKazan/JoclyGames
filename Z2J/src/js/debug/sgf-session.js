@@ -100,4 +100,46 @@ SgfSession.prototype.setProperty = function(name, value) {
   node.props[name] = value;
 }
 
+SgfSession.prototype.nodeToStr = function(node, board) {
+  var design = Model.Game.design;
+  if (!_.isUndefined(node.move)) {
+      var player = design.playerNames[board.player][0];
+      return ";" + player + "[" + node.move +"]";
+  }
+  var r = "";
+  if (!_.isUndefined(node.setup)) {
+      var setup = _.chain(_.keys(node.setup))
+       .groupBy(function(pos) {
+           return node.setup[pos].getOwner()[0];
+        })
+       .value();
+      _.each(_.keys(setup), function(player) { 
+          r = r + ";A" + player;
+          _.each(setup[player], function(pos) {
+              r = r + "[" + Model.Game.posToString(pos) + "]";
+          });
+      });
+  }
+  return r;
+}
+
+SgfSession.prototype.getSgf = function(node, board) {
+  var r = "";
+  _.each(_.keys(node.props), function(name) {
+      r = r + ";" + name + "[" + node.props[name] + "]";
+  });
+  r = r + this.nodeToStr(node, board);
+  if (node.child.length === 1) {
+      return r + this.getSgf(node.child[0], node.board);
+  }
+  _.each(node.child, function(child) {
+      r = r + "(" + this.getSgf(child, node.board) + ")";
+  }, this);
+  return r;
+}
+
+SgfSession.prototype.toString = function() {
+  return "(" + this.getSgf(this.tree[0], this.tree[0].board) +")";
+}
+
 })();

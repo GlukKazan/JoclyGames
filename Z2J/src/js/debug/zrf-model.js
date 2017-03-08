@@ -492,7 +492,7 @@ Model.Game.getDesign = function() {
   return Model.Game.design;
 }
 
-Model.Game.delayedStrike   = false;
+Model.Game.deferredStrike  = false;
 Model.Game.discardCascades = false;
 Model.Game.forkMode        = false;
 Model.Game.passPartial     = false;
@@ -929,7 +929,7 @@ ZrfMoveGenerator.prototype.dropPiece = function(pos, piece) {
 
 ZrfMoveGenerator.prototype.capturePiece = function(pos) {
   this.move.capturePiece(pos, this.level);
-  if (Model.Game.delayedStrike !== true) {
+  if (Model.Game.deferredStrike !== true) {
       this.setPiece(pos, null);
   }
 }
@@ -1804,7 +1804,7 @@ ZrfMove.prototype.dropPiece = function(pos, piece, part) {
 }
 
 ZrfMove.prototype.capturePiece = function(pos, part) {
-  if (Model.Game.delayedStrike === true) {
+  if (Model.Game.deferredStrike === true) {
       part = -part;
   }
   this.actions.push([ [pos], null, null, part]);
