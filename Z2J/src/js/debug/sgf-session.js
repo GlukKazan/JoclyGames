@@ -19,6 +19,15 @@ SgfSession.prototype.getNode = function() {
   return this.node;
 }
 
+SgfSession.prototype.getFavoriteMove = function() {
+  if (_.isUndefined(node)) return null;
+  if (_.isUndefined(node.child)) return null;
+  if (_.isUndefined(node.child.length === 0)) return null;
+  var child = node.child.peekBack();
+  if (_.isUndefined(child.move)) return null;
+  return child.move;
+}
+
 SgfSession.prototype.addMove = function(move) {
   var node = this.getNode();
   var s = move.toString();
@@ -46,6 +55,9 @@ SgfSession.prototype.addMove = function(move) {
       node.child[i] = node.child[i + 1];
   }
   node.child[l] = n;
+  if (_.isUndefined(n.board)) {
+      n.board = node.board.apply(move);
+  }
   return n.board;
 }
 
