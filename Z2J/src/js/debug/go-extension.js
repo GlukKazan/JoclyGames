@@ -99,15 +99,16 @@ Model.Game.CheckInvariants = function(board) {
 }
 
 Model.Move.moveToString = function(move, part) {
-  for (var i in move.actions) { 
-       var fp = move.actions[i][0];
-       var tp = move.actions[i][1];
-       var p  = move.actions[i][2];
-       if ((fp === null) && (tp !== null) && (p !== null)) {
-           return p[0].getOwner() + " " + Model.Game.posToString(tp[0]);
-       }
-  }
-  return "Pass";
+  if (move.actions.length === 0) return "tt";
+  return _.chain(move.actions)
+   .filter(function (action) {
+       return (action[0] === null) && (action[1] !== null) && (action[2] !== null);
+    })
+   .map(function (action) {
+       return Model.Game.posToString(action[1][0]);
+    })
+   .first()
+   .value();
 }
 
 })();

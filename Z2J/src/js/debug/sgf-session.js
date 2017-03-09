@@ -115,14 +115,14 @@ SgfSession.prototype.setProperty = function(name, value) {
 SgfSession.prototype.nodeToStr = function(node, board) {
   var design = Model.Game.design;
   if (!_.isUndefined(node.move)) {
-      var player = design.playerNames[board.player][0];
+      var player = design.playerNames[board.player].charAt(0);
       return ";" + player + "[" + node.move +"]";
   }
   var r = "";
   if (!_.isUndefined(node.setup)) {
       var setup = _.chain(_.keys(node.setup))
        .groupBy(function(pos) {
-           return node.setup[pos].getOwner()[0];
+           return node.setup[pos].getOwner().charAt(0);
         })
        .value();
       _.each(_.keys(setup), function(player) { 
