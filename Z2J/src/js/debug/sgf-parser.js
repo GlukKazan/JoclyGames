@@ -85,7 +85,7 @@ function rep(pattern, separator) {
 var wsp = rgx(/\s+/);
 
 var arg = seq([txt('['),
-              term(']', '\'),
+              term(']', '\\'),
               txt(']')
           ])
          .then(function(r) {return r[1];});
