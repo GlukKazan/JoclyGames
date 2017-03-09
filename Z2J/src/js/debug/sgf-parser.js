@@ -26,7 +26,7 @@ function term(end, esc) {
                continue;
            }
            if (!f && (str.charAt(i) == end)) {
-               return { res: str.substr(pos, (i - pos) + 1), end: i + 1 };
+               return { res: str.substr(pos, (i - pos)), end: i };
            }
            f = false;
        }
