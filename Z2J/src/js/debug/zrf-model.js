@@ -1721,7 +1721,7 @@ Model.Move.moveToString = function(move, part) {
 }
 
 ZrfMove.prototype.toString = function(part) {
-  return Model.Move.moveToString(this, part);
+  return Model.Move.moveToString(this, part ? part : 0 );
 }
 
 ZrfMove.prototype.isAttacked = function(pos) {

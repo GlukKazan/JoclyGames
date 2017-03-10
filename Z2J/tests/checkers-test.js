@@ -43,7 +43,7 @@ QUnit.test( "Template", function( assert ) {
   assert.equal( (t0.commands[4])(g0), 0, "VERIFY command executed");
   g0.pos = 0;
   assert.equal( (t0.commands[5])(g0), 0, "CAPTURE command executed");
-  assert.equal( move.toString(0), "x a8", "... piece is captured");
+  assert.equal( move.toString(), "x a8", "... piece is captured");
   assert.equal( (t0.commands[10])(g0), 0, "IN_ZONE? command executed");
   assert.equal( g0.stack.pop(), true, "... promotion zone for A Player");
   assert.equal( (t0.commands[11])(g0), null, "Stack is empty");
@@ -236,7 +236,7 @@ QUnit.test( "Board", function( assert ) {
   o.movePiece(Model.Game.stringToPos("f6"), Model.Game.stringToPos("a6"), p, 2);
   assert.equal( o.toString(1), "f3 - f6 x f5", "f3 - f6 x f5");
   assert.equal( o.toString(2), "f6 - a6 x c6", "f6 - a6 x c6");
-  assert.equal( o.toString(0), "f3 - f6 - a6 x f5 x c6", "f3 - f6 - a6 x f5 x c6");
+  assert.equal( o.toString(), "f3 - f6 - a6 x f5 x c6", "f3 - f6 - a6 x f5 x c6");
   var ob = board.apply(o);
   assert.equal( ob.player, 2, "Black");
   assert.equal( ob.getPiece(Model.Game.stringToPos("f3")), null, "f3 - Empty");
@@ -331,26 +331,26 @@ QUnit.test( "Man's moves", function( assert ) {
   assert.equal( g1.pieces[34].toString(), "White Man", "White Man on c4");
   assert.equal( g1.pieces[0], undefined, "any positions undefined");
   assert.equal( g1.move.toString(1), "c3 - c4", "c3 - c4");
-  assert.equal( g1.move.toString(0), "c3 - c4", "c3 - c4");
+  assert.equal( g1.move.toString(), "c3 - c4", "c3 - c4");
 
   assert.equal( g1.moveType, 1, "Default MoveType");
   assert.equal( (g1.template.commands[g1.cmd++])(g1), null, "ZRF_END executed");
   assert.equal( g1.cmd, 13, "cmd = 13");
   assert.equal( g1.moveType, 0, "MoveType cleaned");
   assert.equal( board.moves.length, 1, "Move generated");
-  assert.equal( board.moves[0].toString(0), "c3 - c4", "c3 - c4");
+  assert.equal( board.moves[0].toString(), "c3 - c4", "c3 - c4");
 
   var g2 = Model.Game.createGen(t1, [ design.getDirection("w") ]);
   g2.init(board, Model.Game.stringToPos("c3"));
   g2.generate();
   assert.equal( board.moves.length, 2, "Move generated");
-  assert.equal( board.moves[1].toString(0), "c3 - b3", "c3 - b3");
+  assert.equal( board.moves[1].toString(), "c3 - b3", "c3 - b3");
 
   var g4 = Model.Game.createGen(t1, [ design.getDirection("n") ]);
   g4.init(board, Model.Game.stringToPos("g7"));
   g4.generate();
   assert.equal( board.moves.length, 3, "Move generated");
-  assert.equal( board.moves[2].toString(0), "g7 - g8", "g7 - g8");
+  assert.equal( board.moves[2].toString(), "g7 - g8", "g7 - g8");
   assert.equal( board.moves[2].actions[0][2][0].toString(), "White King", "promoted");
 
   Model.Game.design = undefined;
@@ -379,7 +379,7 @@ QUnit.test( "Man's capturing", function( assert ) {
   assert.equal( g1.moveType, 0, "No MoveType");
   assert.equal( g1.mode, 0, "jumptype");
   assert.equal( board.moves.length, 1, "Move generated");
-  assert.equal( board.moves[0].toString(0), "d6 - f6 x e6", "d6 - f6 x e6");
+  assert.equal( board.moves[0].toString(), "d6 - f6 x e6", "d6 - f6 x e6");
   assert.equal( g1.lastf, Model.Game.stringToPos("d6"), "Last from");
   assert.equal( g1.lastt, Model.Game.stringToPos("f6"), "Last to");
 
@@ -388,14 +388,14 @@ QUnit.test( "Man's capturing", function( assert ) {
   assert.equal( g2.level, 2, "Level 2");
   assert.equal( g2.parent, g1, "Parent assigned");
   assert.equal( g2.pos, Model.Game.stringToPos("f6"), "Pos assigned");
-  assert.equal( g2.move.toString(0), "d6 - f6 x e6", "Move assigned");
+  assert.equal( g2.move.toString(), "d6 - f6 x e6", "Move assigned");
   g2.generate();
   assert.equal( g2.moveType, 0, "No MoveType");
   assert.equal( g2.mode, 2, "notype");
   assert.equal( board.moves.length, 2, "Move generated");
   assert.equal( board.moves[1].toString(1), "d6 - f6 x e6", "d6 - f6 x e6");
   assert.equal( board.moves[1].toString(2), "f6 - f8 x f7", "f6 - f8 x f7");
-  assert.equal( board.moves[1].toString(0), "d6 - f6 - f8 x e6 x f7", "d6 - f6 - f8 x e6 x f7");
+  assert.equal( board.moves[1].toString(), "d6 - f6 - f8 x e6 x f7", "d6 - f6 - f8 x e6 x f7");
   assert.equal( board.moves[1].actions.length, 4, "actions");
   assert.equal( board.moves[1].actions[3][2][0].toString(), "White King", "promoted");
   assert.equal( g2.lastf, Model.Game.stringToPos("f6"), "Last from");
@@ -475,14 +475,14 @@ QUnit.test( "King's moves", function( assert ) {
   assert.equal( g1.pieces[Model.Game.stringToPos("b1")], null, "b1 is empty");
   assert.equal( g1.pieces[Model.Game.stringToPos("b2")].toString(), "White King", "White King on b2");
   assert.equal( g1.move.toString(1), "b1 - b2", "b1 - b2");
-  assert.equal( g1.move.toString(0), "b1 - b2", "b1 - b2");
+  assert.equal( g1.move.toString(), "b1 - b2", "b1 - b2");
 
   assert.equal( g1.moveType, 1, "Default MoveType");
   assert.equal( (g1.template.commands[g1.cmd++])(g1), null, "ZRF_END executed");
   assert.equal( g1.cmd, 9, "cmd = 9");
   assert.equal( g1.moveType, 0, "MoveType cleaned");
   assert.equal( board.moves.length, 1, "Move generated");
-  assert.equal( board.moves[0].toString(0), "b1 - b2", "b1 - b2");
+  assert.equal( board.moves[0].toString(), "b1 - b2", "b1 - b2");
 
   var g2 = board.forks.pop();
   assert.equal( g2.move.toString() , "Pass", "No move");
@@ -537,13 +537,13 @@ QUnit.test( "King's moves", function( assert ) {
   assert.equal( g2.cmd, 8, "cmd = 8");
   assert.equal( g2.from, null, "Empty position");
   assert.equal( g2.piece, null, "Empty piece");
-  assert.equal( g2.move.toString(0), "b1 - b3", "b1 - b3");
+  assert.equal( g2.move.toString(), "b1 - b3", "b1 - b3");
 
   assert.equal( (g2.template.commands[g2.cmd++])(g2), null, "ZRF_END executed");
   assert.equal( g2.cmd, 9, "cmd = 9");
   assert.equal( board.moves.length, 2, "Move generated");
-  assert.equal( board.moves[0].toString(0), "b1 - b2", "b1 - b2");
-  assert.equal( board.moves[1].toString(0), "b1 - b3", "b1 - b3");
+  assert.equal( board.moves[0].toString(), "b1 - b2", "b1 - b2");
+  assert.equal( board.moves[1].toString(), "b1 - b3", "b1 - b3");
 
   var g3 = board.forks.pop();
   assert.equal( g3.move.toString() , "Pass", "No move");
@@ -563,9 +563,9 @@ QUnit.test( "King's moves", function( assert ) {
   g3.generate();
   assert.equal( board.forks.length, 1, "Fork generated");
   assert.equal( board.moves.length, 3, "Move generated");
-  assert.equal( board.moves[0].toString(0), "b1 - b2", "b1 - b2");
-  assert.equal( board.moves[1].toString(0), "b1 - b3", "b1 - b3");
-  assert.equal( board.moves[2].toString(0), "b1 - b4", "b1 - b4");
+  assert.equal( board.moves[0].toString(), "b1 - b2", "b1 - b2");
+  assert.equal( board.moves[1].toString(), "b1 - b3", "b1 - b3");
+  assert.equal( board.moves[2].toString(), "b1 - b4", "b1 - b4");
 
   var g4 = board.forks.pop();
   g4.generate();
@@ -596,13 +596,13 @@ QUnit.test( "King's capturing", function( assert ) {
   g1.generate();
   assert.equal( board.forks.length, 1, "Fork generated");
   assert.equal( board.moves.length, 1, "Move generated");
-  assert.equal( board.moves[0].toString(0), "c4 - f4 x e4", "c4 - f4 x e4");
+  assert.equal( board.moves[0].toString(), "c4 - f4 x e4", "c4 - f4 x e4");
 
   var g2 = board.forks.pop();
   g2.generate();
   assert.equal( board.forks.length, 1, "Fork generated");
   assert.equal( board.moves.length, 2, "Move generated");
-  assert.equal( board.moves[1].toString(0), "c4 - g4 x e4", "c4 - g4 x e4");
+  assert.equal( board.moves[1].toString(), "c4 - g4 x e4", "c4 - g4 x e4");
   board.forks.pop();
 
   var n  = design.getDirection("n");
@@ -610,11 +610,11 @@ QUnit.test( "King's capturing", function( assert ) {
   assert.equal( g3.level, 2, "Level 2");
   assert.equal( g3.parent, g2, "Parent assigned");
   assert.equal( g3.pos, Model.Game.stringToPos("g4"), "Pos assigned");
-  assert.equal( g3.move.toString(0), "c4 - g4 x e4", "Move assigned");
+  assert.equal( g3.move.toString(), "c4 - g4 x e4", "Move assigned");
   g3.generate();
   assert.equal( board.forks.length, 1, "Fork generated");
   assert.equal( board.moves.length, 3, "Move generated");
-  assert.equal( board.moves[2].toString(0), "c4 - g4 - g7 x e4 x g6", "c4 - g4 - g7 x e4 x g6");
+  assert.equal( board.moves[2].toString(), "c4 - g4 - g7 x e4 x g6", "c4 - g4 - g7 x e4 x g6");
   board.forks.pop();
 
   var w  = design.getDirection("w");
@@ -622,7 +622,7 @@ QUnit.test( "King's capturing", function( assert ) {
   assert.equal( g4.level, 2, "Level 2");
   assert.equal( g4.parent, g1, "Parent assigned");
   assert.equal( g4.pos, Model.Game.stringToPos("f4"), "Pos assigned");
-  assert.equal( g4.move.toString(0), "c4 - f4 x e4", "Move assigned");
+  assert.equal( g4.move.toString(), "c4 - f4 x e4", "Move assigned");
   assert.equal( g4.cmd, 0, "cmd = 0");
 
   assert.equal( (g4.template.commands[g4.cmd++])(g4), 0, "ZRF_FROM executed");
@@ -665,9 +665,9 @@ QUnit.test( "Simple Man's moves", function( assert ) {
   design.setup("White", "Man", Model.Game.stringToPos("c3"));
   board.generate();
   assert.equal( board.moves.length, 3, "3 Moves generated");
-  assert.equal( board.moves[0].toString(0), "c3 - d3", "c3 - d3");
-  assert.equal( board.moves[1].toString(0), "c3 - b3", "c3 - b3");
-  assert.equal( board.moves[2].toString(0), "c3 - c4", "c3 - c4");
+  assert.equal( board.moves[0].toString(), "c3 - d3", "c3 - d3");
+  assert.equal( board.moves[1].toString(), "c3 - b3", "c3 - b3");
+  assert.equal( board.moves[2].toString(), "c3 - c4", "c3 - c4");
 
   Model.Game.design = undefined;
   Model.Game.board = undefined;
@@ -687,8 +687,8 @@ QUnit.test( "Man's capturing priorited", function( assert ) {
 
   board.generate();
   assert.equal( board.moves.length, 2, "2 Moves generated");
-  assert.equal( board.moves[0].toString(0), "e2 - g2 x f2", "e2 - g2 x f2");
-  assert.equal( board.moves[1].toString(0), "b2 - b4 x b3", "b2 - b4 x b3");
+  assert.equal( board.moves[0].toString(), "e2 - g2 x f2", "e2 - g2 x f2");
+  assert.equal( board.moves[1].toString(), "b2 - b4 x b3", "b2 - b4 x b3");
 
   Model.Game.design = undefined;
   Model.Game.board = undefined;
@@ -709,7 +709,7 @@ QUnit.test( "Man's capturing chain", function( assert ) {
 
   board.generate();
   assert.equal( board.moves.length, 1, "1 move generated");
-  assert.equal( board.moves[0].toString(0), "d2 - d4 - f4 - f6 x d3 x e4 x f5", "d2 - d4 - f4 - f6 x d3 x e4 x f5");
+  assert.equal( board.moves[0].toString(), "d2 - d4 - f4 - f6 x d3 x e4 x f5", "d2 - d4 - f4 - f6 x d3 x e4 x f5");
 
   Model.Game.design = undefined;
   Model.Game.board = undefined;
@@ -725,20 +725,20 @@ QUnit.test( "King's slide", function( assert ) {
   design.setup("White", "King", Model.Game.stringToPos("d4"));
   board.generate();
   assert.equal( board.moves.length, 14, "14 moves generated");
-  assert.equal( board.moves[0].toString(0), "d4 - d3", "d4 - d3");
-  assert.equal( board.moves[1].toString(0), "d4 - e4", "d4 - e4");
-  assert.equal( board.moves[2].toString(0), "d4 - c4", "d4 - c4");
-  assert.equal( board.moves[3].toString(0), "d4 - d5", "d4 - d5");
-  assert.equal( board.moves[4].toString(0), "d4 - d6", "d4 - d6");
-  assert.equal( board.moves[5].toString(0), "d4 - d7", "d4 - d7");
-  assert.equal( board.moves[6].toString(0), "d4 - d8", "d4 - d8");
-  assert.equal( board.moves[7].toString(0), "d4 - b4", "d4 - b4");
-  assert.equal( board.moves[8].toString(0), "d4 - a4", "d4 - a4");
-  assert.equal( board.moves[9].toString(0), "d4 - f4", "d4 - f4");
-  assert.equal( board.moves[10].toString(0), "d4 - g4", "d4 - g4");
-  assert.equal( board.moves[11].toString(0), "d4 - h4", "d4 - h4");
-  assert.equal( board.moves[12].toString(0), "d4 - d2", "d4 - d2");
-  assert.equal( board.moves[13].toString(0), "d4 - d1", "d4 - d1");
+  assert.equal( board.moves[0].toString(), "d4 - d3", "d4 - d3");
+  assert.equal( board.moves[1].toString(), "d4 - e4", "d4 - e4");
+  assert.equal( board.moves[2].toString(), "d4 - c4", "d4 - c4");
+  assert.equal( board.moves[3].toString(), "d4 - d5", "d4 - d5");
+  assert.equal( board.moves[4].toString(), "d4 - d6", "d4 - d6");
+  assert.equal( board.moves[5].toString(), "d4 - d7", "d4 - d7");
+  assert.equal( board.moves[6].toString(), "d4 - d8", "d4 - d8");
+  assert.equal( board.moves[7].toString(), "d4 - b4", "d4 - b4");
+  assert.equal( board.moves[8].toString(), "d4 - a4", "d4 - a4");
+  assert.equal( board.moves[9].toString(), "d4 - f4", "d4 - f4");
+  assert.equal( board.moves[10].toString(), "d4 - g4", "d4 - g4");
+  assert.equal( board.moves[11].toString(), "d4 - h4", "d4 - h4");
+  assert.equal( board.moves[12].toString(), "d4 - d2", "d4 - d2");
+  assert.equal( board.moves[13].toString(), "d4 - d1", "d4 - d1");
 
   Model.Game.design = undefined;
   Model.Game.board = undefined;
@@ -758,8 +758,8 @@ QUnit.test( "King's capturing chain", function( assert ) {
 
   board.generate();
   assert.equal( board.moves.length, 2, "2 moves generated");
-  assert.equal( board.moves[0].toString(0), "d4 - a4 - a8 - g8 x c4 x a6 x f8", "d4 - a4 - a8 - g8 x c4 x a6 x f8");
-  assert.equal( board.moves[1].toString(0), "d4 - a4 - a8 - h8 x c4 x a6 x f8", "d4 - a4 - a8 - h8 x c4 x a6 x f8");
+  assert.equal( board.moves[0].toString(), "d4 - a4 - a8 - g8 x c4 x a6 x f8", "d4 - a4 - a8 - g8 x c4 x a6 x f8");
+  assert.equal( board.moves[1].toString(), "d4 - a4 - a8 - h8 x c4 x a6 x f8", "d4 - a4 - a8 - h8 x c4 x a6 x f8");
 
   Model.Game.design = undefined;
   Model.Game.board = undefined;

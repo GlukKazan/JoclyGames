@@ -70,7 +70,7 @@ function seq(patterns) {
 
 function rep(pattern, separator) {
     var separated = !separator ? pattern :
-        seq(separator, pattern).then(function(r) {return r[1];});
+        seq([separator, pattern]).then(function(r) {return r[1];});
     return new Pattern(function (str, pos) {
         var res = [], end = pos, r = pattern.exec(str, end);
         while (r && r.end > end) {
@@ -90,22 +90,26 @@ var arg = seq([txt('['),
           ])
          .then(function(r) {return r[1];});
 
-var cmd = seq([txt(';'), opt(wsp),
+var name = rgx(/\w+/);
+var cmd = seq([opt(txt(';')), opt(wsp),
               name, opt(wsp),
               rep(arg, opt(wsp))
           ])
-         .then(function(r) {return {name: r[2], arg: r[3]};});
+         .then(function(r) {return {name: r[2], arg: r[4]};});
 
-var subseq = new Pattern((function(str, pos) {return sgf.exec(str, pos);});
+var subseq = new Pattern(function(str, pos) {return sgf.exec(str, pos);});
 
 var sgf = seq([txt('('), opt(wsp),
-              rep(any([cmd, subseq]), opt(wsp))
+              rep(any([cmd, subseq]), opt(wsp)),
               txt(')')
           ])
          .then(function(r) {return r[2];});
 
-Model.Game.parseSgf = function (text) {
-    return sgf.exec(text);
+Model.Game.parseSgf = function(text) {
+    var r = sgf.exec(text, 0);
+    if (r) {
+        return r.res;
+    }
 }
 
 })();

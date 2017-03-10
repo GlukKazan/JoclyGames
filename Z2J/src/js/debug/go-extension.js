@@ -99,7 +99,7 @@ Model.Game.CheckInvariants = function(board) {
 }
 
 Model.Move.moveToString = function(move, part) {
-  if (move.actions.length === 0) return "tt";
+  if (move.actions.length === 0) return "";
   return _.chain(move.actions)
    .filter(function (action) {
        return (action[0] === null) && (action[1] !== null) && (action[2] !== null);

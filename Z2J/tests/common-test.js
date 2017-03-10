@@ -103,20 +103,20 @@ QUnit.test( "Move Determinate", function( assert ) {
   var m = Model.Game.createMove();
   m.actions.push([ [0, 1], [2, 3], null, 1]);
   m.actions.push([ [3, 2], null, null, 1]);
-  assert.equal( m.toString(0), "A - C x D", "'A - C x D' Move");
+  assert.equal( m.toString(), "A - C x D", "'A - C x D' Move");
 
   var ix = m.getControlList();
   assert.equal( ix.length, 8, "ix.length == 8");
   var ml = m.determinate();
   assert.equal( ml.length, 8, "ml.length == 8");
-  assert.equal( ml[0].toString(0), "A - C x D", "A - C x D");
-  assert.equal( ml[1].toString(0), "A - C x C", "A - C x C");
-  assert.equal( ml[2].toString(0), "A - D x D", "A - D x D");
-  assert.equal( ml[3].toString(0), "A - D x C", "A - D x C");
-  assert.equal( ml[4].toString(0), "B - C x D", "B - C x D");
-  assert.equal( ml[5].toString(0), "B - C x C", "B - C x C");
-  assert.equal( ml[6].toString(0), "B - D x D", "B - D x D");
-  assert.equal( ml[7].toString(0), "B - D x C", "B - D x C");
+  assert.equal( ml[0].toString(), "A - C x D", "A - C x D");
+  assert.equal( ml[1].toString(), "A - C x C", "A - C x C");
+  assert.equal( ml[2].toString(), "A - D x D", "A - D x D");
+  assert.equal( ml[3].toString(), "A - D x C", "A - D x C");
+  assert.equal( ml[4].toString(), "B - C x D", "B - C x D");
+  assert.equal( ml[5].toString(), "B - C x C", "B - C x C");
+  assert.equal( ml[6].toString(), "B - D x D", "B - D x D");
+  assert.equal( ml[7].toString(), "B - D x C", "B - D x C");
 
   Model.Game.design = undefined;
 });
@@ -140,17 +140,17 @@ QUnit.test( "Null and Bad Moves filtering", function( assert ) {
   m.actions.push([ [0], [1], null, 1]);
   m.actions.push([ [2, 3, null], null, null, 1]);
   m.actions.push([ [3, 2, null], null, null, 1]);
-  assert.equal( m.toString(0), "A - B x C x D", "'A - B x C x D' Move");
+  assert.equal( m.toString(), "A - B x C x D", "'A - B x C x D' Move");
 
   var ml = m.determinate();
   assert.equal( ml.length, 7, "ml.length == 7");
-  assert.equal( ml[0].toString(0), "A - B x C x D", "A - B x C x D");
-  assert.equal( ml[1].toString(0), "A - B x C", "A - B x C");
-  assert.equal( ml[2].toString(0), "A - B x D x C", "A - B x D x C");
-  assert.equal( ml[3].toString(0), "A - B x D", "A - B x D");
-  assert.equal( ml[4].toString(0), "A - B x D", "A - B x D");
-  assert.equal( ml[5].toString(0), "A - B x C", "A - B x C");
-  assert.equal( ml[6].toString(0), "A - B", "A - B");
+  assert.equal( ml[0].toString(), "A - B x C x D", "A - B x C x D");
+  assert.equal( ml[1].toString(), "A - B x C", "A - B x C");
+  assert.equal( ml[2].toString(), "A - B x D x C", "A - B x D x C");
+  assert.equal( ml[3].toString(), "A - B x D", "A - B x D");
+  assert.equal( ml[4].toString(), "A - B x D", "A - B x D");
+  assert.equal( ml[5].toString(), "A - B x C", "A - B x C");
+  assert.equal( ml[6].toString(), "A - B", "A - B");
 
   Model.Game.design = undefined;
 });
