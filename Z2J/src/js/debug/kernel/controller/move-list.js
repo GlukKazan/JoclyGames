@@ -1,6 +1,6 @@
 (function() {
 
-function ZrfMoveList(board) {
+function MoveList(board) {
   this.board  = board;
   this.stack  = [];
   this.stack.push({
@@ -15,14 +15,14 @@ function ZrfMoveList(board) {
 
 Model.Game.getMoveList = function(board) {
   board.generate();
-  return new ZrfMoveList(board);
+  return new MoveList(board);
 }
 
-ZrfMoveList.prototype.getLevel = function() {
+MoveList.prototype.getLevel = function() {
   return this.stack.length;
 }
 
-ZrfMoveList.prototype.getMoves = function() {
+MoveList.prototype.getMoves = function() {
   var frame = this.stack.peekBack();
   if (frame.moves.length > 0) {
       return frame.moves;
@@ -31,7 +31,7 @@ ZrfMoveList.prototype.getMoves = function() {
   }
 }
 
-ZrfMoveList.prototype.back = function(view) {
+MoveList.prototype.back = function(view) {
   if (this.stack.length > 1) {
       var frame = this.stack.pop();
       if (view !== null) {
@@ -43,7 +43,7 @@ ZrfMoveList.prototype.back = function(view) {
   this.from = null;
 }
 
-ZrfMoveList.prototype.getCapturing = function() {
+MoveList.prototype.getCapturing = function() {
   var r = [];
   var frame = this.stack.peekBack();
   for (var i in frame.moves) {
@@ -122,7 +122,7 @@ var isUniqueDest = function(moves, pos, level) {
   return r;
 }
 
-ZrfMoveList.prototype.getPositions = function() {
+MoveList.prototype.getPositions = function() {
   var r = [];
   var frame = this.stack.peekBack();
   for (var i in frame.moves) {
@@ -195,7 +195,7 @@ ZrfMoveList.prototype.getPositions = function() {
   return r;
 }
 
-ZrfMoveList.prototype.canPass = function() {
+MoveList.prototype.canPass = function() {
   var frame = this.stack.peekBack();
   for (var i in frame.moves) {
        var m = frame.moves[i];
@@ -206,7 +206,7 @@ ZrfMoveList.prototype.canPass = function() {
   return false;
 }
 
-ZrfMoveList.prototype.pass = function() {
+MoveList.prototype.pass = function() {
   if (this.canPass() === false) {
       return null;
   }
@@ -219,7 +219,7 @@ ZrfMoveList.prototype.pass = function() {
   return "Pass";
 }
 
-ZrfMoveList.prototype.movePiece = function(fPos, tPos, p, n) {
+MoveList.prototype.movePiece = function(fPos, tPos, p, n) {
   this.move.actions.push([ fPos ], [ tPos ], p, n);
   this.undo.actions.push([ tPos ], [ fPos ], p, n);
   var piece = this.board.getPiece(tPos);
@@ -228,7 +228,7 @@ ZrfMoveList.prototype.movePiece = function(fPos, tPos, p, n) {
   }
 }
 
-ZrfMoveList.prototype.capturePiece = function(pos, n) {
+MoveList.prototype.capturePiece = function(pos, n) {
   this.move.actions.push([ pos ], null, null, n);
   var piece = this.board.getPiece(pos);
   if (piece !== null) {
@@ -236,12 +236,12 @@ ZrfMoveList.prototype.capturePiece = function(pos, n) {
   }
 }
 
-ZrfMoveList.prototype.dropPiece = function(pos, p, n) {
+MoveList.prototype.dropPiece = function(pos, p, n) {
   this.move.actions.push(null, [ pos ], p, n);
   this.undo.actions.push([ pos ], null, null, n);
 }
 
-ZrfMoveList.prototype.setPosition = function(name, view) {
+MoveList.prototype.setPosition = function(name, view) {
   var pos = Model.Game.stringToPos(name);
   var oldFrame = this.stack.peekBack();
   var newFrame = {

@@ -1,12 +1,12 @@
 http://edeon.ru/scacobnv/spisokdeb.txt
 
-1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. ab2 
-1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. ed4 
-1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. ef4 
-1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. cd4 fg5 7. cb6 ac5 8. db6 
-1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. fg5 hf4 7. eg5 
-1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. cd4 fe5 
-1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 ed6 
+1. cd4 ba5 2. dc5 db4 3. ac5 fg5 4. bc3 gf6 5. ab2 
+1. cd4 ba5 2. dc5 db4 3. ac5 fg5 4. ed4 
+1. cd4 ba5 2. dc5 db4 3. ac5 fg5 4. ef4 
+1. cd4 ba5 2. dc5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. cd4 fg5 7. cb6 ac5 8. db6 
+1. cd4 ba5 2. dc5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. fg5 hf4 7. eg5 
+1. cd4 ba5 2. dc5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. cd4 fe5 
+1. cd4 ba5 2. dc5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 ed6 
 1. cd4 fg5 2. bc3 gf6 3. cb4 hg7 
 1. cd4 ba5 2. bc3 
 1. cb4 fe5 2. gh4 ef4 3. eg5 hf4 
@@ -82,7 +82,7 @@ http://edeon.ru/scacobnv/spisokdeb.txt
 1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. fg5 hf4 6. hf4 
 1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. cb4 fg5 
 1. cb4 fg5 2. gf4 gf6 3. bc3 gh4 4. fg5 hf4 5. hf4 
-1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 ñb4 5. ac5 db4 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 cb4 5. ac5 db4 
 1. cb4 bc5 2. bc3 fg5 3. cd4 gf6 4. db6 ac5 
 1. cb4 fg5 2. gf4 gf6 3. bc3 fe5 4. ab2 
 1. cb4 fg5 2. gf4 gf6 3. bc3 fe5 4. ba5 
