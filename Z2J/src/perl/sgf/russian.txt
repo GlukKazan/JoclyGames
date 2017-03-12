@@ -1,0 +1,106 @@
+http://edeon.ru/scacobnv/spisokdeb.txt
+
+1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. ab2 
+1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. ed4 
+1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. ef4 
+1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. cd4 fg5 7. cb6 ac5 8. db6 
+1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. fg5 hf4 7. eg5 
+1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 gh4 6. cd4 fe5 
+1. cd4 ba5 2. dñ5 db4 3. ac5 fg5 4. bc3 gf6 5. gf4 ed6 
+1. cd4 fg5 2. bc3 gf6 3. cb4 hg7 
+1. cd4 ba5 2. bc3 
+1. cb4 fe5 2. gh4 ef4 3. eg5 hf4 
+1. cb4 ba5 2. bc5 db4 3. ac5 fg5 4. bc3 gf6 5. gh4 gf4 6. eg5 hf4 
+1. cd4 dc5 2. bc3 fg5 3. cb4 gh4 4. b4:d6 e7:c5 
+1. cd4 dc5 2. bc3 fg5 3. cb4 gf6 4. b4:d6 e7:c5 
+1. cd4 dc5 2. bc3 fg5 3. cb4 ba5 
+1. cd4 dc5 2. dc3 fg5 3. cb4 gh4 4. bd6 cc3 5. bd4 ba5 
+1. cd4 dc5 2. bc3 fg5 3. gf4 
+1. cb4 fe5 2. ef4 gf6 
+1. cb4 fe5 2. ef4 ef6 3. ba5 fg5 4. bc3 ge3 5. ff6 ge5 6. gh4 
+1. cb4 de5 2. ba5 bc5 3. ef4 ed6 4. bc3 fg5 5. cb4 ge3 6. ff6 ge5 7. gh4 
+1. cb4 fe5 2. ef4 ef6 3. ba5 fg5 4. fe3 gh4 5. gf2 
+1. cb4 de5 2. ba5 bc5 3. ef4 ed6 4. bc3 fg5 5. fe3 gh4 6. gf2 
+1. cb4 fe5 2. ef4 ba5 
+1. cd4 dc5 2. bc3 cd6 3. cb4 ba5 4. db6 ac7 
+1. cd4 dc5 2. dc3 
+1. cd4 dc5 2. bc3 cd6 3. ab2 
+1. cd4 dc5 2. bc3 cd6 3. gf4 
+1. cd4 dc5 2. gh4 
+1. cd4 dc5 2. gf4 cd6 3. de5 
+1. cd4 dc5 2. bc3 ed6 3. cb4 
+1. cd4 dc5 2. bc3 ed6 3. gf4 
+1. cd4 dc5 2. bc3 ed6 3. gh4 
+1. cd4 bc5 2. db6 ac5 
+1. cd4 fe5 
+1. cd4 fg5 2. bc3 gf6 3. cb4 ba5 4. dc5 ac3 5. db4 
+1. cd4 fg5 2. bc3 gf6 3. cb4 gh4 4. dc5 bd4 5. ec5 hg7 
+1. cd4 fg5 2. bc3 gf6 3. ab2 
+1. cd4 fg5 2. bc3 gh4 3. cb4 hg5 4. dc5 bd4 5. ec5 
+1. cd4 fg5 2. bc3 gh4 3. cb4 hg5 4. bc5 db4 5. ac5 
+1. cd4 fg5 2. bc3 gh4 3. cb4 de5 4. df6 ge5 
+1. cd4 fg5 2. bc3 gh4 3. cb4 de5 4. df6 eg5 
+1. cd4 fg5 2. bc3 gf6 3. cb4 bc5 4. db6 cc3 5. db4 hg7 
+1. cd4 fg5 2. dc5 db4 3. ac5 bd4 4. ec5 
+1. cb4 fg5 2. bc3 gf4 
+1. cd4 fg5 2. dc5 db4 3. ac5 bd4 4. ec5 gf4 5. ge5 cb6 
+1. cd4 fg5 2. gf4 gf6 3. bc3 hg7 
+1. cd4 fg5 2. gf4 gf6 3. bc3 gh4 4. fg5 hf4 5. eg5 
+1. cd4 fg5 2. bc3 ef6 
+1. cd4 de5 2. bc3 ed6 3. ef4 
+1. cd4 de5 2. bc3 ed6 3. gh4 
+1. cd4 de5 2. gf4 
+1. gf4 fe5 2. cd4 
+1. cd4 fg5 2. gh4 
+1. ed4 hg5 2. gh4 de5 
+1. ed4 fe5 2. d4:f6 g7:e5 
+1. ed4 dc5 2. fe3 
+1. ed4 fg5 2. gh4 
+1. ed4 fg5 2. cb4 
+1. ed4 fg5 2. de3 
+1. cb4 fg5 2. dc3 
+1. ab4 ba5 2. ba3 
+1. ab4 ba5 2. ed4 
+1. ab4 fe5 
+1. ab4 fg5 
+1. ab4 hg5 
+1. ab4 bc5 
+1. cd4 hg5 2. gh4 gh6 
+1. cd4 hg5 2. gh4 ba5 
+1. cd4 hg5 2. gh4 de5 
+1. cd4 hg5 2. gh4 dc5 
+1. cb4 hg5 2. gh4 gh6 
+1. cb4 hg5 2. gh4 de5 
+1. cd4 hg5 2. bc3 
+1. cd4 hg5 2. gf4 
+1. cb4 hg5 2. bc3 
+1. cb4 hg5 2. gf4 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. cd4 hg7 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. cd4 fg5 6. db6 a:c5 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. ab2 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. cb2 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. fg5 hf4 6. hf4 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 gh4 5. cb4 fg5 
+1. cb4 fg5 2. gf4 gf6 3. bc3 gh4 4. fg5 hf4 5. hf4 
+1. cb4 fg5 2. gf4 gf6 3. bc3 bc5 4. ba5 ñb4 5. ac5 db4 
+1. cb4 bc5 2. bc3 fg5 3. cd4 gf6 4. db6 ac5 
+1. cb4 fg5 2. gf4 gf6 3. bc3 fe5 4. ab2 
+1. cb4 fg5 2. gf4 gf6 3. bc3 fe5 4. ba5 
+1. cb4 fg5 2. gf4 gf6 3. bc3 de5 
+1. cb4 fg5 2. gf4 gf6 3. bc3 dc5 
+1. gf4 fe5 2. hg3 ed4 
+1. gf4 ba5 
+1. gf4 dc5 
+1. ef4 fg5 2. cb4 ge3 3. d2:f4 bc5 
+1. ef4 fg5 2. cb4 ge3 3. d2:f4 gf6 
+1. ef4 fg5 2. cb4 ge3 3. d2:f4 ef6 
+1. ef4 fg5 2. de3 
+1. gh4 ba5 
+1. gh4 fe5 2. ab4 
+1. gh4 fe5 2. ed4 ef6 3. de3 hg5 4. ed2 ba5 5. fg3 cb6 6. gf4 eg3 7. h2:h6 
+1. gh4 fg5 2. hf6 ge5 
+1. gh4 bc5 2. cb4 
+1. cb4 de5 2. ba5 fg5 
+1. cb4 fe5 2. gh4 ba5 
+1. cd4 fg5 2. bc3 gf6 3. cb4 de5 
+1. gh4 de5
