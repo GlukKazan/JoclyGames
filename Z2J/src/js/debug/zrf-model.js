@@ -74,12 +74,11 @@ Model.Game.commands[Model.Move.ZRF_FUNCTION] = function(gen, param) {
 }
 
 Model.Game.commands[Model.Move.ZRF_IN_ZONE] = function(gen, param) {
-   var design = Model.Game.getDesign();
    var player = gen.board.player;
    if (gen.pos === null) {
        return null;
    }
-   gen.stack.push(design.inZone(param, player, gen.pos));
+   gen.stack.push(gen.design.inZone(param, player, gen.pos));
    return 0;
 }
 
@@ -155,13 +154,12 @@ Model.Game.commands[Model.Move.ZRF_MODE] = function(gen, param) {
 }
 
 Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(gen, param) {
-   var design = Model.game.getDesign();
    var player = gen.board.player;
    var pos = gen.pos;
    if (pos === null) {
        return null;
    }
-   pos = design.navigate(player, pos, param);
+   pos = gen.design.navigate(player, pos, param);
    if (pos !== null) {
        gen.stack.push(true);
    } else {
@@ -171,8 +169,7 @@ Model.Game.commands[Model.Move.ZRF_ON_BOARDD] = function(gen, param) {
 }
 
 Model.Game.commands[Model.Move.ZRF_ON_BOARDP] = function(gen, param) {
-   var design = Model.Game.getDesign();
-   if ((param >= 0) && (param < design.positions.length)) {
+   if ((param >= 0) && (param < gen.design.positions.length)) {
        gen.stack.push(true);
    } else {
        gen.stack.push(false);
@@ -210,8 +207,7 @@ Model.Game.functions[Model.Move.ZRF_SET_POS] = function(gen) {
        return null;
    }
    var pos = gen.stack.pop();
-   var design = Model.Game.getDesign();
-   if (pos < design.positions.length) {
+   if (pos < gen.design.positions.length) {
       gen.pos = pos;
       return 0;
    } else {
@@ -224,17 +220,16 @@ Model.Game.functions[Model.Move.ZRF_NAVIGATE] = function(gen) {
        return null;
    }
    var dir = gen.stack.pop();
-   var design = Model.Game.getDesign();
    var player = gen.board.player;
    var pos = gen.pos;
    if (pos === null) {
        return null;
    }
-   pos = design.navigate(player, pos, dir);
+   pos = gen.design.navigate(player, pos, dir);
    if (pos === null) {
        return null;
    }
-   if (pos < design.positions.length) {
+   if (pos < gen.design.positions.length) {
       gen.pos = pos;
       return 0;
    } else {
@@ -247,14 +242,13 @@ Model.Game.functions[Model.Move.ZRF_OPPOSITE] = function(gen) {
        return null;
    }
    var dir = gen.stack.pop();
-   var design = Model.Game.getDesign();
-   if (_.isUndefined(design.players[0])) {
+   if (_.isUndefined(gen.design.players[0])) {
        return null;
    }
-   if (_.isUndefined(design.players[0][dir])) {
+   if (_.isUndefined(gen.design.players[0][dir])) {
        return null;
    }
-   dir = design.players[0][dir];
+   dir = gen.design.players[0][dir];
    gen.stack.push(dir);
    return 0;
 }
@@ -449,8 +443,10 @@ Model.isIncluding = function(a, b) {
   return Model.find(a, b[0]) >= 0;
 }
 
-Model.Game.posToString = function(pos) {
-   var design = Model.Game.getDesign();
+Model.Game.posToString = function(pos, design) {
+   if (_.isUndefined(design)) {
+       design = Model.Game.getDesign();
+   }
    if (pos < design.positionNames.length) {
        return design.positionNames[pos];
    } else {
@@ -458,8 +454,10 @@ Model.Game.posToString = function(pos) {
    }
 }
 
-Model.Game.stringToPos = function(name) {
-   var design = Model.Game.getDesign();
+Model.Game.stringToPos = function(name, design) {
+   if (_.isUndefined(design)) {
+       design = Model.Game.getDesign();
+   }
    var pos = Model.find(design.positionNames, name);
    if (pos >= 0) {
        return pos;
@@ -799,7 +797,7 @@ ZrfCheck.prototype.addMove = function(move) {
 ZrfCheck.prototype.prepare = function(board) {
   var b = board.copy();
   if (this.type <= NOT_DEFENDED) {
-      b.player = Model.Game.design.prevPlayer(b.player);
+      b.player = board.game.design.prevPlayer(b.player);
   }
   if (this.to !== null) {
       b.setPiece(this.to, null);
@@ -826,7 +824,7 @@ ZrfCheck.prototype.isFailed = function() {
   }
 }
 
-function ZrfMoveGenerator() {
+function ZrfMoveGenerator(design) {
   this.move     = new ZrfMove();
   this.moveType = 1;
   this.template = null;
@@ -842,10 +840,14 @@ function ZrfMoveGenerator() {
   this.marks	= [];
   this.cmd      = 0;
   this.level    = 1;
+  this.design   = design;
 }
 
-Model.Game.createGen = function(template, params) {
-  var r = new ZrfMoveGenerator();
+Model.Game.createGen = function(template, params, design) {
+  if (_.isUndefined(design)) {
+      design = Model.Game.getDesign();
+  }
+  var r = new ZrfMoveGenerator(design);
   r.template = template;
   r.params   = Model.int32Array(params);
   return r;
@@ -857,7 +859,7 @@ ZrfMoveGenerator.prototype.init = function(board, pos) {
 }
 
 ZrfMoveGenerator.prototype.clone = function() {
-  var r = new ZrfMoveGenerator();
+  var r = new ZrfMoveGenerator(this.design);
   r.template = this.template;
   r.params   = this.params;  
   r.level    = this.level;
@@ -894,7 +896,7 @@ ZrfMoveGenerator.prototype.clone = function() {
 }
 
 ZrfMoveGenerator.prototype.copy = function(template, params) {
-  var r = Model.Game.createGen(template, params);
+  var r = Model.Game.createGen(template, params, this.design);
   r.level    = this.level + 1;
   r.parent   = this;
   r.board    = this.board;
@@ -1053,8 +1055,7 @@ ZrfMoveGenerator.prototype.getAttr = function(name, pos) {
   if (piece !== null) {
       var value = piece.getValue(name);
       if (value === null) {
-          var design = Model.Game.getDesign();
-          value = design.getAttribute(piece.type, name);
+          value = this.design.getAttribute(piece.type, name);
       }
       return value;
   }
@@ -1215,8 +1216,8 @@ ZrfBoard.prototype.isEquals = function(board) {
 
 Model.Game.getInitBoard = function() {
   if (_.isUndefined(Model.Game.board)) {
-      Model.Game.board = new ZrfBoard(Model.Game);
       var design = Model.Game.getDesign();
+      Model.Game.board = new ZrfBoard(Model.Game);
       Model.Game.board.reserve = design.reserve;
   }
   return Model.Game.board;
@@ -1301,9 +1302,8 @@ Model.Game.getPartList = function(board, gen) {
 
 var addPrior = function(priors, mode, gen) {
   var ix = 0;
-  var design = Model.Game.design;
-  if (design.modes.length > 0) {
-      ix = Model.find(design.modes, mode);
+  if (gen.design.modes.length > 0) {
+      ix = Model.find(gen.design.modes, mode);
   }
   if (ix >= 0) {
       if (_.isUndefined(priors[ix])) {
@@ -1321,7 +1321,7 @@ var CompleteMove = function(board, gen) {
        pos = positions.pop();
        var piece = gen.getPieceInternal(pos);
        if (Model.Game.isFriend(piece, board.player) || (Model.Game.sharedPieces === true)) {
-           _.each(Model.Game.design.pieces[piece.type], function(move) {
+           _.each(board.game.design.pieces[piece.type], function(move) {
                 if ((move.type === 0) && (move.mode === gen.mode)) {
                     var g = gen.copy(move.template, move.params);
                     g.moveType = t;
@@ -1337,7 +1337,7 @@ var CompleteMove = function(board, gen) {
 }
 
 ZrfBoard.prototype.generateInternal = function(callback, cont) {
-  var design = Model.Game.design;
+  var design = this.game.design;
   if ((this.moves.length === 0) && (design.failed !== true) && (this.player > 0)) {
       var priors = [];
       _.chain(_.keys(this.pieces))
@@ -1350,7 +1350,7 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
            _.chain(design.pieces[piece.type])
             .filter(function(move) { return (move.type === 0); })
             .each(function(move) {
-                var g = Model.Game.createGen(move.template, move.params);
+                var g = Model.Game.createGen(move.template, move.params, this.game.design);
                 g.init(this, pos);
                 addPrior(priors, move.mode, g);
             }, this);
@@ -1362,7 +1362,7 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
                _.chain(design.pieces[tp])
                 .filter(function(move) { return (move.type === 1); })
                 .each(function(move) {
-                    var g = Model.Game.createGen(move.template, move.params);
+                    var g = Model.Game.createGen(move.template, move.params, this.game.design);
                     g.init(this, pos);
                     g.piece = new ZrfPiece(tp, this.player);
                     addPrior(priors, move.mode, g);
@@ -1416,7 +1416,7 @@ ZrfBoard.prototype.generateInternal = function(callback, cont) {
   }
 }
 
-ZrfBoard.prototype.generate = function() {
+ZrfBoard.prototype.generate = function(design) {
   this.generateInternal(this, true);
 }
 
@@ -1491,7 +1491,7 @@ ZrfBoard.prototype.apply = function(move) {
    .each(function (part) {
       move.applyTo(r, part);
    }, this);
-  r.player = Model.Game.design.nextPlayer(this.player);
+  r.player = this.game.design.nextPlayer(this.player);
   r.move = move;
   return r;
 }
@@ -1504,6 +1504,27 @@ ZrfBoard.prototype.applyAll = function(move) {
   .value();
 }
 
+Model.Game.getRandom = function(moves, restrict, cnt) {
+  if (moves.length === 1) return 0;
+  if (moves.length > 0) {
+      var r = _.random(0, moves.length - 1);
+      if (moves.length === restrict.length) return r;
+      var c = 0;
+      if (!_.isUndefined(cnt)) {
+          c = cnt;
+      }
+      while (Model.find(this.restrict, r) >= 0) {
+          if (c > 0) {
+              c--;
+              if (c == 0) return r;
+          }
+          r = _.random(0, moves.length - 1);       
+      }
+      restrict.push(r);
+      return r;
+  }
+}
+
 function ZrfMove() {
   this.actions = [];
   this.checks  = [];
@@ -1511,6 +1532,10 @@ function ZrfMove() {
 
 Model.Game.createMove = function() {
   return new ZrfMove();
+}
+
+Model.Game.compareMove = function(move, notation, board) {
+  return (move.toString() == notation);
 }
 
 var cartesian = function(r, prefix, arr) {
