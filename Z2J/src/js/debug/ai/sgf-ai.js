@@ -29,16 +29,20 @@ Model.Game.createBot = function(design, type, params) {
 
 var compareMove = Model.Game.compareMove;
 
-Model.Game.compareMove = function(move, notation, board) {
-  if ((move.actions.length > 0) && (move.actions[0][1] !== null)) {
-      var s = Model.Game.posToString(move.actions[0][1][0], this.design);
-      if (move.actions[0][0] !== null) {
-          s = Model.Game.posToString(move.actions[0][0][0], this.design) + s;
-      }
-      if (s == notation) {
-          return true;
-      }
-  }
+Model.Game.compareMove = function(move, notation, design, board) {
+  if (_.chain(move.actions)
+   .filter(function(action) {
+       return (action[1] !== null);
+    })
+   .first()
+   .map(function(action) {
+       var r = Model.Game.posToString(action[1][0]);
+       if (action[0] !== null) {
+           r = Model.Game.posToString(action[0][0]) + r;
+       }
+       return r;
+    })
+   .value() == notation) return true;
   return compareMove(move, notation, board);
 }
 

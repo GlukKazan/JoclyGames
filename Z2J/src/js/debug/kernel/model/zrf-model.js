@@ -520,7 +520,7 @@ Model.Game.checkVersion = function(design, name, value) {
          (name != "selection-screen")   &&
          (name != "show-moves-list")    &&
          (name != "silent-?-moves")) {
-         aDesign.failed = true;
+         design.failed = true;
      }
      if (name == "smart-moves") {
          if ((value === "from") || (value === "true")) {
@@ -1534,7 +1534,7 @@ Model.Game.createMove = function() {
   return new ZrfMove();
 }
 
-Model.Game.compareMove = function(move, notation, board) {
+Model.Game.compareMove = function(move, notation, design, board) {
   return (move.toString() == notation);
 }
 

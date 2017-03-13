@@ -90,7 +90,7 @@ var arg = seq([txt('['),
           ])
          .then(function(r) {return r[1];});
 
-var name = rgx(/\w+/);
+var name = rgx(/\w[\w\d]*/);
 var cmd = seq([opt(txt(';')), opt(wsp),
               name, opt(wsp),
               rep(arg, opt(wsp))
