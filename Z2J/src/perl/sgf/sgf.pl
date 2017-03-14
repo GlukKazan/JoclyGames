@@ -2,7 +2,7 @@ my %tree;
 
 while (<>) {
   my $node = \%tree;
-  while (/(\w\d\w\d)/g) {
+  while (/(\w\d+\w\d+)/g) {
      my $move = $1;
      if (!$node->{$move}) {
         $node->{$move} = {};
