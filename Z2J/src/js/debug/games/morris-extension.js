@@ -125,7 +125,7 @@ Model.Game.CheckInvariants = function(board) {
       var b = board.apply(m);
       _.chain(m.actions)
        .filter(function(action) {
-           return (action[0] !== null) && (action[1] !== null);
+           return (action[1] !== null);
         })
        .first();
        .each(function(action) {
@@ -134,7 +134,7 @@ Model.Game.CheckInvariants = function(board) {
            pn = action[3];
            var cnt = countLines(b, tp[0], board.player);
            if (cnt > 0) {
-               if (koMode === true) {
+               if ((koMode === true) && (fp !== null)) {
                    if (countLines(board, fp[0], board.player) > 0) {
                        m.failed = true;
                    }
